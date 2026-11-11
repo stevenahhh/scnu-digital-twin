@@ -36772,68 +36772,6 @@
       "method": "lane C aerial corridor and authoritative network connectivity review"
     },
     {
-      "id": "RS_cabd3499248ea1a2",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_120",
-      "refs": [],
-      "method": "unique reviewed road-zone containment",
-      "candidates": [],
-      "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified."
-    },
-    {
-      "id": "JA_cabd3499248ea1a2",
-      "verified": false,
-      "nodeId": null,
-      "originalNode": "ND_200",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00077",
-        "backend/simulation/data/road_segments.geojson#RD_120",
-        "task-24-attempt-2/owner-source-probes.json#JA_cabd3499248ea1a2",
-        "VR scene_b7 f/r/b/l/d",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_120",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_120-paths.png",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/209",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-3.png#scene_b7",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/666",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_200",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0152",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0153",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0154",
-        "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00077"
-      ],
-      "reason": "JA_cabd3499248ea1a2: MX00077; EPSG:5186 (244194.163, 264015.005). 사진의 MX00077 표식은 RD_120 그룹에 놓였으나 독립 교차로 폴리곤 대응은 없다. 부모 RS_cabd3499248ea1a2의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_200는 사진 중심에서 140.323 m, 연결 도로는 RD_006이며 대안 노드는 ND_200 140.323 m, ND_201 140.44 m, ND_187 145.658 m이다. 동일 RD만 연결하는 그래프 분할점이므로 실제 교차로 경계와 일치한다고 할 수 없다.",
-      "reviewEvidence": {
-        "centreTm": [
-          244194.163,
-          264015.005
-        ],
-        "sourceRefs": [
-          "MX00077"
-        ],
-        "namedRoadVertexShares": [],
-        "namedRoadCentreShares": [],
-        "namedJunctionShares": [],
-        "nearestVr": {
-          "scene": "scene_b7",
-          "distanceM": 174.54
-        },
-        "outputScores": [
-          {
-            "id": "JA_cabd3499248ea1a2/guide/0",
-            "support": 1,
-            "residualM": 0.225,
-            "occluded": false,
-            "unmeasurable": false
-          }
-        ],
-        "status": "unresolved",
-        "unresolvedQuestion": "This is on the 오리정1길 perimeter corridor from way/481311982. The OSM polyline has no surveyed carriageway boundary here (none); adjacent parallel or split ways cannot be separated by the inherited nearest-road label."
-      },
-      "method": "lane C aerial corridor and authoritative network connectivity review"
-    },
-    {
       "id": "RS_10dd9405b695511c",
       "verified": false,
       "segmentId": null,
@@ -48219,30 +48157,6 @@
       "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
     },
     {
-      "id": "RS_620730705cfc76aa",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_112",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00019",
-        "photo/evidence/markings-extra.geojson#MX00020",
-        "photo/evidence/markings-extra.geojson#MX00021"
-      ],
-      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
-    },
-    {
-      "id": "RS_1702b3e6a8814d8f",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_112",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00019",
-        "photo/evidence/markings-extra.geojson#MX00020",
-        "photo/evidence/markings-extra.geojson#MX00021"
-      ],
-      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
-    },
-    {
       "id": "RS_b754ef8f93b73c5b",
       "verified": false,
       "segmentId": null,
@@ -48741,64 +48655,6 @@
     },
     {
       "id": "RS_db4dcc68c4f90a93",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_137",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00856",
-        "photo/evidence/markings.geojson#MK01172",
-        "photo/evidence/markings-extra.geojson#MX00854",
-        "photo/evidence/markings.geojson#MK01155",
-        "photo/evidence/markings-extra.geojson#MX00851",
-        "photo/evidence/markings-extra.geojson#MX00780",
-        "photo/evidence/markings.geojson#MK01044",
-        "photo/evidence/markings.geojson#MK01043",
-        "photo/evidence/markings.geojson#MK01042",
-        "photo/evidence/markings.geojson#MK01041",
-        "photo/evidence/markings.geojson#MK01040",
-        "photo/evidence/markings.geojson#MK01039",
-        "photo/evidence/markings.geojson#MK01038",
-        "photo/evidence/markings.geojson#MK01037",
-        "photo/evidence/markings.geojson#MK01036",
-        "photo/evidence/markings.geojson#MK01035",
-        "photo/evidence/markings.geojson#MK01034",
-        "photo/evidence/markings.geojson#MK01033",
-        "photo/evidence/markings.geojson#MK01032",
-        "photo/evidence/markings.geojson#MK01031"
-      ],
-      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
-    },
-    {
-      "id": "RS_5bb6b2b9ba581263",
-      "verified": false,
-      "segmentId": null,
-      "originalSegment": "RD_137",
-      "refs": [
-        "photo/evidence/markings-extra.geojson#MX00856",
-        "photo/evidence/markings.geojson#MK01172",
-        "photo/evidence/markings-extra.geojson#MX00854",
-        "photo/evidence/markings.geojson#MK01155",
-        "photo/evidence/markings-extra.geojson#MX00851",
-        "photo/evidence/markings-extra.geojson#MX00780",
-        "photo/evidence/markings.geojson#MK01044",
-        "photo/evidence/markings.geojson#MK01043",
-        "photo/evidence/markings.geojson#MK01042",
-        "photo/evidence/markings.geojson#MK01041",
-        "photo/evidence/markings.geojson#MK01040",
-        "photo/evidence/markings.geojson#MK01039",
-        "photo/evidence/markings.geojson#MK01038",
-        "photo/evidence/markings.geojson#MK01037",
-        "photo/evidence/markings.geojson#MK01036",
-        "photo/evidence/markings.geojson#MK01035",
-        "photo/evidence/markings.geojson#MK01034",
-        "photo/evidence/markings.geojson#MK01033",
-        "photo/evidence/markings.geojson#MK01032",
-        "photo/evidence/markings.geojson#MK01031"
-      ],
-      "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)"
-    },
-    {
-      "id": "RS_6c3e49467e51c19d",
       "verified": false,
       "segmentId": null,
       "originalSegment": "RD_137",

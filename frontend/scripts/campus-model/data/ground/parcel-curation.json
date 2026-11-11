@@ -4266,6 +4266,320 @@
    },
    "estimated": true,
    "reason": "keep the LOT_E243489_N263815/R2 stall paint on lot ground: the row's front ends sit up to 0.5 m south of PARCEL_ASPHALT_ROAD_ZONE_13 after the D4 reseed; ring is the row footprint plus the generator's row margin (estimated)"
+  },
+  {
+   "id": "PARCEL_LINK_E244169_N263720_GAP",
+   "class": "road",
+   "ring": [
+    [
+     244163.5,
+     263720.8
+    ],
+    [
+     244166.25,
+     263719.95
+    ],
+    [
+     244170.9,
+     263718.69
+    ],
+    [
+     244171.69,
+     263718.77
+    ],
+    [
+     244173.5,
+     263720.82
+    ],
+    [
+     244173.49,
+     263721.09
+    ],
+    [
+     244163.51,
+     263721.08
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 9.6 m2 with no ground parcel between asphalt parcels; the build drew bare terrain there as a grey triangle"
+    ]
+   },
+   "estimated": true,
+   "reason": "close the gap between the surrounding road parcels at the junction north-east of A17: asphalt is continuous here (estimated)"
+  },
+  {
+   "id": "PARCEL_LINK_E244160_N263718_GAP",
+   "class": "road",
+   "ring": [
+    [
+     244157.59,
+     263712.28
+    ],
+    [
+     244158.14,
+     263712.01
+    ],
+    [
+     244158.41,
+     263712.01
+    ],
+    [
+     244158.67,
+     263712.51
+    ],
+    [
+     244158.94,
+     263713.25
+    ],
+    [
+     244160.8,
+     263719.65
+    ],
+    [
+     244160.99,
+     263720.69
+    ],
+    [
+     244161.38,
+     263724.73
+    ],
+    [
+     244161.36,
+     263726.24
+    ],
+    [
+     244161.09,
+     263726.24
+    ],
+    [
+     244160.58,
+     263724.49
+    ],
+    [
+     244158.24,
+     263715.82
+    ],
+    [
+     244157.57,
+     263712.78
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 9.6 m2 with no ground parcel between asphalt parcels; the build drew bare terrain there as a grey triangle"
+    ]
+   },
+   "estimated": true,
+   "reason": "close the gap between the surrounding road parcels at the junction north-east of A17: asphalt is continuous here (estimated)"
+  },
+  {
+   "id": "PARCEL_LINK_E244199_N263693_GAP",
+   "class": "road",
+   "ring": [
+    [
+     244195.6,
+     263695.55
+    ],
+    [
+     244196.31,
+     263694.48
+    ],
+    [
+     244199.95,
+     263690.04
+    ],
+    [
+     244200.22,
+     263689.8
+    ],
+    [
+     244200.77,
+     263689.83
+    ],
+    [
+     244200.85,
+     263690.89
+    ],
+    [
+     244200.16,
+     263694.54
+    ],
+    [
+     244199.8,
+     263695.15
+    ],
+    [
+     244197.57,
+     263695.72
+    ],
+    [
+     244196.44,
+     263695.89
+    ],
+    [
+     244195.62,
+     263695.83
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 8.7 m2 with no ground parcel between asphalt parcels; the build drew bare terrain there as a grey triangle"
+    ]
+   },
+   "estimated": true,
+   "reason": "close the gap between the surrounding road parcels at the junction north-east of A17: asphalt is continuous here (estimated)"
+  },
+  {
+   "id": "PARCEL_LINK_E244182_N263717_GAP",
+   "class": "road",
+   "ring": [
+    [
+     244179.82,
+     263715.99
+    ],
+    [
+     244181.86,
+     263715.27
+    ],
+    [
+     244182.81,
+     263715.25
+    ],
+    [
+     244183.2,
+     263716.04
+    ],
+    [
+     244183.92,
+     263718.52
+    ],
+    [
+     244184.05,
+     263719.65
+    ],
+    [
+     244183.98,
+     263720.45
+    ],
+    [
+     244183.69,
+     263720.46
+    ],
+    [
+     244179.78,
+     263716.57
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 6.4 m2 with no ground parcel between asphalt parcels; the build drew bare terrain there as a grey triangle"
+    ]
+   },
+   "estimated": true,
+   "reason": "close the gap between the surrounding road parcels at the junction north-east of A17: asphalt is continuous here (estimated)"
+  },
+  {
+   "id": "PARCEL_LINK_E244210_N263735_GAP",
+   "class": "road",
+   "ring": [
+    [
+     244208.07,
+     263734.24
+    ],
+    [
+     244208.38,
+     263733.91
+    ],
+    [
+     244208.67,
+     263733.87
+    ],
+    [
+     244211.73,
+     263735.89
+    ],
+    [
+     244211.96,
+     263736.19
+    ],
+    [
+     244211.93,
+     263736.5
+    ],
+    [
+     244211.08,
+     263736.62
+    ],
+    [
+     244208.02,
+     263735.87
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 2.4 m2 with no ground parcel between asphalt parcels; the build drew bare terrain there as a grey triangle"
+    ]
+   },
+   "estimated": true,
+   "reason": "close the gap between the surrounding road parcels at the junction north-east of A17: asphalt is continuous here (estimated)"
+  },
+  {
+   "id": "PARCEL_LINK_E244190_N263723_ISLAND",
+   "class": "road",
+   "ring": [
+    [
+     244190,
+     263726.6
+    ],
+    [
+     244186.6,
+     263721.7
+    ],
+    [
+     244192,
+     263720.1
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: traffic island traced on the 1 m grid chip, outer kerb edge, corners about 0.3 m"
+    ]
+   },
+   "estimated": true,
+   "reason": "traffic island of the junction north-east of A17, an unassigned hole that was drawn as bare terrain; filled as road because curated additions may only be road or lot, so the raised island itself is not modelled (estimated)"
+  },
+  {
+   "id": "PARCEL_LINK_E244193_N263702_ISLAND",
+   "class": "road",
+   "ring": [
+    [
+     244189,
+     263705.6
+    ],
+    [
+     244196,
+     263703.9
+    ],
+    [
+     244193.7,
+     263698
+    ]
+   ],
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: traffic island traced on the 1 m grid chip, outer kerb edge, corners about 0.3 m"
+    ]
+   },
+   "estimated": true,
+   "reason": "traffic island of the junction north-east of A17, an unassigned hole that was drawn as bare terrain; filled as road because curated additions may only be road or lot, so the raised island itself is not modelled (estimated)"
   }
  ],
  "notAsphalt": [

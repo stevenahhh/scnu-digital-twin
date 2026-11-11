@@ -66,8 +66,11 @@ export function seedRoadMarkings(model, humpRecords, context) {
   const paintGround=context.parcels?topParcelAt(context.parcels):null;
   const offGround=part=>{
     if(!paintGround) return false;
-    const p=frameAt(part,polylineLength(part)/2,"run").centre,[x,z]=tmToScene(...p);
-    return x>=EXTENT.minX&&x<=EXTENT.maxX&&z>=EXTENT.minZ&&z<=EXTENT.maxZ&&!paintGround(p)?.paintAllowed;
+    // its two ends count as well: a run that overhangs the parcel edge still paints unassigned ground (design 10.3)
+    return [part[0],frameAt(part,polylineLength(part)/2,"run").centre,part.at(-1)].some(p=>{
+      const [x,z]=tmToScene(...p);
+      return x>=EXTENT.minX&&x<=EXTENT.maxX&&z>=EXTENT.minZ&&z<=EXTENT.maxZ&&!paintGround(p)?.paintAllowed;
+    });
   };
   for(const l of model.lines) {
     const painted=l.path.map(tm),owner=nearest(painted[Math.floor(painted.length/2)]);

@@ -6897,12 +6897,12 @@
       "RA_9754c0440bf41db5": {
         "line": [
           [
-            243970.11983422565,
-            264004.4432794608
+            243968.43977516086,
+            264003.16252820496
           ],
           [
-            243968.7483515695,
-            264003.3977637578
+            243966.76074919978,
+            264001.8825645101
           ]
         ],
         "evidence": {
@@ -6946,92 +6946,6 @@
             "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00021"
           ],
           "method": "lane C aerial corridor and authoritative network connectivity review",
-          "candidates": []
-        }
-      },
-      "RA_620730705cfc76aa": {
-        "line": [
-          [
-            243968.43977516086,
-            264003.16252820496
-          ],
-          [
-            243966.76074919978,
-            264001.8825645101
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00019",
-            "MX00020",
-            "MX00021"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "line:lane_line_dashed",
-          "refs": [
-            "MX00019",
-            "MX00020",
-            "MX00021"
-          ],
-          "component": 1
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 47.504046793887944,
-          "refs": [
-            "photo/evidence/markings-extra.geojson#MX00019",
-            "photo/evidence/markings-extra.geojson#MX00020",
-            "photo/evidence/markings-extra.geojson#MX00021"
-          ],
-          "method": "reviewed evidence",
-          "candidates": []
-        }
-      },
-      "RA_1702b3e6a8814d8f": {
-        "line": [
-          [
-            243966.56184616926,
-            264001.7309357302
-          ],
-          [
-            243965.09052040675,
-            264000.6093071176
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00019",
-            "MX00020",
-            "MX00021"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "line:lane_line_dashed",
-          "refs": [
-            "MX00019",
-            "MX00020",
-            "MX00021"
-          ],
-          "component": 2
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 47.504046793887944,
-          "refs": [
-            "photo/evidence/markings-extra.geojson#MX00019",
-            "photo/evidence/markings-extra.geojson#MX00020",
-            "photo/evidence/markings-extra.geojson#MX00021"
-          ],
-          "method": "reviewed evidence",
           "candidates": []
         }
       },
@@ -10557,80 +10471,6 @@
         "alignment": "RA_9754c0440bf41db5",
         "pathIndex": 0,
         "fromM": 0,
-        "toM": 1.7245485674028216,
-        "lanes": [
-          {
-            "dir": "fwd",
-            "widthM": 3.25,
-            "line": "white_dashed",
-            "lineWidthM": 0.12500291473764188
-          },
-          {
-            "dir": "fwd",
-            "widthM": 3.25
-          }
-        ],
-        "centre": {
-          "type": "none",
-          "widthM": 0.15
-        },
-        "edges": {
-          "left": "none",
-          "right": "none"
-        },
-        "lateralOffsetM": 0,
-        "kerbOffsetsM": {
-          "left": 3.25,
-          "right": 3.25
-        },
-        "kerbNoParking": {
-          "left": false,
-          "right": false
-        },
-        "humps": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00019",
-            "MX00020",
-            "MX00021"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "dashPhaseM": 1.4044060585342315e-14,
-        "dashPattern": {
-          "dashM": 6.324028891245897,
-          "gapM": 1.000023317901135
-        },
-        "curation": {
-          "verified": false,
-          "refs": [
-            "photo/evidence/markings-extra.geojson#MX00019",
-            "photo/evidence/markings-extra.geojson#MX00020",
-            "photo/evidence/markings-extra.geojson#MX00021",
-            "backend/simulation/data/road_segments.geojson#RD_112",
-            "task-24-attempt-2/owner-source-probes.json#RS_9754c0440bf41db5",
-            "VR scene_002 f/r/b/l/d",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_112",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_112-paths.png",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/452",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-0.png#scene_002",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/99",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00019",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00020",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00021"
-          ],
-          "reason": "RS_9754c0440bf41db5: MX00019, MX00020, MX00021; EPSG:5186 (243967.493, 264002.441). 사진 중심은 조비길 본선이 아니라 건물 옆 주차장 내부이다. RD_112에서 주차장 통로로 이어지는 별도 RD 레코드가 확인되지 않아 본선 ID를 그대로 승인할 수 없다.",
-          "dimensionsVerified": false
-        }
-      },
-      {
-        "id": "RS_620730705cfc76aa",
-        "alignment": "RA_620730705cfc76aa",
-        "pathIndex": 0,
-        "fromM": 0,
         "toM": 2.1112638959083956,
         "lanes": [
           {
@@ -10682,71 +10522,21 @@
           "refs": [
             "photo/evidence/markings-extra.geojson#MX00019",
             "photo/evidence/markings-extra.geojson#MX00020",
-            "photo/evidence/markings-extra.geojson#MX00021"
+            "photo/evidence/markings-extra.geojson#MX00021",
+            "backend/simulation/data/road_segments.geojson#RD_112",
+            "task-24-attempt-2/owner-source-probes.json#RS_9754c0440bf41db5",
+            "VR scene_002 f/r/b/l/d",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_112",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_112-paths.png",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/452",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-0.png#scene_002",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/99",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00019",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00020",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00021"
           ],
-          "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)",
-          "dimensionsVerified": false
-        }
-      },
-      {
-        "id": "RS_1702b3e6a8814d8f",
-        "alignment": "RA_1702b3e6a8814d8f",
-        "pathIndex": 0,
-        "fromM": 0,
-        "toM": 1.8500946581456286,
-        "lanes": [
-          {
-            "dir": "fwd",
-            "widthM": 3.25,
-            "line": "white_dashed",
-            "lineWidthM": 0.12500291473764188
-          },
-          {
-            "dir": "fwd",
-            "widthM": 3.25
-          }
-        ],
-        "centre": {
-          "type": "none",
-          "widthM": 0.15
-        },
-        "edges": {
-          "left": "none",
-          "right": "none"
-        },
-        "lateralOffsetM": 0,
-        "kerbOffsetsM": {
-          "left": 3.25,
-          "right": 3.25
-        },
-        "kerbNoParking": {
-          "left": false,
-          "right": false
-        },
-        "humps": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00019",
-            "MX00020",
-            "MX00021"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "dashPhaseM": 4.473934233107749,
-        "dashPattern": {
-          "dashM": 6.324028891245897,
-          "gapM": 1.000023317901135
-        },
-        "curation": {
-          "verified": false,
-          "refs": [
-            "photo/evidence/markings-extra.geojson#MX00019",
-            "photo/evidence/markings-extra.geojson#MX00020",
-            "photo/evidence/markings-extra.geojson#MX00021"
-          ],
-          "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)",
+          "reason": "RS_9754c0440bf41db5: MX00019, MX00020, MX00021; EPSG:5186 (243967.493, 264002.441). 사진 중심은 조비길 본선이 아니라 건물 옆 주차장 내부이다. RD_112에서 주차장 통로로 이어지는 별도 RD 레코드가 확인되지 않아 본선 ID를 그대로 승인할 수 없다.",
           "dimensionsVerified": false
         }
       },
@@ -19899,12 +19689,12 @@
       "RA_7f1ec2cf5f2e8436": {
         "line": [
           [
-            244238.90943066365,
-            263540.5627435069
+            244237.28214322444,
+            263547.46594997635
           ],
           [
-            244238.52651435742,
-            263542.18713404704
+            244236.57458451367,
+            263550.46752410015
           ]
         ],
         "evidence": {
@@ -20022,12 +19812,12 @@
       "RA_befa34794c93905a": {
         "line": [
           [
-            244237.28214322444,
-            263547.46594997635
+            244233.17105780594,
+            263564.9058138707
           ],
           [
-            244236.57458451367,
-            263550.46752410015
+            244232.34163917578,
+            263568.42433673004
           ]
         ],
         "evidence": {
@@ -20116,12 +19906,12 @@
       "RA_b671e91be2d6f94a": {
         "line": [
           [
-            244235.3160280396,
-            263555.806516453
+            244231.2190972445,
+            263573.18633423303
           ],
           [
-            244234.45722790505,
-            263559.44968022476
+            244230.31443514477,
+            263577.02405159565
           ]
         ],
         "evidence": {
@@ -20210,12 +20000,12 @@
       "RA_b128ea452b1d9ec7": {
         "line": [
           [
-            244233.17105780594,
-            263564.9058138707
+            244229.03479187016,
+            263582.4524974368
           ],
           [
-            244232.34163917578,
-            263568.42433673004
+            244228.18938045902,
+            263586.03886416095
           ]
         ],
         "evidence": {
@@ -20304,12 +20094,12 @@
       "RA_4baa89ac2ed725cc": {
         "line": [
           [
-            244231.2190972445,
-            263573.18633423303
+            244226.97969148334,
+            263591.1705529835
           ],
           [
-            244230.31443514477,
-            263577.02405159565
+            244226.18508184908,
+            263594.541410667
           ]
         ],
         "evidence": {
@@ -20398,12 +20188,12 @@
       "RA_6b00048a6adc7ea5": {
         "line": [
           [
-            244229.03479187016,
-            263582.4524974368
+            244224.91709267377,
+            263599.9204180059
           ],
           [
-            244228.18938045902,
-            263586.03886416095
+            244224.0977855945,
+            263603.39604609343
           ]
         ],
         "evidence": {
@@ -20492,12 +20282,12 @@
       "RA_fcd28919a431a569": {
         "line": [
           [
-            244226.97969148334,
-            263591.1705529835
+            244222.88585278887,
+            263608.5372535916
           ],
           [
-            244226.18508184908,
-            263594.541410667
+            244222.0909951782,
+            263611.90916322963
           ]
         ],
         "evidence": {
@@ -20586,12 +20376,12 @@
       "RA_d892b8df82c9f97d": {
         "line": [
           [
-            244224.91709267377,
-            263599.9204180059
+            244220.88215766108,
+            263617.0372400325
           ],
           [
-            244224.0977855945,
-            263603.39604609343
+            244220.087548117,
+            263620.4080973335
           ]
         ],
         "evidence": {
@@ -20680,12 +20470,12 @@
       "RA_308b8bec8a3a6a06": {
         "line": [
           [
-            244222.88585278887,
-            263608.5372535916
+            244218.86491476116,
+            263625.5946982304
           ],
           [
-            244222.0909951782,
-            263611.90916322963
+            244218.27532979177,
+            263628.0958093905
           ]
         ],
         "evidence": {
@@ -20774,12 +20564,12 @@
       "RA_69d74ead1e0c6e25": {
         "line": [
           [
-            244220.88215766108,
-            263617.0372400325
+            244216.99667465614,
+            263633.52006339235
           ],
           [
-            244220.087548117,
-            263620.4080973335
+            244216.40400705885,
+            263636.0342515396
           ]
         ],
         "evidence": {
@@ -20868,12 +20658,12 @@
       "RA_fd59321aa3f1845d": {
         "line": [
           [
-            244218.86491476116,
-            263625.5946982304
+            244215.33062453894,
+            263640.5877071719
           ],
           [
-            244218.27532979177,
-            263628.0958093905
+            244214.68556095206,
+            263643.32416725805
           ]
         ],
         "evidence": {
@@ -20962,12 +20752,12 @@
       "RA_ea03b3819bd2cfb0": {
         "line": [
           [
-            244216.99667465614,
-            263633.52006339235
+            244213.67545087196,
+            263647.6092113576
           ],
           [
-            244216.40400705885,
-            263636.0342515396
+            244213.00229946655,
+            263650.4648243395
           ]
         ],
         "evidence": {
@@ -21056,12 +20846,12 @@
       "RA_8fa7e146f84dd77d": {
         "line": [
           [
-            244215.33062453894,
-            263640.5877071719
+            244211.91150791646,
+            263655.0921317861
           ],
           [
-            244214.68556095206,
-            263643.32416725805
+            244211.26977505552,
+            263657.8144624147
           ]
         ],
         "evidence": {
@@ -21150,12 +20940,12 @@
       "RA_91e5f3dc4b855f8c": {
         "line": [
           [
-            244213.67545087196,
-            263647.6092113576
+            244210.20035962967,
+            263662.35108901694
           ],
           [
-            244213.00229946655,
-            263650.4648243395
+            244209.5550480675,
+            263665.08860105276
           ]
         ],
         "evidence": {
@@ -21244,12 +21034,12 @@
       "RA_af5c21c325e1ba71": {
         "line": [
           [
-            244211.91150791646,
-            263655.0921317861
+            244208.41602852487,
+            263669.92049914657
           ],
           [
-            244211.26977505552,
-            263657.8144624147
+            244207.77429570557,
+            263672.6428295984
           ]
         ],
         "evidence": {
@@ -21338,12 +21128,12 @@
       "RA_0e71e63a51a35a9e": {
         "line": [
           [
-            244210.20035962967,
-            263662.35108901694
+            244206.63841853183,
+            263677.46139727434
           ],
           [
-            244209.5550480675,
-            263665.08860105276
+            244206.01771030287,
+            263680.0945381433
           ]
         ],
         "evidence": {
@@ -21432,12 +21222,12 @@
       "RA_427b1f707a07a934": {
         "line": [
           [
-            244208.41602852487,
-            263669.92049914657
+            244204.89936162715,
+            263684.83874720393
           ],
           [
-            244207.77429570557,
-            263672.6428295984
+            244204.3133555327,
+            263687.3246762198
           ]
         ],
         "evidence": {
@@ -21526,194 +21316,6 @@
       "RA_db4dcc68c4f90a93": {
         "line": [
           [
-            244206.63841853183,
-            263677.46139727434
-          ],
-          [
-            244206.01771030287,
-            263680.0945381433
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00856",
-            "MK01172",
-            "MX00854",
-            "MK01155",
-            "MX00851",
-            "MX00780",
-            "MK01044",
-            "MK01043",
-            "MK01042",
-            "MK01041",
-            "MK01040",
-            "MK01039",
-            "MK01038",
-            "MK01037",
-            "MK01036",
-            "MK01035",
-            "MK01034",
-            "MK01033",
-            "MK01032",
-            "MK01031"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "line:lane_line_dashed",
-          "refs": [
-            "MX00856",
-            "MK01172",
-            "MX00854",
-            "MK01155",
-            "MX00851",
-            "MX00780",
-            "MK01044",
-            "MK01043",
-            "MK01042",
-            "MK01041",
-            "MK01040",
-            "MK01039",
-            "MK01038",
-            "MK01037",
-            "MK01036",
-            "MK01035",
-            "MK01034",
-            "MK01033",
-            "MK01032",
-            "MK01031"
-          ],
-          "component": 17
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 5.031605996618021,
-          "refs": [
-            "photo/evidence/markings-extra.geojson#MX00856",
-            "photo/evidence/markings.geojson#MK01172",
-            "photo/evidence/markings-extra.geojson#MX00854",
-            "photo/evidence/markings.geojson#MK01155",
-            "photo/evidence/markings-extra.geojson#MX00851",
-            "photo/evidence/markings-extra.geojson#MX00780",
-            "photo/evidence/markings.geojson#MK01044",
-            "photo/evidence/markings.geojson#MK01043",
-            "photo/evidence/markings.geojson#MK01042",
-            "photo/evidence/markings.geojson#MK01041",
-            "photo/evidence/markings.geojson#MK01040",
-            "photo/evidence/markings.geojson#MK01039",
-            "photo/evidence/markings.geojson#MK01038",
-            "photo/evidence/markings.geojson#MK01037",
-            "photo/evidence/markings.geojson#MK01036",
-            "photo/evidence/markings.geojson#MK01035",
-            "photo/evidence/markings.geojson#MK01034",
-            "photo/evidence/markings.geojson#MK01033",
-            "photo/evidence/markings.geojson#MK01032",
-            "photo/evidence/markings.geojson#MK01031"
-          ],
-          "method": "reviewed evidence",
-          "candidates": []
-        }
-      },
-      "RA_5bb6b2b9ba581263": {
-        "line": [
-          [
-            244204.89936162715,
-            263684.83874720393
-          ],
-          [
-            244204.3133555327,
-            263687.3246762198
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00856",
-            "MK01172",
-            "MX00854",
-            "MK01155",
-            "MX00851",
-            "MX00780",
-            "MK01044",
-            "MK01043",
-            "MK01042",
-            "MK01041",
-            "MK01040",
-            "MK01039",
-            "MK01038",
-            "MK01037",
-            "MK01036",
-            "MK01035",
-            "MK01034",
-            "MK01033",
-            "MK01032",
-            "MK01031"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "line:lane_line_dashed",
-          "refs": [
-            "MX00856",
-            "MK01172",
-            "MX00854",
-            "MK01155",
-            "MX00851",
-            "MX00780",
-            "MK01044",
-            "MK01043",
-            "MK01042",
-            "MK01041",
-            "MK01040",
-            "MK01039",
-            "MK01038",
-            "MK01037",
-            "MK01036",
-            "MK01035",
-            "MK01034",
-            "MK01033",
-            "MK01032",
-            "MK01031"
-          ],
-          "component": 18
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 5.031605996618021,
-          "refs": [
-            "photo/evidence/markings-extra.geojson#MX00856",
-            "photo/evidence/markings.geojson#MK01172",
-            "photo/evidence/markings-extra.geojson#MX00854",
-            "photo/evidence/markings.geojson#MK01155",
-            "photo/evidence/markings-extra.geojson#MX00851",
-            "photo/evidence/markings-extra.geojson#MX00780",
-            "photo/evidence/markings.geojson#MK01044",
-            "photo/evidence/markings.geojson#MK01043",
-            "photo/evidence/markings.geojson#MK01042",
-            "photo/evidence/markings.geojson#MK01041",
-            "photo/evidence/markings.geojson#MK01040",
-            "photo/evidence/markings.geojson#MK01039",
-            "photo/evidence/markings.geojson#MK01038",
-            "photo/evidence/markings.geojson#MK01037",
-            "photo/evidence/markings.geojson#MK01036",
-            "photo/evidence/markings.geojson#MK01035",
-            "photo/evidence/markings.geojson#MK01034",
-            "photo/evidence/markings.geojson#MK01033",
-            "photo/evidence/markings.geojson#MK01032",
-            "photo/evidence/markings.geojson#MK01031"
-          ],
-          "method": "reviewed evidence",
-          "candidates": []
-        }
-      },
-      "RA_6c3e49467e51c19d": {
-        "line": [
-          [
             244203.1429175834,
             263692.2898560822
           ],
@@ -21774,7 +21376,7 @@
             "MK01032",
             "MK01031"
           ],
-          "component": 19
+          "component": 17
         },
         "association": {
           "verified": false,
@@ -27060,131 +26662,6 @@
         "alignment": "RA_7f1ec2cf5f2e8436",
         "pathIndex": 0,
         "fromM": 0,
-        "toM": 1.6689126772879561,
-        "lanes": [
-          {
-            "dir": "fwd",
-            "widthM": 3.25,
-            "line": "white_dashed",
-            "lineWidthM": 0.12500291473764188
-          },
-          {
-            "dir": "fwd",
-            "widthM": 3.25
-          }
-        ],
-        "centre": {
-          "type": "none",
-          "widthM": 0.15
-        },
-        "edges": {
-          "left": "none",
-          "right": "none"
-        },
-        "lateralOffsetM": 0,
-        "kerbOffsetsM": {
-          "left": 3.25,
-          "right": 3.25
-        },
-        "kerbNoParking": {
-          "left": false,
-          "right": false
-        },
-        "humps": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00856",
-            "MK01172",
-            "MX00854",
-            "MK01155",
-            "MX00851",
-            "MX00780",
-            "MK01044",
-            "MK01043",
-            "MK01042",
-            "MK01041",
-            "MK01040",
-            "MK01039",
-            "MK01038",
-            "MK01037",
-            "MK01036",
-            "MK01035",
-            "MK01034",
-            "MK01033",
-            "MK01032",
-            "MK01031"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "dashPhaseM": 0,
-        "dashPattern": {
-          "dashM": 158.6686122070812,
-          "gapM": 1.000023317901135
-        },
-        "curation": {
-          "verified": true,
-          "refs": [
-            "photo/evidence/markings-extra.geojson#MX00856",
-            "photo/evidence/markings.geojson#MK01172",
-            "photo/evidence/markings-extra.geojson#MX00854",
-            "photo/evidence/markings.geojson#MK01155",
-            "photo/evidence/markings-extra.geojson#MX00851",
-            "photo/evidence/markings-extra.geojson#MX00780",
-            "photo/evidence/markings.geojson#MK01044",
-            "photo/evidence/markings.geojson#MK01043",
-            "photo/evidence/markings.geojson#MK01042",
-            "photo/evidence/markings.geojson#MK01041",
-            "photo/evidence/markings.geojson#MK01040",
-            "photo/evidence/markings.geojson#MK01039",
-            "photo/evidence/markings.geojson#MK01038",
-            "photo/evidence/markings.geojson#MK01037",
-            "photo/evidence/markings.geojson#MK01036",
-            "photo/evidence/markings.geojson#MK01035",
-            "photo/evidence/markings.geojson#MK01034",
-            "photo/evidence/markings.geojson#MK01033",
-            "photo/evidence/markings.geojson#MK01032",
-            "photo/evidence/markings.geojson#MK01031",
-            "backend/simulation/data/road_segments.geojson#RD_137",
-            "task-24-attempt-2/owner-source-probes.json#RS_7f1ec2cf5f2e8436",
-            "VR scene_a17 f/r/b/l/d",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_137",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_137-paths.png",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/422",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-2.png#scene_a17",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/241",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00856",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01172",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00854",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01155",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00851",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00780",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01044",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01043",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01042",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01041",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01040",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01039",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01038",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01037",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01036",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01035",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01034",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01033",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01032",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01031"
-          ],
-          "reason": "RS_7f1ec2cf5f2e8436: MX00856, MK01172, MX00854, MK01155, MX00851, MX00780, MK01044, MK01043, MK01042, MK01041, MK01040, MK01039, MK01038, MK01037, MK01036, MK01035, MK01034, MK01033, MK01032, MK01031; EPSG:5186 (244220.735, 263617.664). 중앙로 남측 본선의 연속 차선 또는 차도 가장자리 도색이다. 정문 회전 유도선과 순천대2길 입구의 횡방향 경계 중 귀속이 갈리는 여섯 owner는 별도로 남겼다. 사진 위치의 가장 가까운 도로들은 RD_137 5.597 m, RD_104 16.806 m, RD_125 44.381 m이다. 도로 ID만 승인하며 치수·도색 존재·IoU·잔차 판정은 변경하지 않는다.",
-          "dimensionsVerified": false
-        }
-      },
-      {
-        "id": "RS_befa34794c93905a",
-        "alignment": "RA_befa34794c93905a",
-        "pathIndex": 0,
-        "fromM": 0,
         "toM": 3.0838428218478797,
         "lanes": [
           {
@@ -27249,7 +26726,7 @@
           "gapM": 1.000023317901135
         },
         "curation": {
-          "verified": false,
+          "verified": true,
           "refs": [
             "photo/evidence/markings-extra.geojson#MX00856",
             "photo/evidence/markings.geojson#MK01172",
@@ -27270,111 +26747,44 @@
             "photo/evidence/markings.geojson#MK01034",
             "photo/evidence/markings.geojson#MK01033",
             "photo/evidence/markings.geojson#MK01032",
-            "photo/evidence/markings.geojson#MK01031"
+            "photo/evidence/markings.geojson#MK01031",
+            "backend/simulation/data/road_segments.geojson#RD_137",
+            "task-24-attempt-2/owner-source-probes.json#RS_7f1ec2cf5f2e8436",
+            "VR scene_a17 f/r/b/l/d",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_137",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_137-paths.png",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/422",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-2.png#scene_a17",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/241",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00856",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01172",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00854",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01155",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00851",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00780",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01044",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01043",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01042",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01041",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01040",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01039",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01038",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01037",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01036",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01035",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01034",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01033",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01032",
+            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK01031"
           ],
-          "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)",
+          "reason": "RS_7f1ec2cf5f2e8436: MX00856, MK01172, MX00854, MK01155, MX00851, MX00780, MK01044, MK01043, MK01042, MK01041, MK01040, MK01039, MK01038, MK01037, MK01036, MK01035, MK01034, MK01033, MK01032, MK01031; EPSG:5186 (244220.735, 263617.664). 중앙로 남측 본선의 연속 차선 또는 차도 가장자리 도색이다. 정문 회전 유도선과 순천대2길 입구의 횡방향 경계 중 귀속이 갈리는 여섯 owner는 별도로 남겼다. 사진 위치의 가장 가까운 도로들은 RD_137 5.597 m, RD_104 16.806 m, RD_125 44.381 m이다. 도로 ID만 승인하며 치수·도색 존재·IoU·잔차 판정은 변경하지 않는다.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_b671e91be2d6f94a",
-        "alignment": "RA_b671e91be2d6f94a",
-        "pathIndex": 0,
-        "fromM": 0,
-        "toM": 3.7430174911570058,
-        "lanes": [
-          {
-            "dir": "fwd",
-            "widthM": 3.25,
-            "line": "white_dashed",
-            "lineWidthM": 0.12500291473764188
-          },
-          {
-            "dir": "fwd",
-            "widthM": 3.25
-          }
-        ],
-        "centre": {
-          "type": "none",
-          "widthM": 0.15
-        },
-        "edges": {
-          "left": "none",
-          "right": "none"
-        },
-        "lateralOffsetM": 0,
-        "kerbOffsetsM": {
-          "left": 3.25,
-          "right": 3.25
-        },
-        "kerbNoParking": {
-          "left": false,
-          "right": false
-        },
-        "humps": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00856",
-            "MK01172",
-            "MX00854",
-            "MK01155",
-            "MX00851",
-            "MX00780",
-            "MK01044",
-            "MK01043",
-            "MK01042",
-            "MK01041",
-            "MK01040",
-            "MK01039",
-            "MK01038",
-            "MK01037",
-            "MK01036",
-            "MK01035",
-            "MK01034",
-            "MK01033",
-            "MK01032",
-            "MK01031"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "dashPhaseM": 15.66158216943761,
-        "dashPattern": {
-          "dashM": 158.6686122070812,
-          "gapM": 1.000023317901135
-        },
-        "curation": {
-          "verified": false,
-          "refs": [
-            "photo/evidence/markings-extra.geojson#MX00856",
-            "photo/evidence/markings.geojson#MK01172",
-            "photo/evidence/markings-extra.geojson#MX00854",
-            "photo/evidence/markings.geojson#MK01155",
-            "photo/evidence/markings-extra.geojson#MX00851",
-            "photo/evidence/markings-extra.geojson#MX00780",
-            "photo/evidence/markings.geojson#MK01044",
-            "photo/evidence/markings.geojson#MK01043",
-            "photo/evidence/markings.geojson#MK01042",
-            "photo/evidence/markings.geojson#MK01041",
-            "photo/evidence/markings.geojson#MK01040",
-            "photo/evidence/markings.geojson#MK01039",
-            "photo/evidence/markings.geojson#MK01038",
-            "photo/evidence/markings.geojson#MK01037",
-            "photo/evidence/markings.geojson#MK01036",
-            "photo/evidence/markings.geojson#MK01035",
-            "photo/evidence/markings.geojson#MK01034",
-            "photo/evidence/markings.geojson#MK01033",
-            "photo/evidence/markings.geojson#MK01032",
-            "photo/evidence/markings.geojson#MK01031"
-          ],
-          "reason": "lane/fix-markings 2026-11-11: new seed owner for one photo dash of a line drawn as the photo shows it (fit/markingEvidenceFit.mjs detectedDashLine); road association unreviewed (estimated)",
-          "dimensionsVerified": false
-        }
-      },
-      {
-        "id": "RS_b128ea452b1d9ec7",
-        "alignment": "RA_b128ea452b1d9ec7",
+        "id": "RS_befa34794c93905a",
+        "alignment": "RA_befa34794c93905a",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 3.614960356021721,
@@ -27469,8 +26879,8 @@
         }
       },
       {
-        "id": "RS_4baa89ac2ed725cc",
-        "alignment": "RA_4baa89ac2ed725cc",
+        "id": "RS_b671e91be2d6f94a",
+        "alignment": "RA_b671e91be2d6f94a",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 3.942903507574624,
@@ -27565,8 +26975,8 @@
         }
       },
       {
-        "id": "RS_6b00048a6adc7ea5",
-        "alignment": "RA_6b00048a6adc7ea5",
+        "id": "RS_b128ea452b1d9ec7",
+        "alignment": "RA_b128ea452b1d9ec7",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 3.6846637206503625,
@@ -27661,8 +27071,8 @@
         }
       },
       {
-        "id": "RS_fcd28919a431a569",
-        "alignment": "RA_fcd28919a431a569",
+        "id": "RS_4baa89ac2ed725cc",
+        "alignment": "RA_4baa89ac2ed725cc",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 3.463247896629266,
@@ -27757,8 +27167,8 @@
         }
       },
       {
-        "id": "RS_d892b8df82c9f97d",
-        "alignment": "RA_d892b8df82c9f97d",
+        "id": "RS_6b00048a6adc7ea5",
+        "alignment": "RA_6b00048a6adc7ea5",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 3.570889902108418,
@@ -27853,8 +27263,8 @@
         }
       },
       {
-        "id": "RS_308b8bec8a3a6a06",
-        "alignment": "RA_308b8bec8a3a6a06",
+        "id": "RS_fcd28919a431a569",
+        "alignment": "RA_fcd28919a431a569",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 3.4643286836567673,
@@ -27949,8 +27359,8 @@
         }
       },
       {
-        "id": "RS_69d74ead1e0c6e25",
-        "alignment": "RA_69d74ead1e0c6e25",
+        "id": "RS_d892b8df82c9f97d",
+        "alignment": "RA_d892b8df82c9f97d",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 3.4632475035998023,
@@ -28045,8 +27455,8 @@
         }
       },
       {
-        "id": "RS_fd59321aa3f1845d",
-        "alignment": "RA_fd59321aa3f1845d",
+        "id": "RS_308b8bec8a3a6a06",
+        "alignment": "RA_308b8bec8a3a6a06",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 2.5696629100453063,
@@ -28141,8 +27551,8 @@
         }
       },
       {
-        "id": "RS_ea03b3819bd2cfb0",
-        "alignment": "RA_ea03b3819bd2cfb0",
+        "id": "RS_69d74ead1e0c6e25",
+        "alignment": "RA_69d74ead1e0c6e25",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 2.583098318053288,
@@ -28237,8 +27647,8 @@
         }
       },
       {
-        "id": "RS_8fa7e146f84dd77d",
-        "alignment": "RA_8fa7e146f84dd77d",
+        "id": "RS_fd59321aa3f1845d",
+        "alignment": "RA_fd59321aa3f1845d",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 2.811462401334894,
@@ -28333,8 +27743,8 @@
         }
       },
       {
-        "id": "RS_91e5f3dc4b855f8c",
-        "alignment": "RA_91e5f3dc4b855f8c",
+        "id": "RS_ea03b3819bd2cfb0",
+        "alignment": "RA_ea03b3819bd2cfb0",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 2.9338811013648383,
@@ -28429,8 +27839,8 @@
         }
       },
       {
-        "id": "RS_af5c21c325e1ba71",
-        "alignment": "RA_af5c21c325e1ba71",
+        "id": "RS_8fa7e146f84dd77d",
+        "alignment": "RA_8fa7e146f84dd77d",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 2.796945676311888,
@@ -28525,8 +27935,8 @@
         }
       },
       {
-        "id": "RS_0e71e63a51a35a9e",
-        "alignment": "RA_0e71e63a51a35a9e",
+        "id": "RS_91e5f3dc4b855f8c",
+        "alignment": "RA_91e5f3dc4b855f8c",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 2.8125431834062953,
@@ -28621,8 +28031,8 @@
         }
       },
       {
-        "id": "RS_427b1f707a07a934",
-        "alignment": "RA_427b1f707a07a934",
+        "id": "RS_af5c21c325e1ba71",
+        "alignment": "RA_af5c21c325e1ba71",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 2.796945494695506,
@@ -28717,8 +28127,8 @@
         }
       },
       {
-        "id": "RS_db4dcc68c4f90a93",
-        "alignment": "RA_db4dcc68c4f90a93",
+        "id": "RS_0e71e63a51a35a9e",
+        "alignment": "RA_0e71e63a51a35a9e",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 2.705311357562563,
@@ -28813,8 +28223,8 @@
         }
       },
       {
-        "id": "RS_5bb6b2b9ba581263",
-        "alignment": "RA_5bb6b2b9ba581263",
+        "id": "RS_427b1f707a07a934",
+        "alignment": "RA_427b1f707a07a934",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 2.554064645728773,
@@ -28909,8 +28319,8 @@
         }
       },
       {
-        "id": "RS_6c3e49467e51c19d",
-        "alignment": "RA_6c3e49467e51c19d",
+        "id": "RS_db4dcc68c4f90a93",
+        "alignment": "RA_db4dcc68c4f90a93",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 2.782839140213299,
@@ -38791,7 +38201,7 @@
         "lanes": [
           {
             "dir": "fwd",
-            "widthM": 5.241926685470437
+            "widthM": 14.040608400870191
           }
         ],
         "centre": {
@@ -38802,10 +38212,10 @@
           "left": "none",
           "right": "none"
         },
-        "lateralOffsetM": -4.399340857699877,
+        "lateralOffsetM": 0,
         "kerbOffsetsM": {
-          "left": 2.6209633427352186,
-          "right": 2.6209633427352186
+          "left": 7.0203042004350955,
+          "right": 7.0203042004350955
         },
         "kerbNoParking": {
           "left": false,
@@ -38820,7 +38230,7 @@
             "heightM": 0.1,
             "bands": true,
             "widthM": 14.040608400870191,
-            "lateralOffsetM": 4.399340857699877,
+            "lateralOffsetM": 0,
             "bandAxis": "travel",
             "bandWidthM": 0.4518226798123647,
             "bandStartColour": "white",
@@ -63796,41 +63206,6 @@
           "candidates": []
         }
       },
-      "RA_cabd3499248ea1a2": {
-        "line": [
-          [
-            244194.4010185937,
-            264015.0823492612
-          ],
-          [
-            244193.62751322062,
-            264014.83067798504
-          ]
-        ],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00077"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "role": "inferred-road-centreline",
-        "seedIdentity": {
-          "role": "line:give_way_line",
-          "refs": [
-            "MX00077"
-          ],
-          "component": 0
-        },
-        "association": {
-          "verified": false,
-          "distanceM": 3.675983101043597,
-          "refs": [],
-          "method": "unique reviewed road-zone containment",
-          "candidates": []
-        }
-      },
       "RA_10dd9405b695511c": {
         "line": [
           [
@@ -64214,56 +63589,6 @@
         "dashPhaseM": 0,
         "dashPattern": {
           "dashM": 0.874785013330746,
-          "gapM": 1.000023317901135
-        },
-        "curation": {
-          "verified": false,
-          "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
-          "dimensionsVerified": false
-        }
-      },
-      {
-        "id": "RS_cabd3499248ea1a2",
-        "alignment": "RA_cabd3499248ea1a2",
-        "pathIndex": 0,
-        "fromM": 0,
-        "toM": 0.8134180926321439,
-        "lanes": [
-          {
-            "dir": "fwd",
-            "widthM": 6.5
-          }
-        ],
-        "centre": {
-          "type": "none",
-          "widthM": 0.15
-        },
-        "edges": {
-          "left": "none",
-          "right": "none"
-        },
-        "lateralOffsetM": 0,
-        "kerbOffsetsM": {
-          "left": 3.25,
-          "right": 3.25
-        },
-        "kerbNoParking": {
-          "left": false,
-          "right": false
-        },
-        "humps": [],
-        "evidence": {
-          "tier": "T1",
-          "refs": [
-            "MX00077"
-          ]
-        },
-        "estimated": true,
-        "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
-        "dashPhaseM": 0,
-        "dashPattern": {
-          "dashM": 0.8134180926243594,
           "gapM": 1.000023317901135
         },
         "curation": {

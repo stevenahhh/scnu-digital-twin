@@ -3238,52 +3238,48 @@
    "class": "court",
    "ring": [
     [
-     244148.8713,
-     263547.0083
+     244146.4213,
+     263548.5583
     ],
     [
-     244149.4478,
-     263548.653
+     244147.3878,
+     263548.803
     ],
     [
-     244149.4442,
-     263549.3963
+     244147.1642,
+     263549.7263
     ],
     [
-     244146.8571,
-     263561.2548
+     244144.4771,
+     263560.6648
     ],
     [
-     244141.3194,
-     263584.5928
+     244138.584,
+     263584.6346
     ],
     [
-     244140.374,
-     263585.5646
+     244108.6922,
+     263577.2906
     ],
     [
-     244108.6122,
-     263577.6006
+     244107.0425,
+     263576.8819
     ],
     [
-     244106.9425,
-     263577.2819
+     244105.1791,
+     263576.4338
     ],
     [
-     244105.7491,
-     263576.6438
+     244110.1618,
+     263556.1743
     ],
     [
-     244110.5418,
-     263556.2643
+     244110.5356,
+     263554.6118
     ],
     [
-     244110.9056,
-     263554.7018
-    ],
-    [
-     244114.5048,
-     263539.3978
+     244113.9848,
+     263540.5978
     ]
    ],
    "holes": [],
@@ -3291,11 +3287,25 @@
    "mesh": "Ground_Sports",
    "label": 6,
    "source": "project-estimated",
-   "source_ref": "MCEE class-141 facility 16",
+   "source_ref": "MCEE class-141 facility 16; registration GR_F16_0, GR_F16_1, GR_F16_2, GR_F16_3, GR_F16_4, GR_F16_5, GR_F16_6, GR_F16_7, GR_F16_8, GR_F16_9, GR_F16_10, GR_F16_11, GR_F16_12, GR_F16_13",
    "evidence": {
-    "tier": "T4",
+    "tier": "T1",
     "refs": [
-     "MCEE class-141 facility 16"
+     "MCEE class-141 facility 16",
+     "GR_F16_0",
+     "GR_F16_1",
+     "GR_F16_2",
+     "GR_F16_3",
+     "GR_F16_4",
+     "GR_F16_5",
+     "GR_F16_6",
+     "GR_F16_7",
+     "GR_F16_8",
+     "GR_F16_9",
+     "GR_F16_10",
+     "GR_F16_11",
+     "GR_F16_12",
+     "GR_F16_13"
     ]
    },
    "paintAllowed": false,
@@ -3307,11 +3317,11 @@
       {
        "surface": "tennis",
        "point": [
-        244127.65388132437,
-        263562.51551264053
+        244127.1591674964,
+        263562.83485894627
        ],
-       "headingDegrees": 102,
-       "note": "tennis courts (테니스장)"
+       "headingDegrees": 76.5,
+       "note": "tennis courts (테니스장): two courts side by side, their centres 14.88 m apart (TENNIS_COURT_OFFSET_M); centre between the two green court surfaces and their long axis (grid bearing 166.2 degrees) fitted on the NGII 2025 orthophoto, 2026-11-11; heading 102 had them 26 degrees off the clay court and its fence (estimated)"
       }
      ]
     }
@@ -3420,20 +3430,37 @@
       {
        "surface": "basketball",
        "point": [
-        244123.8335737773,
-        263650.0207211882
+        244123.7639454821,
+        263649.31034342444
        ],
-       "headingDegrees": 12,
-       "note": "blue basketball court (full court)"
+       "headingDegrees": 14.4,
+       "note": "blue basketball court (full court): centre of its painted lines, 24.8 x 15.1 m (lib/pitchLines.mjs BASKETBALL_HALF_M), long axis square to the futsal pitch's, and area = its blue surface (28.9 x 17.95 m), read on the NGII 2025 orthophoto, 2026-11-11; it sat 0.7 m north and 2.4 degrees off (estimated)",
+       "area": {
+        "point": [
+         244123.68336167157,
+         263648.97712212696
+        ],
+        "lengthMetres": 28.9,
+        "widthMetres": 17.95
+       }
       },
       {
        "surface": "basketball",
        "point": [
-        244127.4746406522,
-        263631.72147414985
+        244126.6189201963,
+        263631.1515240379
        ],
+       "headingDegrees": 14.4,
        "lines": false,
-       "note": "blue basketball court (half court)"
+       "note": "blue basketball court (half court, hoop at its east end, lines not drawn): area = its blue surface south of the full court (14.35 x 15.1 m) on the NGII 2025 orthophoto, 2026-11-11, so the futsal pitch and the multi court apron keep their own paint (estimated)",
+       "area": {
+        "point": [
+         244126.6189201963,
+         263631.1515240379
+        ],
+        "lengthMetres": 14.35,
+        "widthMetres": 15.1
+       }
       },
       {
        "surface": "futsal",
@@ -3442,16 +3469,32 @@
         263605.7180173872
        ],
        "headingDegrees": 104.4,
-       "note": "futsal pitch west of the multi court (centre, long axis and 38.2 x 20.2 m outline read from the painted lines on the NGII 2025 orthophoto, 2026-11-10; estimated)"
+       "note": "futsal pitch west of the multi court (centre, long axis and 38.2 x 20.2 m outline read from the painted lines on the NGII 2025 orthophoto, 2026-11-10); area = its green turf inside the ball-stop fence (42.55 x 22.4 m) on the same photo, 2026-11-11 (estimated)",
+       "area": {
+        "point": [
+         244109.20624167094,
+         263605.87201159
+        ],
+        "lengthMetres": 42.55,
+        "widthMetres": 22.4
+       }
       },
       {
        "surface": "multi",
        "point": [
-        244127.56603660766,
-        263603.36464476405
+        244127.55856636216,
+        263603.02068245015
        ],
        "headingDegrees": 104.4,
-       "note": "multi court (green apron, red court; long axis read from the red court's edges on the NGII 2025 orthophoto, 2026-11-10; estimated)"
+       "note": "multi court (green apron, red court; long axis read from the red court's edges on the NGII 2025 orthophoto, 2026-11-10); centre = the red court's (15.2 x 6.6 m, MULTI_COURT_HALF_M) and area = the green apron (32.9 x 14.4 m) on the same photo, 2026-11-11 (estimated)",
+       "area": {
+        "point": [
+         244127.46729468135,
+         263603.00914690655
+        ],
+        "lengthMetres": 32.9,
+        "widthMetres": 14.4
+       }
       }
      ]
     }
@@ -209632,6 +209675,457 @@
    "curated": "todo 13a"
   },
   {
+   "id": "PARCEL_LINK_E244169_N263720_GAP",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244163.5,
+     263720.8
+    ],
+    [
+     244166.25,
+     263719.95
+    ],
+    [
+     244170.9,
+     263718.69
+    ],
+    [
+     244171.69,
+     263718.77
+    ],
+    [
+     244173.5,
+     263720.82
+    ],
+    [
+     244173.49,
+     263721.09
+    ],
+    [
+     244163.51,
+     263721.08
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "close the gap between the surrounding road parcels at the junction north-east of A17: asphalt is continuous here (estimated)",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 9.6 m2 with no ground parcel between asphalt parcels; the build drew bare terrain there as a grey triangle"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_WAY_366373738_36",
+    "PARCEL_ASPHALT_WAY_366373738_37",
+    "PARCEL_ASPHALT_WAY_366373738_38",
+    "PARCEL_ASPHALT_WAY_366373738_39",
+    "PARCEL_ASPHALT_WAY_366373738_40",
+    "PARCEL_ASPHALT_WAY_366373738_41",
+    "PARCEL_ASPHALT_WAY_366373738_42",
+    "PARCEL_ASPHALT_WAY_366373738_43",
+    "PARCEL_ASPHALT_WAY_366373738_44",
+    "PARCEL_ASPHALT_WAY_366373738_45",
+    "PARCEL_ASPHALT_WAY_929202517_30",
+    "PARCEL_ASPHALT_WAY_929202517_31",
+    "PARCEL_ASPHALT_WAY_929202517_32",
+    "PARCEL_ASPHALT_WAY_929202517_33",
+    "PARCEL_ASPHALT_WAY_929202517_34",
+    "PARCEL_ROAD_E244173_N263726"
+   ]
+  },
+  {
+   "id": "PARCEL_LINK_E244160_N263718_GAP",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244157.59,
+     263712.28
+    ],
+    [
+     244158.14,
+     263712.01
+    ],
+    [
+     244158.41,
+     263712.01
+    ],
+    [
+     244158.67,
+     263712.51
+    ],
+    [
+     244158.94,
+     263713.25
+    ],
+    [
+     244160.8,
+     263719.65
+    ],
+    [
+     244160.99,
+     263720.69
+    ],
+    [
+     244161.38,
+     263724.73
+    ],
+    [
+     244161.36,
+     263726.24
+    ],
+    [
+     244161.09,
+     263726.24
+    ],
+    [
+     244160.58,
+     263724.49
+    ],
+    [
+     244158.24,
+     263715.82
+    ],
+    [
+     244157.57,
+     263712.78
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "close the gap between the surrounding road parcels at the junction north-east of A17: asphalt is continuous here (estimated)",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 9.6 m2 with no ground parcel between asphalt parcels; the build drew bare terrain there as a grey triangle"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_ROAD_ZONE_80",
+    "PARCEL_ASPHALT_WAY_366373738_47",
+    "PARCEL_ROAD_E244173_N263726"
+   ]
+  },
+  {
+   "id": "PARCEL_LINK_E244199_N263693_GAP",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244195.6,
+     263695.55
+    ],
+    [
+     244196.31,
+     263694.48
+    ],
+    [
+     244199.95,
+     263690.04
+    ],
+    [
+     244200.22,
+     263689.8
+    ],
+    [
+     244200.77,
+     263689.83
+    ],
+    [
+     244200.85,
+     263690.89
+    ],
+    [
+     244200.16,
+     263694.54
+    ],
+    [
+     244199.8,
+     263695.15
+    ],
+    [
+     244197.57,
+     263695.72
+    ],
+    [
+     244196.44,
+     263695.89
+    ],
+    [
+     244195.62,
+     263695.83
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "close the gap between the surrounding road parcels at the junction north-east of A17: asphalt is continuous here (estimated)",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 8.7 m2 with no ground parcel between asphalt parcels; the build drew bare terrain there as a grey triangle"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_WAY_975429314_126",
+    "PARCEL_ASPHALT_WAY_975429314_127",
+    "PARCEL_ASPHALT_WAY_975429314_128",
+    "PARCEL_ASPHALT_WAY_975429314_129",
+    "PARCEL_ASPHALT_WAY_975429314_130",
+    "PARCEL_ASPHALT_WAY_975429314_131",
+    "PARCEL_ASPHALT_WAY_975429314_132",
+    "PARCEL_ASPHALT_WAY_929202517_90",
+    "PARCEL_ASPHALT_WAY_929202517_91",
+    "PARCEL_ASPHALT_WAY_929202517_92",
+    "PARCEL_ASPHALT_WAY_929202517_93",
+    "PARCEL_ASPHALT_WAY_929202517_94",
+    "PARCEL_ASPHALT_WAY_929202517_95",
+    "PARCEL_ASPHALT_WAY_929202517_96",
+    "PARCEL_ASPHALT_WAY_929202517_97",
+    "PARCEL_ASPHALT_WAY_929202517_98"
+   ]
+  },
+  {
+   "id": "PARCEL_LINK_E244182_N263717_GAP",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244179.82,
+     263715.99
+    ],
+    [
+     244181.86,
+     263715.27
+    ],
+    [
+     244182.81,
+     263715.25
+    ],
+    [
+     244183.2,
+     263716.04
+    ],
+    [
+     244183.92,
+     263718.52
+    ],
+    [
+     244184.05,
+     263719.65
+    ],
+    [
+     244183.98,
+     263720.45
+    ],
+    [
+     244183.69,
+     263720.46
+    ],
+    [
+     244179.78,
+     263716.57
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "close the gap between the surrounding road parcels at the junction north-east of A17: asphalt is continuous here (estimated)",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 6.4 m2 with no ground parcel between asphalt parcels; the build drew bare terrain there as a grey triangle"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_WAY_366373738_25",
+    "PARCEL_ASPHALT_WAY_366373738_26",
+    "PARCEL_ASPHALT_WAY_366373738_27",
+    "PARCEL_ASPHALT_WAY_366373738_28",
+    "PARCEL_ASPHALT_WAY_929202517_23",
+    "PARCEL_ASPHALT_WAY_929202517_24",
+    "PARCEL_ASPHALT_WAY_929202517_25",
+    "PARCEL_ASPHALT_WAY_929202517_26",
+    "PARCEL_ASPHALT_WAY_929202517_27",
+    "PARCEL_ASPHALT_WAY_929202517_28",
+    "PARCEL_ASPHALT_WAY_929202517_29"
+   ]
+  },
+  {
+   "id": "PARCEL_LINK_E244210_N263735_GAP",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244208.07,
+     263734.24
+    ],
+    [
+     244208.38,
+     263733.91
+    ],
+    [
+     244208.67,
+     263733.87
+    ],
+    [
+     244211.73,
+     263735.89
+    ],
+    [
+     244211.96,
+     263736.19
+    ],
+    [
+     244211.93,
+     263736.5
+    ],
+    [
+     244211.08,
+     263736.62
+    ],
+    [
+     244208.02,
+     263735.87
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "close the gap between the surrounding road parcels at the junction north-east of A17: asphalt is continuous here (estimated)",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: enclosed 2.4 m2 with no ground parcel between asphalt parcels; the build drew bare terrain there as a grey triangle"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_WAY_975429314_167",
+    "PARCEL_ASPHALT_WAY_975429314_168",
+    "PARCEL_ASPHALT_WAY_975429314_169",
+    "PARCEL_ASPHALT_WAY_102943404_10",
+    "PARCEL_ASPHALT_WAY_102943404_11",
+    "PARCEL_ASPHALT_WAY_102943404_12",
+    "PARCEL_ASPHALT_WAY_102943404_13",
+    "PARCEL_ASPHALT_WAY_102943404_14"
+   ]
+  },
+  {
+   "id": "PARCEL_LINK_E244190_N263723_ISLAND",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244190,
+     263726.6
+    ],
+    [
+     244186.6,
+     263721.7
+    ],
+    [
+     244192,
+     263720.1
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "traffic island of the junction north-east of A17, an unassigned hole that was drawn as bare terrain; filled as road because curated additions may only be road or lot, so the raised island itself is not modelled (estimated)",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: traffic island traced on the 1 m grid chip, outer kerb edge, corners about 0.3 m"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_WAY_929202517_15",
+    "PARCEL_ASPHALT_WAY_929202517_16",
+    "PARCEL_ASPHALT_WAY_929202517_17"
+   ]
+  },
+  {
+   "id": "PARCEL_LINK_E244193_N263702_ISLAND",
+   "cls": "ASPHALT",
+   "class": "road",
+   "ring": [
+    [
+     244189,
+     263705.6
+    ],
+    [
+     244196,
+     263703.9
+    ],
+    [
+     244193.7,
+     263698
+    ]
+   ],
+   "holes": [],
+   "precedence": 3,
+   "mesh": "Ground_Asphalt",
+   "label": null,
+   "source": "photo-curated",
+   "source_ref": "traffic island of the junction north-east of A17, an unassigned hole that was drawn as bare terrain; filled as road because curated additions may only be road or lot, so the raised island itself is not modelled (estimated)",
+   "evidence": {
+    "tier": "T4",
+    "refs": [
+     "lane/fix-markings 2026-11-11 defect2-parcel-gaps: traffic island traced on the 1 m grid chip, outer kerb edge, corners about 0.3 m"
+    ]
+   },
+   "paintAllowed": true,
+   "estimated": true,
+   "curated": "todo 13a",
+   "over": [
+    "PARCEL_ASPHALT_WAY_366373738_9",
+    "PARCEL_ASPHALT_WAY_366373738_10",
+    "PARCEL_ASPHALT_WAY_366373738_11",
+    "PARCEL_ASPHALT_WAY_366373738_12",
+    "PARCEL_ASPHALT_WAY_366373738_13",
+    "PARCEL_ASPHALT_WAY_366373738_14",
+    "PARCEL_ASPHALT_WAY_366373738_15",
+    "PARCEL_ASPHALT_WAY_366373738_16",
+    "PARCEL_ASPHALT_WAY_929202517_101",
+    "PARCEL_ASPHALT_WAY_929202517_102"
+   ]
+  },
+  {
    "id": "PARCEL_SUPPORT_ROAD_244046_264016",
    "cls": "ASPHALT",
    "class": "road",
@@ -210744,7 +211238,9 @@
     "PARCEL_ASPHALT_WAY_929202517_20",
     "PARCEL_ASPHALT_WAY_929202517_21",
     "PARCEL_ASPHALT_WAY_929202517_22",
-    "PARCEL_ASPHALT_WAY_929202517_23"
+    "PARCEL_ASPHALT_WAY_929202517_23",
+    "PARCEL_LINK_E244182_N263717_GAP",
+    "PARCEL_LINK_E244190_N263723_ISLAND"
    ]
   },
   {
@@ -210816,7 +211312,9 @@
     "PARCEL_ASPHALT_WAY_929202517_29",
     "PARCEL_ASPHALT_WAY_929202517_30",
     "PARCEL_ASPHALT_WAY_929202517_31",
-    "PARCEL_ROAD_E244173_N263726"
+    "PARCEL_ROAD_E244173_N263726",
+    "PARCEL_LINK_E244169_N263720_GAP",
+    "PARCEL_LINK_E244160_N263718_GAP"
    ]
   },
   {
@@ -212684,6 +213182,8 @@
     "PARCEL_ASPHALT_WAY_929202517_30",
     "PARCEL_ASPHALT_WAY_929202517_31",
     "PARCEL_ROAD_E244173_N263726",
+    "PARCEL_LINK_E244169_N263720_GAP",
+    "PARCEL_LINK_E244160_N263718_GAP",
     "PARCEL_SUPPORT_ROAD_244169_263722",
     "PARCEL_SUPPORT_ROAD_244186_263735"
    ]
@@ -213011,7 +213511,9 @@
     "PARCEL_ASPHALT_WAY_929202517_98",
     "PARCEL_ASPHALT_WAY_929202517_99",
     "PARCEL_ASPHALT_WAY_929202517_100",
-    "PARCEL_ASPHALT_WAY_929202517_101"
+    "PARCEL_ASPHALT_WAY_929202517_101",
+    "PARCEL_LINK_E244199_N263693_GAP",
+    "PARCEL_LINK_E244193_N263702_ISLAND"
    ]
   },
   {
