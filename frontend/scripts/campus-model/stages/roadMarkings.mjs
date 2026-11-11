@@ -25,6 +25,36 @@ export class RoadMarkingError extends Error {
 export const humpProfile = (sM, lengthM = 3.6, heightM = 0.1) =>
   Math.abs(sM) >= lengthM / 2 ? 0 : heightM * (1 - (2 * sM / lengthM) ** 2);
 
+// The painted bands of a striped hump in its own frame: s metres along travel (|s| <= lengthM / 2), t metres to the
+// left of the hump's centre line (|t| <= widthM / 2). On the centre line (s = 0) band i spans t from
+// -widthM / 2 + offsetM + i * bandWidthM over one bandWidthM; its edges lean angleDeg to the left of travel, so a
+// band runs along t - s * tan(angleDeg). Bands are clipped to the hump, or to `clip` ([tLow, tHigh], the painted
+// carriageway), so the end bands are cut where the paint stops, as the photo shows them. Indices before band 0 are
+// negative. Returns [{ index, ring: [[s, t], ...] }].
+export function humpBands({ lengthM, widthM, bandWidthM, angleDeg = 0, offsetM = 0, clip = null }) {
+  const k = Math.tan((angleDeg * Math.PI) / 180), half = lengthM / 2;
+  const [low, high] = clip ?? [-widthM / 2, widthM / 2];
+  const origin = -widthM / 2 + offsetM;
+  const first = Math.floor((low - Math.abs(k) * half - origin) / bandWidthM + 1e-9);
+  const last = Math.ceil((high + Math.abs(k) * half - origin) / bandWidthM - 1e-9) - 1;
+  const cut = (ring, keep, at) => ring.flatMap((p, i) => {
+    const q = ring[(i + 1) % ring.length], out = [];
+    if (keep(p)) out.push(p);
+    if (keep(p) !== keep(q)) out.push([p[0] + ((at - p[1]) / (q[1] - p[1])) * (q[0] - p[0]), at]);
+    return out;
+  });
+  const bands = [];
+  for (let index = first; index <= last; index += 1) {
+    const a = origin + index * bandWidthM, b = a + bandWidthM;
+    let ring = [[-half, a - half * k], [half, a + half * k], [half, b + half * k], [-half, b - half * k]];
+    ring = cut(ring, (p) => p[1] >= low, low);
+    ring = cut(ring, (p) => p[1] <= high, high);
+    const area = ring.reduce((sum, p, i) => sum + p[0] * ring[(i + 1) % ring.length][1] - ring[(i + 1) % ring.length][0] * p[1], 0) / 2;
+    if (ring.length >= 3 && Math.abs(area) > 1e-9) bands.push({ index, ring });
+  }
+  return bands;
+}
+
 // Outgoing tangent at a vertex, incoming tangent at the final endpoint.
 export function frameAt(line, atM, id) {
   let start = 0;
@@ -117,7 +147,17 @@ export function roadMarkingPlan({ sections, junctions, context = roadContext() }
       tm: { centre: bodyCentre, forward },
       lengthM: h.lengthM, heightM: h.heightM, bands: h.bands, evidence: owner.evidence, estimated: owner.estimated,
     });
-    if (h.bands) {
+    const other = h.bandStartColour === "white" ? "yellow" : "white";
+    if (h.bands && h.bandAxis === "travel" && (h.bandAngleDeg !== undefined || h.bandOffsetM !== undefined)) {
+      // measured bands (fit/humpEvidence.mjs): pitch, phase and lean on the hump's own centre line, clipped to the
+      // painted carriageway [low, high], which sits -lateralOffsetM from the body's centre line
+      const lateral = h.lateralOffsetM ?? 0;
+      for (const { index, ring } of humpBands({ lengthM: h.lengthM, widthM: bodyWidth, bandWidthM: h.bandWidthM ?? 0.45,
+        angleDeg: h.bandAngleDeg ?? 0, offsetM: h.bandOffsetM ?? 0, clip: [-lateral - (high - low) / 2, -lateral + (high - low) / 2] })) {
+        emit([ring.map(([s, t]) => add(bodyCentre, add(scale(forward, s), scale(left(forward), t))))],
+          id, "speed_bump", Math.abs(index) % 2 ? other : (h.bandStartColour ?? "yellow"), owner);
+      }
+    } else if (h.bands) {
       const travelAligned=h.bandAxis==="travel";
       const extent=travelAligned?high-low:h.lengthM,bandWidth=h.bandWidthM??0.45;
       const count = Math.ceil(extent / bandWidth-1e-9);

@@ -8630,21 +8630,28 @@
    "properties": {
     "id": "OC0125",
     "kind": "sports_hoop",
-    "confidence": 0.5,
+    "confidence": 0.6,
     "method": "by-eye-photo",
     "source": "ngii-2025-ortho",
     "tile": "T0611",
     "height_m": 3.05,
-    "height_source": "by eye / VR",
+    "height_source": "FIBA ring height, the top of the ring (estimated)",
     "estimated": true,
-    "note": "basketball hoop stand at the west end of the blue court",
+    "note": "portable basketball stand at the west end of the north (full) blue court, facing east into the court",
+    "position_note": "re-traced 2026-11-11 as a LineString from the rear of the stand's base to its board face on the court's centre line: north court fitted to its painted end and side lines on the NGII 2025 sheet (24.8 x 15.1 m, centre line bearing 103.7 deg, rms 0.13-0.15 m); the base reaches 2.3 m behind the west end line, where the photo shows the stand's white base, the board stands 0.3 m inside it; the survey point stood 2.5 m inside the court, in the key; VR scene_a15 b and scene_a16 l show white portable stands with a navy padded front housing, a clear board and an orange ring (estimated)",
     "from_objects_geojson": false
    },
    "geometry": {
-    "type": "Point",
+    "type": "LineString",
     "coordinates": [
-     127.4830476,
-     34.96799553
+     [
+      127.48300095,
+      34.96801256
+     ],
+     [
+      127.48302858,
+      34.96800691
+     ]
     ]
    }
   },
@@ -8653,21 +8660,58 @@
    "properties": {
     "id": "OC0126",
     "kind": "sports_hoop",
-    "confidence": 0.5,
+    "confidence": 0.6,
     "method": "by-eye-photo",
     "source": "ngii-2025-ortho",
     "tile": "T0611",
     "height_m": 3.05,
-    "height_source": "by eye / VR",
+    "height_source": "FIBA ring height, the top of the ring (estimated)",
     "estimated": true,
-    "note": "basketball hoop stand at the east end of the blue court",
+    "note": "portable basketball stand at the east end of the north (full) blue court, facing west into the court",
+    "position_note": "re-traced 2026-11-11 as a LineString from the rear of the stand's base to its board face on the court's centre line: north court fitted to its painted end and side lines on the NGII 2025 sheet (24.8 x 15.1 m, centre line bearing 103.7 deg, rms 0.13-0.15 m); the base reaches 2.2 m behind the east end line, where the photo shows the stand's white base, the board stands 0.3 m inside it; the survey point lay 6 m south of the stand, on the court's south side line; VR scene_a15 b and scene_a16 l show white portable stands with a navy padded front housing, a clear board and an orange ring (estimated)",
     "from_objects_geojson": false
    },
    "geometry": {
-    "type": "Point",
+    "type": "LineString",
     "coordinates": [
-     127.4832852,
-     34.96789994
+     [
+      127.48331256,
+      34.96794883
+     ],
+     [
+      127.483286,
+      34.96795426
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "OC0175",
+    "kind": "sports_hoop",
+    "confidence": 0.6,
+    "method": "by-eye-photo",
+    "source": "ngii-2025-ortho",
+    "tile": "T0711",
+    "height_m": 3.05,
+    "height_source": "FIBA ring height, the top of the ring (estimated)",
+    "estimated": true,
+    "note": "portable basketball stand at the east end of the south half court, facing west into its key",
+    "position_note": "added 2026-11-11: the photo shows a third white stand at the east end line of the south half court (end line bearing 13.5 deg, key 4.8 m wide on centre line bearing 103.7 deg, fitted on the NGII 2025 sheet); LineString from the rear of the base, 2.15 m behind the end line, to the board face 0.3 m inside it; VR scene_a15 b and scene_a16 l show white portable stands with a navy padded front housing, a clear board and an orange ring (estimated)",
+    "from_objects_geojson": false
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      127.4832686,
+      34.96780615
+     ],
+     [
+      127.48324256,
+      34.96781147
+     ]
     ]
    }
   },
@@ -10133,38 +10177,44 @@
     "id": "OC0161",
     "kind": "fence",
     "subtype": "ball_stop_net",
-    "confidence": 0.5,
+    "confidence": 0.6,
     "method": "by-eye-photo",
     "source": "ngii-2025-ortho",
     "tile": "T0811",
     "height_m": 4.0,
     "height_source": "by eye / VR",
     "estimated": true,
-    "note": "tennis-court perimeter fence",
+    "note": "tennis-court perimeter fence on the clay court's edge: a 36.9 x 34.4 m rectangle along the courts' own axis (grid bearing 166.2 degrees), its north, west and east sides at the clay-to-teal steps of red minus blue on the NGII 2025 sheet, 2026-11-11, the south side under the tree crowns mirroring the north run-off; it was traced north-up, 13.8 degrees off the courts (estimated)",
+    "windscreen_m": 2.0,
+    "windscreen_colour": "#13998a",
+    "post_colour": "#9ea4a8",
+    "mesh_colour": "#8d9499",
+    "fence_note": "VR scene_a16 f: galvanised posts and chain-link with a teal windscreen (sampled #05aea0 to #047760) over the lower half of the fence (estimated)",
+    "position_note": "re-traced 2026-11-11 on the NGII 2025 sheet: the clay surround of the two courts fitted as a rectangle (sides at bearing 76.2, 165.0, 77.1 and 167.1 deg, rms 0.31-0.44 m), each side moved out to the dark fence line beyond the clay (0.5 m south and east, 0.75 m north, 1.4 m west, where the green strip with the bench OC0162 and the shelter OC0163 lies inside); the old outline lay up to 8 m inside the court at its north-east corner (estimated)",
     "from_objects_geojson": false
    },
    "geometry": {
     "type": "LineString",
     "coordinates": [
      [
-      127.48296151,
-      34.96731984
+      127.48294847,
+      34.9673249
      ],
      [
-      127.48340497,
-      34.96731808
+      127.4833147,
+      34.9673974
      ],
      [
-      127.48338963,
-      34.96703646
+      127.48340918,
+      34.96707402
      ],
      [
-      127.48299805,
-      34.96701548
+      127.48304295,
+      34.96700151
      ],
      [
-      127.48296151,
-      34.96731984
+      127.48294847,
+      34.9673249
      ]
     ]
    }
@@ -10181,19 +10231,19 @@
     "height_m": 0.45,
     "height_source": "kind default",
     "estimated": true,
-    "note": "long white bench/stand on the west side of the courts",
+    "note": "long white bench/stand on the west side of the courts: 5.7 m along the courts' axis on the clay, 1.5 m inside the west fence, its white top segmented on the NGII 2025 sheet, 2026-11-11; it was traced 2.6 m east on the west court's run-off, 25 degrees across it (estimated)",
     "from_objects_geojson": false
    },
    "geometry": {
     "type": "LineString",
     "coordinates": [
      [
-      127.48303456,
-      34.96717308
+      127.48300757,
+      34.96718118
      ],
      [
-      127.48304792,
-      34.96711669
+      127.48302219,
+      34.96713117
      ]
     ]
    }
@@ -10211,8 +10261,8 @@
     "height_m": 2.8,
     "height_source": "kind default",
     "estimated": true,
-    "note": "small blue-roof shelter at the court entrance (players shelter)",
-    "area_m2": 19.7,
+    "note": "small blue-roof shelter at the court entrance (players shelter): its blue roof, 4.2 x 2.6 m along the courts' axis just outside the west fence, segmented on the NGII 2025 sheet, 2026-11-11; the trace was a north-up box 1.6 m south-east of it, half on the clay court (estimated)",
+    "area_m2": 10.7,
     "from_objects_geojson": false
    },
    "geometry": {
@@ -10220,24 +10270,24 @@
     "coordinates": [
      [
       [
-       127.48300118,
-       34.96708307
+       127.48298165,
+       34.96709158
       ],
       [
-       127.48304225,
-       34.96708291
+       127.4830088,
+       34.96709696
       ],
       [
-       127.48304197,
-       34.96703559
+       127.48301953,
+       34.96706024
       ],
       [
-       127.48300091,
-       34.96703575
+       127.48299238,
+       34.96705486
       ],
       [
-       127.48300118,
-       34.96708307
+       127.48298165,
+       34.96709158
       ]
      ]
     ]
@@ -10600,38 +10650,40 @@
     "id": "OC0173",
     "kind": "fence",
     "subtype": "ball_stop_net",
-    "confidence": 0.35,
+    "confidence": 0.5,
     "method": "by-eye-photo",
     "source": "ngii-2025-ortho",
     "tile": "T0911",
     "height_m": 3.0,
     "height_source": "by eye / VR",
     "estimated": true,
-    "note": "perimeter fence of the hard court (partly beyond EXTENT south edge)",
+    "note": "perimeter fence of the F3 student tennis court; its south part lies beyond the EXTENT south edge and is not drawn",
+    "windscreen_m": 1.0,
+    "windscreen_colour": "#13998a",
+    "post_colour": "#2f8a55",
+    "mesh_colour": "#2f8a55",
+    "fence_note": "VR scene_f3 r: green-coated posts and chain-link over a teal windscreen (sampled #099c85 to #02caae) about a third of the fence high (estimated)",
+    "position_note": "re-traced 2026-11-11 on the NGII 2025 sheet: the clay court fitted as a rectangle (sides at bearing 76.1, 166.9 and 76.4 deg, rms 0.31-0.38 m; the west side parallel to the east side through the clay edge clear of the F3 hut), each side moved out 0.5 m to the dark fence line; the line starts at the north wall of the hut BLD_SCNU_R138317 and ends where the east side meets the EXTENT south edge (scene z 1.9); the old closed outline drew a south side along the EXTENT edge that the photo does not show (estimated)",
     "from_objects_geojson": false
    },
    "geometry": {
     "type": "LineString",
     "coordinates": [
      [
-      127.48303848,
-      34.96644069
+      127.48305717,
+      34.96630654
      ],
      [
-      127.48339987,
-      34.96645052
+      127.48302887,
+      34.96640854
      ],
      [
-      127.48341197,
-      34.96618006
+      127.48337117,
+      34.96647526
      ],
      [
-      127.4830479,
-      34.96618151
-     ],
-     [
-      127.48303848,
-      34.96644069
+      127.48344655,
+      34.96620357
      ]
     ]
    }

@@ -20,7 +20,7 @@ import { simulationToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
 import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
 import { glyphElements } from "../lib/markingGlyphs.mjs";
-import { FUTSAL_HALF_M, pitchRing, snapGoalToEndLine, trackPitchHalf } from "../lib/pitchLines.mjs";
+import { COURT_TREE_CLEARANCE_M, FUTSAL_HALF_M, pitchRing, playingSurfaces, snapGoalToEndLine, trackPitchHalf } from "../lib/pitchLines.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
@@ -57,13 +57,11 @@ const EXCLUDED = {
   OC0109: "surveyed as a grey roofed shelter on the arterial's south footway, but VR scene_b1 l shows a long slanted banner board there and the NGII photo shows no roof, only the board's thin pale top edge beside a tree shadow: superseded by SD-B1-S2 (data/photo/site-detail.geojson, signboard)",
   OC0111: "SCNU letter monument: superseded by RS-GATE-A19 (data/photo/rest-spaces.geojson, gate_sign), placed from VR scene_a19 (and scene_001) about 13 m further south at the plaza's road edge; the 2025 photo shows that corner of the gate plaza under construction, so this survey position (VR only, confidence 0.2) is left out",
   OC0102: "E8 courtyard raised bed: superseded by RS0018 and RS0018A-C (data/photo/rest-spaces.geojson, planter); the survey drew one 7.7 x 8.8 m soil bed over the entrance walk and its steps, where VR scene_e8 f and the NGII 2025 photo show two L-shaped brick hedge beds beside the walk and hedge strips at the wing walls",
+  OB0010: "surveyed as a white roofed pergola on the west edge of the A19 gate plaza, then built as a curved step; VR scene_001 f (the plaza from above) and scene_a19 l show the finished plaza with its only stepped arc on the east edge, along OC0128 next to the striped paving, and paving and trees on the west edge, so the curved band of the 2025 photo there is the construction-era kerb of the round plaza at grade, not a structure (estimated)",
+  OC0129: "surveyed as a white parapet wall at the north edge of the planted bank; the white bar on the NGII 2025 photo is the top of the SCNU letter sign (VR scene_a19 l: white letters on a stone-faced bed at the south end of the striped paving; scene_001 d shows the letters from above along the bed's front kerb), built once as RS-GATE-A19 on this photo trace (estimated)",
 };
 // A retype may carry props (merged over the survey's properties) for the catalogue builder that now draws the object.
 const RETYPED = {
-  OB0010: {
-    kind: "stepped_arc",
-    reason: "surveyed as a white roofed pergola, but VR scene_a19 shows no roof there, only the stepped arc of the finished gate plaza, and the photo shows a curved edge with a thin shadow; built as a two-tier curved step (0.45 m)",
-  },
   OC0078: {
     kind: "pavilion_hip",
     reason: "VR scene_d4 l (cols 1250-1450): the garden 정자 has a brown square hip roof on four timber columns; drawn by the catalogue pavilion_hip builder (estimated)",
@@ -290,11 +288,20 @@ export function loadFurnitureSurvey({ wallSnapshots, anchorFootprints } = {}) {
     const heading = ((court.headingDegrees ?? 0) * Math.PI) / 180;
     pitches.push({ centre: geoToModel(...court.at), axis: [Math.cos(heading), Math.sin(heading)], halfLength: metres(FUTSAL_HALF_M.length), halfWidth: metres(FUTSAL_HALF_M.width) });
   }
-  // no tree stands on a playing surface: canopies that overhang a court were planted inside it
-  treeBlock.push(...pitches.map(pitchRing));
+  // no tree stands on a playing surface: canopies that overhang a court were planted inside it. The court surfaces of
+  // the surface labels (osm-ground.json `area`, the two tennis courts) keep trunks COURT_TREE_CLEARANCE_M away, so a
+  // crown traced on a court's own paint is left out instead of being nudged onto the court's edge (lib/pitchLines.mjs).
+  const labels = groundFeatures.supplements.features.filter((f) => f.kind === "surface" && f.headingDegrees !== undefined).map((f) => {
+    const heading = (f.headingDegrees * Math.PI) / 180;
+    return { surface: f.surface, point: geoToModel(...f.at), axis: [Math.cos(heading), Math.sin(heading)],
+      area: f.area ? { centre: geoToModel(...f.area.at), halfLength: metres(f.area.lengthMetres / 2), halfWidth: metres(f.area.widthMetres / 2) } : null };
+  });
+  const clear = metres(COURT_TREE_CLEARANCE_M);
+  const playingBlock = [...pitches.map(pitchRing), ...playingSurfaces(labels, metres(1)).map((c) => pitchRing({ ...c, halfLength: c.halfLength + clear, halfWidth: c.halfWidth + clear }))];
+  treeBlock.push(...playingBlock);
   // The 구령대 is also a GIS building record (운동장 본부석); the buildings stage leaves its generic mass out for it.
   const detailedStructures = objects.filter((o) => o.kind === "reviewing_stand").map((o) => o.footprint);
-  return { objects, excluded, retyped: RETYPED, treeBlock, detailedStructures, fieldCentre, pitches, sun };
+  return { objects, excluded, retyped: RETYPED, treeBlock, playingBlock, detailedStructures, fieldCentre, pitches, sun };
 }
 
 // The seed reads the survey above; production consumers only receive resolved parcel-local inputs.
@@ -318,7 +325,7 @@ export function loadFurniture(options = {}) {
   if (records.size) throw new ObjectPlacementError(records.keys().next().value, "unknown anchor source");
   return { ...survey, objects,
     treeBlock: [...objects.filter(o => o.footprint).map(o => o.footprint),
-      ...objects.filter(o => ["pond", "fountain"].includes(o.subtype)).map(o => o.ring)],
+      ...objects.filter(o => ["pond", "fountain"].includes(o.subtype)).map(o => o.ring), ...survey.playingBlock],
     detailedStructures: objects.filter(o => o.kind === "reviewing_stand").map(o => o.footprint) };
 }
 
@@ -641,9 +648,79 @@ B.retaining_wall = (ctx, o) => {
   if (/railing/.test(o.p.note ?? "")) railing(ctx, o.line, 1.1, C.galvanised, { baseM: o.heightM, rails: [1, 0.5] });
 };
 
+// Court fences (ball_stop_net; VR scene_a16 f: the staff tennis courts, scene_f3 r: the student courts, scene_a16 l: the
+// futsal pitch): round posts at every vertex of the line and at most postSpacingM apart, a top and a bottom rail, a fabric
+// windscreen from the bottom rail up to windscreen_m where the record sets one (opaque, both faces) and the chain-link
+// above it as a diamond lattice of thin opaque wires. No translucent sheet: drawn as one, the mesh read as a glass box
+// round the courts. Colours per record (post_colour, mesh_colour, windscreen_colour), green-coated by default (the futsal
+// fence); every size is an estimate.
+export const COURT_FENCE = { postSpacingM: 2.5, postRadiusM: 0.04, railM: 0.05, wireM: 0.025, pitchM: 0.45, post: "#4f8f63", mesh: "#3b7a52", windscreen: "#1b8b7f" };
+
+// Wires of a chain-link panel lengthM long between heights bottomM and topM (metres along and above the panel): lines at
+// +45 and -45 degrees whose intercepts are pitchM apart along the panel, clipped to it. Returns [[s0, h0], [s1, h1]] pairs.
+export function diamondLattice(lengthM, bottomM, topM, pitchM) {
+  const height = topM - bottomM;
+  const wires = [];
+  if (!(lengthM > 0 && height > 0 && pitchM > 0)) return wires;
+  // rising wires h - bottomM = s - c, c in (-height, lengthM); falling wires h - bottomM = c - s, c in (0, lengthM + height)
+  for (let c = -height + pitchM / 2; c < lengthM; c += pitchM) {
+    const [s0, s1] = [Math.max(0, c), Math.min(lengthM, c + height)];
+    if (s1 - s0 > 1e-6) wires.push([[s0, bottomM + s0 - c], [s1, bottomM + s1 - c]]);
+  }
+  for (let c = pitchM / 2; c < lengthM + height; c += pitchM) {
+    const [s0, s1] = [Math.max(0, c - height), Math.min(lengthM, c)];
+    if (s1 - s0 > 1e-6) wires.push([[s0, bottomM + c - s0], [s1, bottomM + c - s1]]);
+  }
+  return wires;
+}
+
+// Post stations of a fence line: every vertex, and evenly between two vertices at most spacingM apart (scene units in, out).
+function postStations(line, spacingM) {
+  const out = [line[0]];
+  for (let i = 1; i < line.length; i += 1) {
+    const [a, b] = [line[i - 1], line[i]];
+    const n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / M(spacingM)));
+    for (let k = 1; k <= n; k += 1) out.push([a[0] + ((b[0] - a[0]) * k) / n, a[1] + ((b[1] - a[1]) * k) / n]);
+  }
+  return out;
+}
+
+function courtFence(ctx, o) {
+  const h = o.heightM;
+  const { postRadiusM, railM, wireM, pitchM } = COURT_FENCE;
+  const post = paintOf(o.p.post_colour, rgb(COURT_FENCE.post), o.id);
+  const mesh = paintOf(o.p.mesh_colour, rgb(COURT_FENCE.mesh), o.id);
+  const screenM = o.p.windscreen_m ?? 0;
+  const screen = paintOf(o.p.windscreen_colour, rgb(COURT_FENCE.windscreen), o.id);
+  const stations = postStations(o.line, COURT_FENCE.postSpacingM);
+  const closed = Math.hypot(stations[0][0] - stations.at(-1)[0], stations[0][1] - stations.at(-1)[1]) < 1e-6;
+  for (const p of closed ? stations.slice(0, -1) : stations) {
+    const g = ctx.groundAt(...p);
+    ctx.solid.pole(p, g - M(0.1), g + M(h), postRadiusM, postRadiusM, post, { sides: 6 });
+  }
+  for (let i = 0; i + 1 < stations.length; i += 1) {
+    const [a, b] = [stations[i], stations[i + 1]];
+    const lengthM = Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
+    if (lengthM < 0.05) continue;
+    const [ga, gb] = [ctx.groundAt(...a), ctx.groundAt(...b)];
+    const at = (s, hM) => [a[0] + ((b[0] - a[0]) * s) / lengthM, ga + ((gb - ga) * s) / lengthM + M(hM), a[1] + ((b[1] - a[1]) * s) / lengthM];
+    const normal = [-(b[1] - a[1]), 0, b[0] - a[0]];
+    for (const hM of [0.05 + railM / 2, h - railM / 2]) ctx.solid.beam(at(0, hM), at(lengthM, hM), railM, railM, post, { ends: false });
+    if (screenM > 0) {
+      twoSided(ctx, [at(0, 0.05), at(lengthM, 0.05), at(lengthM, screenM), at(0, screenM)], normal, screen);
+      ctx.solid.beam(at(0, screenM - railM / 2), at(lengthM, screenM - railM / 2), railM, railM, post, { ends: false });
+    }
+    for (const [[s0, h0], [s1, h1]] of diamondLattice(lengthM, Math.max(screenM, 0.05 + railM), h - railM, pitchM)) {
+      const l = Math.hypot(s1 - s0, h1 - h0);
+      const [ps, ph] = [(-(h1 - h0) / l) * (wireM / 2), ((s1 - s0) / l) * (wireM / 2)];
+      twoSided(ctx, [at(s0 - ps, h0 - ph), at(s1 - ps, h1 - ph), at(s1 + ps, h1 + ph), at(s0 + ps, h0 + ph)], normal, mesh);
+    }
+  }
+}
+
 B.fence = (ctx, o) => {
   const h = o.heightM;
-  if (o.subtype === "ball_stop_net") railing(ctx, o.line, h, C.galvanised, { stepM: 3, rails: [1, 0.5, 0.02], postM: 0.09, panel: GLASS.net });
+  if (o.subtype === "ball_stop_net") courtFence(ctx, o);
   else if (o.subtype === "mesh") railing(ctx, o.line, h, /teal/.test(o.p.note ?? "") ? C.railTeal : C.roofGreen, { stepM: 2.5, rails: [1, 0.03], panel: /teal/.test(o.p.note ?? "") ? GLASS.mesh : GLASS.net });
   else railing(ctx, o.line, Math.min(h, 1.2), C.white, { stepM: 2, rails: [1, 0.55, 0.12] });
 };
@@ -1105,16 +1182,6 @@ B.pergola = (ctx, o) => {
   ctx.solid.flat(o.footprint, [], (x, z) => ctx.groundAt(x, z) + M(h), roofColour, { down: true });
 };
 
-// Gate plaza arc (OB0010, retyped): a two-tier curved step over the surveyed 2 m band (0.2 m, then 0.45 m on the band
-// inset 0.5 m from both edges).
-B.stepped_arc = (ctx, o) => {
-  const ring = o.ring;
-  const base = ctx.minGround(ring) - M(0.1);
-  ctx.solid.prism(ring, base, (x, z) => ctx.groundAt(x, z) + M(0.2), C.concrete);
-  const inner = offsetLine([...ring, ring[0]], insideSign(ring) * M(0.5)).slice(0, -1);
-  if (Math.abs(ringArea(inner)) > M(1) * M(1)) ctx.solid.prism(inner, base, (x, z) => ctx.groundAt(x, z) + M(0.45), { side: C.concrete, top: C.offWhite });
-};
-
 B.gazebo = (ctx, o) => {
   const ring = o.footprint;
   const round = ring.length >= 12;
@@ -1330,19 +1397,125 @@ B.traffic_island = (ctx, o) => {
   ctx.solid.prism(inner, g, g + M(kerbM + 0.01), paintOf(o.p.fill, C.concreteDark, o.id), { walls: false });
 };
 
-// Gate canopy (main gate): a flat panelled roof over the lanes on four posts, roof outline = the photo outline moved back by
-// the relief lean (footprint), height from its shadow (estimated); colour the roof, postColour the posts and edge band.
+// Parking-gate canopy (GT0004; VR scene_b1 d and r, scene_a19 f): `bays` barrel vaults of blue panels on white ribs side by
+// side, one over each lane, their axis along vault_axis_deg (a bearing; default the outline's long side). Posts stand on
+// every bay line at both ends: on the nearest island named in post_islands, kerbInsetM clear of its kerb, when one lies
+// within snapM of the line, else at the outline's edge (the kerb side), with a bracket up to the spring beam, so no post
+// stands in a lane. The outline is the photo roof moved back by the relief lean (footprint); heightM is the crown, eave_m
+// the spring line (every value estimated).
+export const GATE_CANOPY = { ribM: 0.08, ribSpacingM: 1.6, segments: 10, postRadiusM: 0.11, kerbInsetM: 0.35, endInsetM: 0.4, beamM: 0.12, snapM: 2 };
+
+// Circular arc over the span from t = -halfWidthM to +halfWidthM, from the spring height springM up to the crown crownM:
+// segments + 1 points [t, h].
+export function vaultArc(halfWidthM, springM, crownM, segments) {
+  const rise = crownM - springM;
+  const radius = rise / 2 + (halfWidthM * halfWidthM) / (2 * rise);
+  const half = Math.asin(halfWidthM / radius);
+  return Array.from({ length: segments + 1 }, (_, k) => {
+    const a = -half + (2 * half * k) / segments;
+    return [radius * Math.sin(a), crownM - radius + radius * Math.cos(a)];
+  });
+}
+
+function nearestOnAxis(p, axis) {
+  let best = null;
+  for (let i = 0; i + 1 < axis.length; i += 1) {
+    const [a, b] = [axis[i], axis[i + 1]];
+    const [dx, dz] = [b[0] - a[0], b[1] - a[1]];
+    const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / (dx * dx + dz * dz || 1)));
+    const q = [a[0] + dx * t, a[1] + dz * t];
+    const d = Math.hypot(p[0] - q[0], p[1] - q[1]);
+    if (!best || d < best.d) best = { q, d };
+  }
+  return best;
+}
+
+// Where a post meant for plan point p stands on a traffic island (axis polyline, half width; any one plan unit): p itself
+// when it lies within halfWidth - inset of the axis, else the point that far from the nearest axis point towards p.
+export function postOnIsland(p, axis, halfWidth, inset) {
+  const best = nearestOnAxis(p, axis);
+  const reach = halfWidth - inset;
+  if (best.d <= reach) return p;
+  return [best.q[0] + ((p[0] - best.q[0]) * reach) / best.d, best.q[1] + ((p[1] - best.q[1]) * reach) / best.d];
+}
+
 B.gate_canopy = (ctx, o) => {
-  const r = orientedRect(o.footprint);
-  const f = frame([r.centre[0], ctx.minGround(o.footprint), r.centre[1]], r.u);
-  const h = o.heightM;
+  const base = ctx.minGround(o.footprint);
+  let f;
+  let hl;
+  let hw;
+  if (o.p.vault_axis_deg === undefined) {
+    const r = orientedRect(o.footprint);
+    f = frame([r.centre[0], base, r.centre[1]], r.u);
+    [hl, hw] = [r.halfLength, r.halfWidth];
+  } else {
+    // the outline's extent along and across the given axis
+    const c = ringCentroid(o.footprint);
+    const f0 = frame([c[0], base, c[1]], bearingDir(o.p.vault_axis_deg));
+    const st = o.footprint.map((p) => toLocal(f0, p));
+    const [s0, s1] = [Math.min(...st.map((q) => q[0])), Math.max(...st.map((q) => q[0]))];
+    const [t0, t1] = [Math.min(...st.map((q) => q[1])), Math.max(...st.map((q) => q[1]))];
+    const mid = localPlan(f0, (s0 + s1) / 2, (t0 + t1) / 2);
+    f = frame([mid[0], base, mid[1]], f0.u);
+    [hl, hw] = [(s1 - s0) / 2, (t1 - t0) / 2];
+  }
+  const crown = o.heightM;
+  const spring = o.p.eave_m ?? crown - 0.7;
   const roof = paintOf(o.p.colour, C.roofBlue, o.id);
-  const post = paintOf(o.p.postColour, C.offWhite, o.id);
-  const [hl, hw] = [r.halfLength, r.halfWidth];
-  for (const s of [-hl + 0.3, hl - 0.3]) for (const t of [-hw + 0.3, hw - 0.3]) ctx.solid.box(f, [s - 0.15, s + 0.15], [t - 0.15, t + 0.15], [-0.1, h - 0.35], post);
-  // edge band and roof slab are closed underneath: a driver looks up at the blue panels
-  ctx.solid.box(f, [-hl, hl], [-hw, hw], [h - 0.35, h - 0.2], { top: post, side: post, bottom: roof }, { bottom: true });
-  ctx.solid.box(f, [-hl, hl], [-hw, hw], [h - 0.2, h], { top: roof, side: post, bottom: roof }, { bottom: true });
+  const white = paintOf(o.p.postColour, C.offWhite, o.id);
+  const islands = (o.p.post_islands ?? []).map((id) => {
+    const island = ctx.byId.get(id);
+    if (island?.kind !== "traffic_island") throw new Error(`furniture: gate_canopy ${o.id}: post island ${id} is not a traffic_island`);
+    return island;
+  });
+  const { ribM, beamM, segments } = GATE_CANOPY;
+  const bays = o.p.bays ?? 1;
+  const bayW = (2 * hw) / bays;
+  const rise = crown - spring;
+  const radius = rise / 2 + (bayW * bayW) / 8 / rise;
+  const centreH = crown - radius;
+  const ribs = Math.max(2, Math.round((2 * hl) / GATE_CANOPY.ribSpacingM) + 1);
+  for (let bay = 0; bay < bays; bay += 1) {
+    const tc = -hw + bayW * (bay + 0.5);
+    const arc = vaultArc(bayW / 2, spring, crown, segments).map(([t, h]) => [tc + t, h]);
+    // vault panels, seen from above and from the lane
+    for (let k = 0; k + 1 < arc.length; k += 1) {
+      const [[t0, h0], [t1, h1]] = [arc[k], arc[k + 1]];
+      const out = sub(local(f, 0, (t0 + t1) / 2, (h0 + h1) / 2), local(f, 0, tc, centreH));
+      twoSided(ctx, [local(f, -hl, t0, h0), local(f, hl, t0, h0), local(f, hl, t1, h1), local(f, -hl, t1, h1)], out, roof);
+    }
+    // ribs on top of the panels (the end ribs frame the vault)
+    const lift = ([t, h]) => {
+      const l = Math.hypot(t - tc, h - centreH);
+      return [tc + (t - tc) * (1 + ribM / 2 / l), centreH + (h - centreH) * (1 + ribM / 2 / l)];
+    };
+    for (let i = 0; i < ribs; i += 1) {
+      const s = -hl + 0.03 + ((2 * hl - 0.06) * i) / (ribs - 1);
+      for (let k = 0; k + 1 < arc.length; k += 1) {
+        const [p, q] = [lift(arc[k]), lift(arc[k + 1])];
+        const up = sub(local(f, s, (p[0] + q[0]) / 2, (p[1] + q[1]) / 2), local(f, s, tc, centreH));
+        ctx.solid.beam(local(f, s, p[0], p[1]), local(f, s, q[0], q[1]), 0.05, ribM, white, { up });
+      }
+    }
+  }
+  // a spring beam on every bay line; posts on the islands (or at the outline's edge), brackets up to the spring beams
+  const postLines = Array.from({ length: bays + 1 }, (_, i) => -hw + bayW * i);
+  for (const t of postLines) ctx.solid.box(f, [-hl, hl], [t - beamM / 2, t + beamM / 2], [spring - beamM, spring], white);
+  for (const s of [-hl + GATE_CANOPY.endInsetM, hl - GATE_CANOPY.endInsetM]) {
+    for (const t of postLines) {
+      const corner = localPlan(f, s, t);
+      let foot = corner;
+      const nearest = islands.map((island) => ({ island, d: nearestOnAxis(corner, island.line).d })).sort((a, b) => a.d - b.d)[0];
+      if (nearest && nearest.d <= M(GATE_CANOPY.snapM)) {
+        foot = postOnIsland(corner, nearest.island.line, M((nearest.island.p.width_m ?? 1.5) / 2), M(GATE_CANOPY.kerbInsetM));
+      }
+      const g = ctx.groundAt(...foot);
+      ctx.solid.pole(foot, g - M(0.1), base + M(spring - beamM / 2), GATE_CANOPY.postRadiusM, GATE_CANOPY.postRadiusM, white);
+      if (Math.hypot(foot[0] - corner[0], foot[1] - corner[1]) > M(0.05)) {
+        ctx.solid.beam([foot[0], base + M(spring - beamM / 2), foot[1]], [corner[0], base + M(spring - beamM / 2), corner[1]], beamM, beamM, white);
+      }
+    }
+  }
 };
 
 B.bike_rack = (ctx, o) => {
@@ -1645,24 +1818,95 @@ B.sign_pole = (ctx, o) => {
   ctx.solid.box(f, [-0.3, 0.3], [0.05, 0.09], [o.heightM - 0.75, o.heightM - 0.15], { top: C.white, side: C.signBlue });
 };
 
-// A19 gate sign (VR scene_a19 l face, scene_001): free-standing letter slab on a planted stone bed, the line being the
-// sign's axis; the lettering is a plain band (no text texture). length_m / depth_m: letter slab, height_m: top of the
-// upper name band above the ground, plinth_m: stone bed, colour / bandColour: slab and band. All estimated.
+// Stroke polylines of a line of text in the plane of a sign, lengthM long and heightM tall: s from 0 (the left end as read)
+// to lengthM, h from 0 (the foot of the letters) up to heightM; every character takes an equal slot, gapM between slots.
+// Glyphs are the road-marking set of lib/markingGlyphs.mjs (Latin capitals, digits, Hangul syllables) on unit boxes, curves
+// as polylines. Returns [{ char, slot: [s0, s1], closed, points: [[s, h], ...] }].
+export function letterStrokes(text, { lengthM, heightM, gapM = 0 }) {
+  const chars = [...text];
+  const slot = (lengthM - gapM * (chars.length - 1)) / chars.length;
+  const strokes = [];
+  chars.forEach((char, i) => {
+    if (char === " ") return;
+    const elements = glyphElements(char);
+    if (!elements) throw new Error(`furniture: no glyph for ${char}`);
+    const s0 = i * (slot + gapM);
+    const at = ([x, y]) => [s0 + x * slot, (1 - y) * heightM];
+    for (const e of elements) {
+      if (e.ellipse) {
+        const [cx, cy, rx, ry] = e.ellipse;
+        const points = Array.from({ length: 16 }, (_, k) => at([cx + rx * Math.cos((k / 16) * 2 * Math.PI), cy + ry * Math.sin((k / 16) * 2 * Math.PI)]));
+        strokes.push({ char, slot: [s0, s0 + slot], closed: true, points });
+      } else strokes.push({ char, slot: [s0, s0 + slot], closed: false, points: e.map(at) });
+    }
+  });
+  return strokes;
+}
+
+// The SCNU letter sign of the A19 gate plaza (RS-GATE-A19; VR scene_a19 l, scene_001 f and d; on the NGII 2025 photo the
+// white tops of its letters along the south edge of the striped paving): white block letters `text` letter_m tall on a
+// planted bed behind a stone-faced wall plinth_m high, the line `subtext` on a thin rail above them up to heightM, both
+// length_m long and read from the side the sign faces (facing_deg, a bearing). The LineString is the letters' axis traced
+// on the photo. Strokes SIGN_STROKE_SHARE of a character slot wide and depth_m deep (the upper line 0.4 of that); every
+// size is an estimate. Returns the plan centre of every character, in reading order.
+const SIGN_STROKE_SHARE = 0.17;
 B.gate_sign = (ctx, o) => {
   const p = o.p;
+  if (p.facing_deg === undefined) throw new Error(`furniture: gate_sign ${o.id} needs facing_deg (the bearing its letters face)`);
   const [a, b] = [o.line[0], o.line.at(-1)];
   const c = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  // read along the traced axis, left to right for a reader in front of the sign
+  const right = bearingDir(p.facing_deg - 90);
+  const u = (b[0] - a[0]) * right[0] + (b[1] - a[1]) * right[1] >= 0 ? [b[0] - a[0], b[1] - a[1]] : [a[0] - b[0], a[1] - b[1]];
+  const ground = ctx.groundAt(...c);
+  const f = frame([c[0], ground, c[1]], u);
+  const facing = bearingDir(p.facing_deg);
+  const front = f.v[0] * facing[0] + f.v[1] * facing[1] >= 0 ? 1 : -1;
   const length = p.length_m ?? Math.hypot(b[0] - a[0], b[1] - a[1]) / M(1);
-  const depth = p.depth_m ?? 0.45;
-  const plinth = p.plinth_m ?? 0.6;
-  const letters = (o.heightM - plinth) * 0.75;
-  const toRoad = towardRoad(c, ctx.roads) ?? [0, 1];
-  const f = facingFrame(ctx, c, [b[0] - a[0], b[1] - a[1]], [c[0] + toRoad[0] * M(5), c[1] + toRoad[1] * M(5)]);
-  const slab = rgb(p.colour ?? "#f4f3ee");
-  ctx.solid.box(f, [-length / 2 - 1, length / 2 + 1], [-depth / 2 - 1.6, depth / 2 + 0.4], [-0.1, plinth], { top: C.shrub, side: C.stone });
-  ctx.solid.box(f, [-length / 2, length / 2], [-depth / 2, depth / 2], [plinth, plinth + letters], { top: slab, side: slab });
-  const band = rgb(p.bandColour ?? p.colour ?? "#f4f3ee");
-  ctx.solid.box(f, [-length * 0.42, length * 0.42], [-depth * 0.3, depth * 0.3], [plinth + letters + 0.1, o.heightM], { top: band, side: band });
+  const plinth = p.plinth_m ?? 0.9;
+  const letterM = p.letter_m ?? (o.heightM - plinth) * 0.65;
+  const depth = p.depth_m ?? 0.4;
+  const white = paintOf(p.colour, rgb("#f4f3ee"), o.id);
+  const bed = paintOf(p.bedColour, rgb("#5b5d5f"), o.id);
+  // the bed: stone-faced front wall 0.7 m in front of the letters, planted top, a light coping on the front edge
+  const [t0, t1] = front > 0 ? [-0.9, 0.7] : [-0.7, 0.9];
+  const s1 = length / 2 + 0.8;
+  const bedRing = [localPlan(f, -s1, t0), localPlan(f, s1, t0), localPlan(f, s1, t1), localPlan(f, -s1, t1)];
+  const foot = (ctx.minGround(bedRing) - ground) / M(1) - 0.1;
+  ctx.solid.box(f, [-s1, s1], [t0, t1], [foot, plinth], { top: C.shrub, side: bed });
+  ctx.solid.box(f, [-s1, s1], front > 0 ? [0.55, 0.75] : [-0.75, -0.55], [plinth - 0.05, plinth + 0.03], C.stone);
+  const normal = [f.v[0], 0, f.v[1]];
+  const letters = [];
+  const line = (text, gapM, h0, h1, d) => {
+    const chars = [...text];
+    const w = (SIGN_STROKE_SHARE * (length - gapM * (chars.length - 1))) / chars.length;
+    const strokes = letterStrokes(text, { lengthM: length - w, heightM: 1, gapM });
+    const hs = strokes.flatMap((st) => st.points.map((q) => q[1]));
+    const [lo, hi] = [Math.min(...hs), Math.max(...hs)];
+    // stretch the glyphs' own height range over the line, a half stroke in from both edges
+    const at = ([s, h]) => local(f, -length / 2 + w / 2 + s, 0, h0 + w / 2 + ((h - lo) / (hi - lo)) * (h1 - h0 - w));
+    for (const st of strokes) {
+      const pts = st.points.map(at);
+      for (let k = 0; k < (st.closed ? pts.length : pts.length - 1); k += 1) {
+        const [pa, pb] = [pts[k], pts[(k + 1) % pts.length]];
+        const l = Math.hypot(pb[0] - pa[0], pb[1] - pa[1], pb[2] - pa[2]);
+        if (l < 1e-9) continue;
+        const e = [((pb[0] - pa[0]) / l) * M(w / 2), ((pb[1] - pa[1]) / l) * M(w / 2), ((pb[2] - pa[2]) / l) * M(w / 2)];
+        ctx.solid.beam([pa[0] - e[0], pa[1] - e[1], pa[2] - e[2]], [pb[0] + e[0], pb[1] + e[1], pb[2] + e[2]], w, d, white, { up: normal });
+      }
+    }
+    const slot = (length - w - gapM * (chars.length - 1)) / chars.length;
+    for (const [i, char] of chars.entries()) {
+      if (char !== " ") letters.push({ char, at: localPlan(f, -length / 2 + w / 2 + i * (slot + gapM) + slot / 2, 0) });
+    }
+  };
+  line(p.text ?? "SCNU", p.gap_m ?? 0.25, plinth, plinth + letterM, depth);
+  const rail = plinth + letterM;
+  if (p.subtext) {
+    ctx.solid.box(f, [-length / 2, length / 2], [-0.04, 0.04], [rail, rail + 0.08], C.metal);
+    line(p.subtext, p.subgap_m ?? 0.12, rail + 0.12, o.heightM, depth * 0.4);
+  }
+  return { letters };
 };
 
 // Garden walls (VR scene_a5 r: a white-coped wall round the walled garden carrying a brown timber lattice screen):
@@ -1919,16 +2163,67 @@ B.sports_goal = (ctx, o) => {
   for (const s of [-w, w]) net([[s, mouth - 0.06, 0.03], [s, back, 0.03], [s, back, 0.9], [s, mouth - 0.06, h - 0.06]]);
 };
 
+// Portable basketball stands of the blue courts (VR scene_a15 b, scene_a16 l): a white base frame behind the end line with
+// a ballast box at the back and a navy padded housing at the front, a white post and two diagonal braces, a clear board in
+// a white frame, an orange ring with a white net. The survey traces each stand on the NGII 2025 photo as a LineString from
+// the rear of its base to the board face, so the board faces along the line, into the court. Board and ring after FIBA
+// (1.80 x 1.05 m board with its lower edge 2.90 m up, ring top 3.05 m, a 0.45 m ring 0.15 m clear of the board); the
+// stand's own parts are estimated from the VR.
+export const HOOP = {
+  ringTopM: 3.05, ringInnerRadiusM: 0.225, ringGapM: 0.15, tubeM: 0.02, netDropM: 0.42,
+  board: { widthM: 1.8, heightM: 1.05, bottomM: 2.9, thicknessM: 0.03, frameM: 0.05 },
+  base: { halfWidthM: 0.5, frontGapM: 0.3, housingM: 0.7, housingHeightM: 1.25, ballastM: 0.75, ballastHeightM: 0.45, postM: 0.14 },
+  colours: { frame: "#f3f3f1", pad: "#22346e", ring: "#d5571f", glass: "#dfe9ee", net: "#f5f5f5" },
+};
 B.sports_hoop = (ctx, o) => {
-  const at = o.point;
-  const other = ctx.objects.find((q) => q.kind === "sports_hoop" && q !== o);
-  const f = frame([at[0], ctx.groundAt(...at), at[1]], other ? [other.point[0] - at[0], other.point[1] - at[1]] : [1, 0]);
-  ctx.solid.box(f, [-0.5, 0.5], [-0.6, 0.6], [-0.05, 0.25], C.concrete);
-  ctx.solid.box(f, [-0.09, 0.09], [-0.09, 0.09], [0.25, 3.3], C.signBlue);
-  ctx.solid.beam(local(f, 0, 0, 3.2), local(f, 1.1, 0, 3.35), 0.1, 0.1, C.signBlue);
-  ctx.solid.box(f, [1.1, 1.16], [-0.9, 0.9], [2.9, 3.95], C.white);
-  const rim = disc([0, 0], 0.23, 8).map(([s, t]) => local(f, 1.16 + 0.23 + s, t, 3.05));
-  for (let i = 0; i < rim.length; i += 1) ctx.solid.beam(rim[i], rim[(i + 1) % rim.length], 0.03, 0.03, C.hoopOrange, { ends: false });
+  if (!o.line || o.line.length !== 2) throw new Error(`furniture: sports_hoop ${o.id} needs a LineString from the base to the board`);
+  const { board, base } = HOOP;
+  const [rear, face] = o.line;
+  const L = Math.hypot(face[0] - rear[0], face[1] - rear[1]) / M(1);
+  const f = frame([rear[0], Math.min(ctx.groundAt(...rear), ctx.groundAt(...face)), rear[1]], [face[0] - rear[0], face[1] - rear[1]]);
+  const white = rgb(HOOP.colours.frame);
+  const pad = rgb(HOOP.colours.pad);
+  const orange = rgb(HOOP.colours.ring);
+  const S = ctx.solid;
+  const hw = base.halfWidthM;
+  const housing = [L - base.frontGapM - base.housingM, L - base.frontGapM];
+  const postS = housing[1] - base.postM / 2 - 0.1;
+  const top = board.bottomM + board.heightM;
+  // base frame: two side rails and a rear bar on the ground, the ballast box at the back, the padded housing in front
+  for (const t of [-hw, hw - 0.1]) S.box(f, [0, housing[0]], [t, t + 0.1], [-0.05, 0.1], white);
+  S.box(f, [0, 0.1], [-hw, hw], [-0.05, 0.1], white);
+  S.box(f, [0.05, 0.05 + base.ballastM], [-hw + 0.1, hw - 0.1], [-0.05, base.ballastHeightM], white);
+  S.box(f, housing, [-hw + 0.05, hw - 0.05], [-0.05, base.housingHeightM], { top: white, side: pad });
+  // post from the housing up behind the board, a cross arm and two arms to the board's back, braces down to the ballast
+  S.box(f, [postS - base.postM / 2, postS + base.postM / 2], [-base.postM / 2, base.postM / 2], [base.housingHeightM, board.bottomM + 0.45], white);
+  S.box(f, [postS - 0.04, postS + 0.04], [-0.35, 0.35], [board.bottomM + 0.3, board.bottomM + 0.4], white);
+  for (const t of [-0.3, 0.3]) S.beam(local(f, postS, t, board.bottomM + 0.35), local(f, L - board.thicknessM, t, board.bottomM + 0.35), 0.06, 0.06, white);
+  for (const t of [-0.35, 0.35]) S.beam(local(f, 0.3, t, base.ballastHeightM), local(f, postS - base.postM / 2, t / 4, board.bottomM + 0.2), 0.06, 0.06, white);
+  // clear board in a white frame, the shooter's square above the ring
+  const [b0, b1] = [L - board.thicknessM, L];
+  const hb = board.widthM / 2;
+  ctx.glass.box(f, [b0, b1], [-hb, hb], [board.bottomM, top], rgb(HOOP.colours.glass, 110), { bottom: true });
+  const fm = board.frameM;
+  S.box(f, [b0 - 0.015, b1 + 0.005], [-hb, hb], [top - fm, top], white);
+  S.box(f, [b0 - 0.015, b1 + 0.005], [-hb, hb], [board.bottomM, board.bottomM + fm], white);
+  for (const t of [-hb, hb - fm]) S.box(f, [b0 - 0.015, b1 + 0.005], [t, t + fm], [board.bottomM, top], white);
+  for (const t of [-0.295, 0.245]) S.box(f, [b1, b1 + 0.005], [t, t + 0.05], [HOOP.ringTopM, HOOP.ringTopM + 0.45], white);
+  S.box(f, [b1, b1 + 0.005], [-0.295, 0.295], [HOOP.ringTopM + 0.4, HOOP.ringTopM + 0.45], white);
+  // ring on its bracket, and the net hanging from it
+  const r = HOOP.ringInnerRadiusM + HOOP.tubeM / 2;
+  const centreS = L + HOOP.ringGapM + HOOP.ringInnerRadiusM;
+  const tubeH = HOOP.ringTopM - HOOP.tubeM / 2;
+  S.box(f, [L, L + HOOP.ringGapM + 0.02], [-0.08, 0.08], [HOOP.ringTopM - 0.05, HOOP.ringTopM], orange);
+  const rim = Array.from({ length: 16 }, (_, k) => [centreS + r * Math.cos((k / 16) * 2 * Math.PI), r * Math.sin((k / 16) * 2 * Math.PI)]);
+  for (let k = 0; k < rim.length; k += 1) {
+    const [p, q] = [rim[k], rim[(k + 1) % rim.length]];
+    S.beam(local(f, p[0], p[1], tubeH), local(f, q[0], q[1], tubeH), HOOP.tubeM, HOOP.tubeM, orange, { ends: false });
+  }
+  const netAt = (k, radius, h) => local(f, centreS + radius * Math.cos((k / 12) * 2 * Math.PI), radius * Math.sin((k / 12) * 2 * Math.PI), h);
+  for (let k = 0; k < 12; k += 1) {
+    const quad = [netAt(k, HOOP.ringInnerRadiusM, tubeH), netAt(k + 1, HOOP.ringInnerRadiusM, tubeH), netAt(k + 1, 0.14, tubeH - HOOP.netDropM), netAt(k, 0.14, tubeH - HOOP.netDropM)];
+    ctx.glass.face(quad, sub(netAt(k + 0.5, 1, tubeH), local(f, centreS, 0, tubeH)), rgb(HOOP.colours.net, 90));
+  }
 };
 
 B.footbridge = (ctx, o) => {

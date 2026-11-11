@@ -1,7 +1,7 @@
 // Evidence fits -> canonical road cross-sections and junction controls.
 // No emitted polygon, arbitrary region, or generic detail is a build input.
-import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
-import { SCENE_UNITS_PER_METRE as U } from "../lib/frame.mjs";
+import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
+import { EXTENT, SCENE_UNITS_PER_METRE as U } from "../lib/frame.mjs";
 import { add, dot, norm, offsetPath, polylineLength, projectArc, scale, slicePath, sub, unit } from "../lib/markingFit.mjs";
 import { frameAt } from "../stages/roadMarkings.mjs";
 import { createHash } from "node:crypto";
@@ -59,6 +59,19 @@ export function seedRoadMarkings(model, humpRecords, context) {
     junctions[node.id]??={approaches:[]}; junctions[node.id].approaches.push(a);
     return a;
   };
+  // paint only where the ground allows it (design 10.3: the build refuses a paint piece whose centre is not on a paint
+  // parcel): a photo dash drawn as detected (one run per dash, fit/markingEvidenceFit.mjs detectedDashLine) whose centre
+  // lies inside EXTENT off every paint parcel (a road the parcel map does not cover yet) is left out until its ground
+  // parcel exists; paint beyond EXTENT lies on the context ground and is not checked here
+  const paintGround=context.parcels?topParcelAt(context.parcels):null;
+  const offGround=part=>{
+    if(!paintGround) return false;
+    // its two ends count as well: a run that overhangs the parcel edge still paints unassigned ground (design 10.3)
+    return [part[0],frameAt(part,polylineLength(part)/2,"run").centre,part.at(-1)].some(p=>{
+      const [x,z]=tmToScene(...p);
+      return x>=EXTENT.minX&&x<=EXTENT.maxX&&z>=EXTENT.minZ&&z<=EXTENT.maxZ&&!paintGround(p)?.paintAllowed;
+    });
+  };
   for(const l of model.lines) {
     const painted=l.path.map(tm),owner=nearest(painted[Math.floor(painted.length/2)]);
     const width=owner.segment.widthM||6.5;
@@ -68,6 +81,7 @@ export function seedRoadMarkings(model, humpRecords, context) {
       if(to<=from) continue;
       const part=slicePath(painted,from*K,Math.min(to*K,polylineLength(painted)));
       if(part.length<2 || polylineLength(part)<0.05) continue;
+      if(l.dashRuns&&offGround(part)) { context.log?.(`road seed: ${l.kind} ${l.refs.join(",")} run ${from.toFixed(2)}-${to.toFixed(2)} m left out (no paint parcel under it)`); continue; }
       const edge=l.kind==="kerb_no_parking"||l.kind==="edge_line";
       let axis=part,side="left";
       if(edge) {
@@ -142,7 +156,8 @@ export function seedRoadMarkings(model, humpRecords, context) {
   }
   for(const [i,h] of humpRecords.entries()) {
     const r=stationSection(h.centre,h.u,h.widthM*K,["photo/evidence/markings-extra.geojson "+h.id],"hump");
-    const bodyWidth=h.widthM*K,lengthM=3.6*K;
+    // a striped hump keeps the painted length its bands measure (fit/humpEvidence.mjs); an outline the statute 3.6 m
+    const bodyWidth=h.widthM*K,lengthM=(h.lengthM??3.6)*K;
     if(h.bands && context.parcels) {
       const {centre,forward}=frameAt(r.line,r.atM,r.s.id),side=left(forward);
       const radius=bodyWidth/2+lengthM/2;
@@ -176,9 +191,16 @@ export function seedRoadMarkings(model, humpRecords, context) {
       r.s.lateralOffsetM=(low+high)/2;
       r.s.kerbOffsetsM={left:(high-low)/2,right:(high-low)/2};
     }
+    // measured bands lean to the left of travel by the angle their axis makes with the section's forward direction
+    let lean=null;
+    if(h.bands&&h.stripe) {
+      const {forward}=frameAt(r.line,r.atM,r.s.id),p=tm(h.centre),st=unit(sub(tm(add(h.centre,scale(h.stripe,U))),p));
+      lean=Math.atan2(forward[0]*st[1]-forward[1]*st[0],dot(forward,st))*180/Math.PI;
+    }
     r.s.humps.push({id:h.id,order:i,atM:r.atM,lengthM,heightM:0.1,bands:Boolean(h.bands),
       widthM:bodyWidth,lateralOffsetM:-r.s.lateralOffsetM,
-      ...(h.bands?{bandAxis:"travel",bandWidthM:h.widthM*K/h.bands,bandStartColour:h.bandStartColour??"yellow"}:{})});
+      ...(h.bands?{bandAxis:"travel",bandWidthM:(h.bandWidthM??h.widthM/h.bands)*K,bandStartColour:h.bandStartColour??"yellow",
+        ...(lean===null?{}:{bandAngleDeg:lean,bandOffsetM:(h.bandOffsetM??0)*K})}:{})});
   }
   return {sections,junctions};
 }
@@ -205,7 +227,7 @@ if(import.meta.main) {
   }});
   const context=roadContext();
   const curation=JSON.parse(readFileSync(new URL("../data/ground/road-curation.json",import.meta.url),"utf8"));
-  const docs=applyRoadCuration(seedRoadMarkings(evidence.model,humps.humps,{...context,parcels:surfaces.parcels}),curation,context);
+  const docs=applyRoadCuration(seedRoadMarkings(evidence.model,humps.humps,{...context,parcels:surfaces.parcels,log:m=>console.log(m)}),curation,context);
   const referencePath=new URL("../data/photo/evidence/road-reference.json",import.meta.url);
   const reference=applyRoadReferenceReviews(JSON.parse(readFileSync(referencePath,"utf8")),curation.referenceReviews??{});
   for(const [name,doc] of [["ground/road-sections",docs.sections],["ground/junctions",docs.junctions],["photo/evidence/road-reference",reference]]) {

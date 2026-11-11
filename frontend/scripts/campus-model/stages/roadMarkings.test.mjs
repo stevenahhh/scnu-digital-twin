@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
-import { loadRoadMarkings, roadMarkingPlan } from "./roadMarkings.mjs";
+import { humpBands, loadRoadMarkings, roadMarkingPlan } from "./roadMarkings.mjs";
 import { loadParcels, paintViolations, pieceKey } from "../lib/parcels.mjs";
 import { loadParking, parkingPlan } from "./parking.mjs";
 import { inMarkingExtent } from "./markings.mjs";
@@ -149,6 +149,43 @@ test("recorded travel-aligned hump bands span the hump length and follow lane wi
   for(const p of base.pieces){const b=bounds(p);close(b[1]-b[0],4);close(b[3]-b[2],0.5);}
   s.lanes.forEach(l=>{l.widthM*=2;});
   assert.equal(plan(s).pieces.length,28);
+});
+
+const ringArea = ring => Math.abs(ring.reduce((sum, p, i) => {
+  const q = ring[(i + 1) % ring.length];
+  return sum + p[0] * q[1] - q[0] * p[1];
+}, 0)) / 2;
+
+test("leaning hump bands tile the painted rectangle with the recorded pitch, phase and lean", () => {
+  const bands = humpBands({ lengthM: 3, widthM: 6, bandWidthM: 0.5, angleDeg: 15, offsetM: 0.2 });
+  close(bands.reduce((sum, b) => sum + ringArea(b.ring), 0), 18);
+  for (const b of bands) for (const [s, t] of b.ring) assert.ok(Math.abs(s) <= 1.5 + 1e-9 && Math.abs(t) <= 3 + 1e-9);
+  const lean = Math.tan(15 * Math.PI / 180);
+  // band 0 starts 0.2 m in from the right edge at the hump's centre line; its edges lean 15 degrees to the left
+  const zero = bands.find(b => b.index === 0);
+  const edge = zero.ring.filter(([s, t]) => Math.abs(t - (-3 + 0.2 + s * lean)) < 1e-9);
+  assert.equal(edge.length, 2);
+  assert.deepEqual([...new Set(bands.map(b => b.index))].sort((a, b) => a - b), bands.map(b => b.index).sort((a, b) => a - b));
+  assert.ok(bands.some(b => b.index < 0), "the partial band before band 0 is drawn");
+  // without lean or phase the bands are the existing travel-aligned rectangles
+  const flat = humpBands({ lengthM: 4, widthM: 7, bandWidthM: 0.5 });
+  assert.equal(flat.length, 14);
+  for (const b of flat) {
+    const ts = b.ring.map(p => p[1]), ss = b.ring.map(p => p[0]);
+    close(Math.max(...ss) - Math.min(...ss), 4);
+    close(Math.max(...ts) - Math.min(...ts), 0.5);
+  }
+});
+
+test("a recorded band lean draws alternating leaning bands over the hump without leaving it", () => {
+  const s = section({ humps: [{ atM: 15, lengthM: 3, heightM: 0.1, bands: true, bandAxis: "travel", bandWidthM: 0.5,
+    bandAngleDeg: -15, bandOffsetM: 0.25, bandStartColour: "white" }] });
+  const result = plan(s);
+  const tm = result.pieces.map(local);
+  close(tm.reduce((sum, ring) => sum + ringArea(ring), 0), 3 * 7);
+  for (const ring of tm) for (const [e, n] of ring) assert.ok(e >= 13.5 - 1e-7 && e <= 16.5 + 1e-7 && n >= -3 - 1e-7 && n <= 4 + 1e-7);
+  const atCentre = result.pieces.filter(p => local(p).some(([e]) => Math.abs(e - 15) < 1.4));
+  assert.ok(atCentre.some(p => p.colour === "white") && atCentre.some(p => p.colour === "yellow"));
 });
 
 test("unrecorded paint is absent and separate sections restart their dash phase", () => {

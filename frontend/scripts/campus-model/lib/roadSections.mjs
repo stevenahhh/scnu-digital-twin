@@ -50,6 +50,8 @@ function humps(list, fail, fromM, toM) {
     if (h?.widthM !== undefined && !positive(h.widthM)) fail(`humps[${i}] needs positive widthM`);
     if (h?.lateralOffsetM !== undefined && !Number.isFinite(h.lateralOffsetM)) fail(`humps[${i}] needs finite lateralOffsetM`);
     if (h?.bandStartColour !== undefined && !["yellow","white"].includes(h.bandStartColour)) fail(`humps[${i}] has unknown bandStartColour`);
+    if (h?.bandAngleDeg !== undefined && !(Number.isFinite(h.bandAngleDeg) && Math.abs(h.bandAngleDeg) < 60)) fail(`humps[${i}] needs bandAngleDeg within 60 degrees of travel`);
+    if (h?.bandOffsetM !== undefined && !nonnegative(h.bandOffsetM)) fail(`humps[${i}] needs nonnegative bandOffsetM`);
   });
 }
 

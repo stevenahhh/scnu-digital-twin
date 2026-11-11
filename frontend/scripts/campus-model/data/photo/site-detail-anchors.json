@@ -1,7 +1,7 @@
 {
   "frameVersion": 2,
   "inputs": {
-    "data/photo/site-detail.geojson": "6a1038d8e7c3d601a6c22fe4fe2638c4856d336ef3d67cf4264566614371d763",
+    "data/photo/site-detail.geojson": "8004ef5993002b2a3f058b1cb774245459e78134aadc5eee7f988936396abede",
     "data/gis-buildings.json": "3807d90af530a0265be0f77e9f05ee97eb80d66150f322429b5788c9fc0dad3c",
     "data/vr-buildings.json": "7ab28c3f543f9f6f1d7fa6d6c30e8cc0e8a9657d20eb6c61a568d706ff3dc53f",
     "data/bld-node-map.json": "fff5e838b1b2bdcab2c75387423c205df902ab5c52654e844154880904fc9d00",
@@ -1639,8 +1639,8 @@
       "id": "SD-E3-S1",
       "anchor": {
         "parcel": "PARCEL_ASPHALT_ROAD_ZONE_91",
-        "uM": -15.570884791481042,
-        "vM": 7.109771038196628
+        "uM": -15.570629636466368,
+        "vM": 7.105684822283038
       },
       "estimated": true,
       "evidence": {
@@ -1653,12 +1653,12 @@
         "type": "LineString",
         "coordinates": [
           [
-            -0.5227499607060596,
-            1.9485956987208193
+            -0.5230781330545308,
+            1.9485076302677522
           ],
           [
-            0.5227499607207446,
-            -1.9485956987771442
+            0.5230781330692252,
+            -1.9485076303240745
           ]
         ]
       },
@@ -1798,8 +1798,8 @@
       "id": "SD-E5-S1",
       "anchor": {
         "parcel": "PARCEL_ASPHALT_ROAD_ZONE_55",
-        "uM": -13.73145157689656,
-        "vM": -2.118482382995273
+        "uM": -13.706042824288325,
+        "vM": -2.1184823830122097
       },
       "estimated": true,
       "evidence": {
@@ -1891,8 +1891,8 @@
       "id": "SD-E8-S1",
       "anchor": {
         "parcel": "PARCEL_ASPHALT_ROAD_ZONE_78",
-        "uM": 7.276703129440234,
-        "vM": 9.909871273437089
+        "uM": 7.3021730879508,
+        "vM": 9.973430341039101
       },
       "estimated": true,
       "evidence": {
@@ -1905,12 +1905,12 @@
         "type": "LineString",
         "coordinates": [
           [
-            -0.16235892864658613,
-            0.6502171198645604
+            -0.16375440343329709,
+            0.6498670787418274
           ],
           [
-            0.16235892870385898,
-            -0.6502171198541705
+            0.1637544034905475,
+            -0.6498670787313144
           ]
         ]
       },
@@ -1924,8 +1924,8 @@
       "id": "SD-E8-PM1",
       "anchor": {
         "parcel": "PARCEL_ASPHALT_ROAD_ZONE_78",
-        "uM": -22.744086357177316,
-        "vM": 10.132753402915345
+        "uM": -22.719025693715547,
+        "vM": 10.131865044064362
       },
       "estimated": true,
       "evidence": {
@@ -1938,12 +1938,12 @@
         "type": "LineString",
         "coordinates": [
           [
-            -2.787777251362263,
-            0.21671370471598367
+            -2.78823605619226,
+            0.21072856468474727
           ],
           [
-            2.787777251419536,
-            -0.21671370470559365
+            2.7882360562495108,
+            -0.21072856467423434
           ]
         ]
       },
@@ -1957,8 +1957,8 @@
       "id": "SD-E8-S2",
       "anchor": {
         "parcel": "PARCEL_ASPHALT_ROAD_ZONE_78",
-        "uM": -18.703431115275336,
-        "vM": 10.096560816368381
+        "uM": -18.678302066339683,
+        "vM": 10.104346788353835
       },
       "estimated": true,
       "evidence": {
@@ -2348,8 +2348,8 @@
       "id": "SD-B3-K1",
       "anchor": {
         "parcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
-        "uM": 24.139572241960373,
-        "vM": 6.253704019662446
+        "uM": 24.149582818396084,
+        "vM": 6.253704019654624
       },
       "estimated": true,
       "evidence": {
@@ -2422,8 +2422,8 @@
       "id": "SD-B3-T2",
       "anchor": {
         "parcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
-        "uM": 24.412010644052486,
-        "vM": 6.2598406325203095
+        "uM": 24.422021220488197,
+        "vM": 6.259840632512487
       },
       "estimated": true,
       "evidence": {
@@ -2449,8 +2449,8 @@
       "id": "SD-B3-T3",
       "anchor": {
         "parcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
-        "uM": 28.000814724923966,
-        "vM": 6.361028172429739
+        "uM": 28.010825301359677,
+        "vM": 6.361028172421917
       },
       "estimated": true,
       "evidence": {
@@ -2476,8 +2476,8 @@
       "id": "SD-B3-T4",
       "anchor": {
         "parcel": "PARCEL_ASPHALT_ROAD_ZONE_68",
-        "uM": 31.714905917319143,
-        "vM": 6.465295462846709
+        "uM": 31.724916493754858,
+        "vM": 6.465295462838887
       },
       "estimated": true,
       "evidence": {
