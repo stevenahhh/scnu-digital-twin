@@ -23,7 +23,7 @@ import { decimateDecal } from "../lib/decimate.mjs";
 import { EXTENT, SCENE_UNITS_PER_METRE } from "../lib/frame.mjs";
 import { LANDCOVER, D4_MATERIAL_SCOPE, splitD4GroundPolygon } from "../lib/landcover.mjs";
 import { encodePng } from "../lib/png.mjs";
-import { FUTSAL_HALF_M, TRACK_LANES, TRACK_LANE_M, trackPitchHalf } from "../lib/pitchLines.mjs";
+import { BASKETBALL_HALF_M, FUTSAL_HALF_M, MULTI_COURT_HALF_M, TENNIS_COURT_HALF_M, TENNIS_COURT_OFFSET_M, TRACK_LANES, TRACK_LANE_M, courtOwner, trackPitchHalf } from "../lib/pitchLines.mjs";
 import { hashNoise, smoothNoise } from "../lib/raster.mjs";
 import { orientedFrame } from "../network/surfaces.mjs";
 import { pavingPattern, pavingTile } from "../lib/pavingPatterns.mjs";
@@ -296,13 +296,15 @@ function courtShader(surfaceName, lines, cover) {
       return (s, t, i, j) => {
         const base = grain(SURFACE.basketball, i, j, 23, 0.05);
         if (lines === false) return base;
-        const key = Math.abs(s) - (14 - 2.9);
+        // the court size read on the photo (BASKETBALL_HALF_M); key, three-point arc and centre circle are FIBA
+        const { length, width } = BASKETBALL_HALF_M;
+        const key = Math.abs(s) - (length - 2.9);
         const d = Math.min(
-          rectOutline(s, t, 14, 7.5),
-          Math.abs(t) <= 7.5 ? Math.abs(s) : Infinity,
+          rectOutline(s, t, length, width),
+          Math.abs(t) <= width ? Math.abs(s) : Infinity,
           Math.abs(Math.hypot(s, t) - 1.8),
           rectOutline(key, t, 2.9, 2.45),
-          Math.abs(s) < 14 - 1.575 ? Math.abs(Math.hypot(Math.abs(s) - (14 - 1.575), t) - 6.75) : Infinity,
+          Math.abs(s) < length - 1.575 ? Math.abs(Math.hypot(Math.abs(s) - (length - 1.575), t) - 6.75) : Infinity,
         );
         return mix(base, LINE_WHITE, cover(d) * 0.85);
       };
@@ -314,17 +316,20 @@ function courtShader(surfaceName, lines, cover) {
       };
     case "multi":
       return (s, t, i, j) => {
-        const inside = Math.abs(s) <= 9 && Math.abs(t) <= 4.5;
+        const { length, width } = MULTI_COURT_HALF_M;
+        const inside = Math.abs(s) <= length && Math.abs(t) <= width;
         const base = grain(inside ? SURFACE.multiCourt : SURFACE.multiApron, i, j, 25, 0.05);
-        return mix(base, LINE_WHITE, cover(Math.min(rectOutline(s, t, 9, 4.5), Math.abs(t) <= 4.5 ? Math.abs(s) : Infinity)) * 0.8);
+        return mix(base, LINE_WHITE, cover(Math.min(rectOutline(s, t, length, width), Math.abs(t) <= width ? Math.abs(s) : Infinity)) * 0.8);
       };
     case "tennis":
       return (s, t, i, j) => {
         let colour = grain(SURFACE.clay, i, j, 26, 0.08);
-        for (const offset of [-8.2, 8.2]) {
+        // two courts side by side (TENNIS_COURT_OFFSET_M); green inside the outer lines, clay from there on (NGII 2025)
+        const { length, width } = TENNIS_COURT_HALF_M;
+        for (const offset of [-TENNIS_COURT_OFFSET_M, TENNIS_COURT_OFFSET_M]) {
           const tt = t - offset;
-          if (Math.abs(s) <= 11.885 + 3 && Math.abs(tt) <= 5.485 + 2) colour = grain(SURFACE.tennisCourt, i, j, 27, 0.05);
-          const d = Math.min(rectOutline(s, tt, 11.885, 5.485), rectOutline(s, tt, 11.885, 4.115), rectOutline(s, tt, 6.4, 4.115), Math.abs(tt) <= 4.115 && Math.abs(s) <= 6.4 ? Math.abs(tt) : Infinity, Math.abs(tt) <= 5.485 ? Math.abs(s) : Infinity);
+          if (Math.abs(s) <= length && Math.abs(tt) <= width) colour = grain(SURFACE.tennisCourt, i, j, 27, 0.05);
+          const d = Math.min(rectOutline(s, tt, length, width), rectOutline(s, tt, length, 4.115), rectOutline(s, tt, 6.4, 4.115), Math.abs(tt) <= 4.115 && Math.abs(s) <= 6.4 ? Math.abs(tt) : Infinity, Math.abs(tt) <= width ? Math.abs(s) : Infinity);
           colour = mix(colour, LINE_WHITE, cover(d) * 0.8);
         }
         return colour;
@@ -359,16 +364,15 @@ function paintShader(layer, frame, texel) {
         const own = label.headingDegrees === undefined
           ? { ...frame, cx: point[0], cz: point[1] }
           : { cx: point[0], cz: point[1], ux: Math.cos((label.headingDegrees * Math.PI) / 180), uz: Math.sin((label.headingDegrees * Math.PI) / 180) };
-        return { point, own, shade: courtShader(label.surface, label.lines, cover) };
+        // its court area (osm-ground.json `area`, in the label's own frame): the part of the facility it paints
+        const area = label.area && { centre: tmToScene(...label.area.point), halfLength: (label.area.lengthMetres / 2) * UNIT, halfWidth: (label.area.widthMetres / 2) * UNIT };
+        return { point, axis: [own.ux, own.uz], area, own, shade: courtShader(label.surface, label.lines, cover) };
       });
       return (s, t, i, j) => {
         const [x, z] = toModel(s, t);
-        let nearest = shaders[0];
-        for (const entry of shaders) {
-          if (Math.hypot(entry.point[0] - x, entry.point[1] - z) < Math.hypot(nearest.point[0] - x, nearest.point[1] - z)) nearest = entry;
-        }
-        const [ls, lt] = localOf(nearest.own, x, z);
-        return nearest.shade(ls, lt, i, j);
+        const owner = courtOwner(shaders, [x, z]);
+        const [ls, lt] = localOf(owner.own, x, z);
+        return owner.shade(ls, lt, i, j);
       };
     }
     case "water": {

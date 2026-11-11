@@ -323,6 +323,272 @@
    "dN": -0.18,
    "reason": "stadium track (F22) west straight / north-west bend: the photo track edge lies 0.28 m inside the MCEE outline here",
    "estimated": true
+  },
+  {
+   "id": "GR_F16_0",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    0
+   ],
+   "dE": -0.52,
+   "dN": 1.2,
+   "reason": "tennis courts (F16) south-west corner: the corner of the clay court rectangle fitted on the NGII 2025 sheet (sides along the courts' own axis, grid bearing 166.2 degrees), 1.31 m from the MCEE vertex (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_1",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    1
+   ],
+   "dE": -0.37,
+   "dN": -0.09,
+   "reason": "tennis courts (F16) west side: the clay court surface ends at the court fence 0.38 m outside the MCEE outline here (clay-to-teal step of red minus blue across the edge on the NGII 2025 sheet) (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_2",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    2
+   ],
+   "dE": -0.42,
+   "dN": -0.1,
+   "reason": "tennis courts (F16) west side: the clay court surface ends at the court fence 0.43 m outside the MCEE outline here (clay-to-teal step of red minus blue across the edge on the NGII 2025 sheet) (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_3",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    3
+   ],
+   "dE": -0.38,
+   "dN": -0.09,
+   "reason": "tennis courts (F16) west side: the clay court surface ends at the court fence 0.39 m outside the MCEE outline here (clay-to-teal step of red minus blue across the edge on the NGII 2025 sheet) (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_4",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    4
+   ],
+   "dE": -0.57,
+   "dN": -0.21,
+   "reason": "tennis courts (F16) north-west corner: the corner of the clay court rectangle fitted on the NGII 2025 sheet (sides along the courts' own axis, grid bearing 166.2 degrees), 0.61 m from the MCEE vertex (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_5",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    5
+   ],
+   "dE": 0.1,
+   "dN": -0.4,
+   "reason": "tennis courts (F16) north side: the clay court surface ends at the court fence 0.41 m inside the MCEE outline here (clay-to-teal step of red minus blue across the edge on the NGII 2025 sheet) (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_6",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    6
+   ],
+   "dE": 0.08,
+   "dN": -0.31,
+   "reason": "tennis courts (F16) north side: the clay court surface ends at the court fence 0.32 m inside the MCEE outline here (clay-to-teal step of red minus blue across the edge on the NGII 2025 sheet) (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_7",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    7
+   ],
+   "dE": -1.79,
+   "dN": -0.93,
+   "reason": "tennis courts (F16) north-east corner: the corner of the clay court rectangle fitted on the NGII 2025 sheet (sides along the courts' own axis, grid bearing 166.2 degrees), 2.02 m from the MCEE vertex (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_8",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    8
+   ],
+   "dE": -2.57,
+   "dN": -0.63,
+   "reason": "tennis courts (F16) east side: the clay court surface ends at the court fence 2.65 m inside the MCEE outline here (clay-to-teal step of red minus blue; the outline took in the tree band beyond the fence) (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_9",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    9
+   ],
+   "dE": -2.38,
+   "dN": -0.59,
+   "reason": "tennis courts (F16) east side: the clay court surface ends at the court fence 2.45 m inside the MCEE outline here (clay-to-teal step of red minus blue; the outline took in the tree band beyond the fence) (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_10",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    10
+   ],
+   "dE": -2.28,
+   "dN": 0.33,
+   "reason": "tennis courts (F16) east side: the clay court surface ends at the court fence 2.30 m inside the MCEE outline here (clay-to-teal step of red minus blue; the outline took in the tree band beyond the fence) (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_11",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    11
+   ],
+   "dE": -2.06,
+   "dN": 0.15,
+   "reason": "tennis courts (F16) south-east corner: the corner of the clay court rectangle fitted on the NGII 2025 sheet (sides along the courts' own axis, grid bearing 166.2 degrees), 2.07 m from the MCEE vertex (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_12",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    12
+   ],
+   "dE": -2.45,
+   "dN": 1.55,
+   "reason": "tennis courts (F16) south side: the south fence is hidden under the tree crowns; the clay is closed 18.45 m south of the courts' centre, mirroring the north run-off (2.90 m inside the MCEE outline) (estimated)",
+   "estimated": true
+  },
+  {
+   "id": "GR_F16_13",
+   "target": "facility",
+   "index": 16,
+   "l3Code": "141",
+   "check": [
+    127.4830486,
+    34.9669907
+   ],
+   "op": "move",
+   "ring": 0,
+   "vertices": [
+    13
+   ],
+   "dE": -0.52,
+   "dN": 1.2,
+   "reason": "tennis courts (F16) south-west corner (closing vertex): the corner of the clay court rectangle fitted on the NGII 2025 sheet (sides along the courts' own axis, grid bearing 166.2 degrees), 1.31 m from the MCEE vertex (estimated)",
+   "estimated": true
   }
  ]
 }

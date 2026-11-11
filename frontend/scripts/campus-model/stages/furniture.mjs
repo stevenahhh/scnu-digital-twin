@@ -20,7 +20,7 @@ import { simulationToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { METRES_PER_DEGREE_LAT, METRES_PER_DEGREE_LON, geoToModel, metres, modelToGeo } from "../lib/frame.mjs";
 import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
 import { glyphElements } from "../lib/markingGlyphs.mjs";
-import { FUTSAL_HALF_M, pitchRing, snapGoalToEndLine, trackPitchHalf } from "../lib/pitchLines.mjs";
+import { COURT_TREE_CLEARANCE_M, FUTSAL_HALF_M, pitchRing, playingSurfaces, snapGoalToEndLine, trackPitchHalf } from "../lib/pitchLines.mjs";
 import { encodePng } from "../lib/png.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
@@ -290,11 +290,20 @@ export function loadFurnitureSurvey({ wallSnapshots, anchorFootprints } = {}) {
     const heading = ((court.headingDegrees ?? 0) * Math.PI) / 180;
     pitches.push({ centre: geoToModel(...court.at), axis: [Math.cos(heading), Math.sin(heading)], halfLength: metres(FUTSAL_HALF_M.length), halfWidth: metres(FUTSAL_HALF_M.width) });
   }
-  // no tree stands on a playing surface: canopies that overhang a court were planted inside it
-  treeBlock.push(...pitches.map(pitchRing));
+  // no tree stands on a playing surface: canopies that overhang a court were planted inside it. The court surfaces of
+  // the surface labels (osm-ground.json `area`, the two tennis courts) keep trunks COURT_TREE_CLEARANCE_M away, so a
+  // crown traced on a court's own paint is left out instead of being nudged onto the court's edge (lib/pitchLines.mjs).
+  const labels = groundFeatures.supplements.features.filter((f) => f.kind === "surface" && f.headingDegrees !== undefined).map((f) => {
+    const heading = (f.headingDegrees * Math.PI) / 180;
+    return { surface: f.surface, point: geoToModel(...f.at), axis: [Math.cos(heading), Math.sin(heading)],
+      area: f.area ? { centre: geoToModel(...f.area.at), halfLength: metres(f.area.lengthMetres / 2), halfWidth: metres(f.area.widthMetres / 2) } : null };
+  });
+  const clear = metres(COURT_TREE_CLEARANCE_M);
+  const playingBlock = [...pitches.map(pitchRing), ...playingSurfaces(labels, metres(1)).map((c) => pitchRing({ ...c, halfLength: c.halfLength + clear, halfWidth: c.halfWidth + clear }))];
+  treeBlock.push(...playingBlock);
   // The 구령대 is also a GIS building record (운동장 본부석); the buildings stage leaves its generic mass out for it.
   const detailedStructures = objects.filter((o) => o.kind === "reviewing_stand").map((o) => o.footprint);
-  return { objects, excluded, retyped: RETYPED, treeBlock, detailedStructures, fieldCentre, pitches, sun };
+  return { objects, excluded, retyped: RETYPED, treeBlock, playingBlock, detailedStructures, fieldCentre, pitches, sun };
 }
 
 // The seed reads the survey above; production consumers only receive resolved parcel-local inputs.
@@ -318,7 +327,7 @@ export function loadFurniture(options = {}) {
   if (records.size) throw new ObjectPlacementError(records.keys().next().value, "unknown anchor source");
   return { ...survey, objects,
     treeBlock: [...objects.filter(o => o.footprint).map(o => o.footprint),
-      ...objects.filter(o => ["pond", "fountain"].includes(o.subtype)).map(o => o.ring)],
+      ...objects.filter(o => ["pond", "fountain"].includes(o.subtype)).map(o => o.ring), ...survey.playingBlock],
     detailedStructures: objects.filter(o => o.kind === "reviewing_stand").map(o => o.footprint) };
 }
 
