@@ -1919,16 +1919,67 @@ B.sports_goal = (ctx, o) => {
   for (const s of [-w, w]) net([[s, mouth - 0.06, 0.03], [s, back, 0.03], [s, back, 0.9], [s, mouth - 0.06, h - 0.06]]);
 };
 
+// Portable basketball stands of the blue courts (VR scene_a15 b, scene_a16 l): a white base frame behind the end line with
+// a ballast box at the back and a navy padded housing at the front, a white post and two diagonal braces, a clear board in
+// a white frame, an orange ring with a white net. The survey traces each stand on the NGII 2025 photo as a LineString from
+// the rear of its base to the board face, so the board faces along the line, into the court. Board and ring after FIBA
+// (1.80 x 1.05 m board with its lower edge 2.90 m up, ring top 3.05 m, a 0.45 m ring 0.15 m clear of the board); the
+// stand's own parts are estimated from the VR.
+export const HOOP = {
+  ringTopM: 3.05, ringInnerRadiusM: 0.225, ringGapM: 0.15, tubeM: 0.02, netDropM: 0.42,
+  board: { widthM: 1.8, heightM: 1.05, bottomM: 2.9, thicknessM: 0.03, frameM: 0.05 },
+  base: { halfWidthM: 0.5, frontGapM: 0.3, housingM: 0.7, housingHeightM: 1.25, ballastM: 0.75, ballastHeightM: 0.45, postM: 0.14 },
+  colours: { frame: "#f3f3f1", pad: "#22346e", ring: "#d5571f", glass: "#dfe9ee", net: "#f5f5f5" },
+};
 B.sports_hoop = (ctx, o) => {
-  const at = o.point;
-  const other = ctx.objects.find((q) => q.kind === "sports_hoop" && q !== o);
-  const f = frame([at[0], ctx.groundAt(...at), at[1]], other ? [other.point[0] - at[0], other.point[1] - at[1]] : [1, 0]);
-  ctx.solid.box(f, [-0.5, 0.5], [-0.6, 0.6], [-0.05, 0.25], C.concrete);
-  ctx.solid.box(f, [-0.09, 0.09], [-0.09, 0.09], [0.25, 3.3], C.signBlue);
-  ctx.solid.beam(local(f, 0, 0, 3.2), local(f, 1.1, 0, 3.35), 0.1, 0.1, C.signBlue);
-  ctx.solid.box(f, [1.1, 1.16], [-0.9, 0.9], [2.9, 3.95], C.white);
-  const rim = disc([0, 0], 0.23, 8).map(([s, t]) => local(f, 1.16 + 0.23 + s, t, 3.05));
-  for (let i = 0; i < rim.length; i += 1) ctx.solid.beam(rim[i], rim[(i + 1) % rim.length], 0.03, 0.03, C.hoopOrange, { ends: false });
+  if (!o.line || o.line.length !== 2) throw new Error(`furniture: sports_hoop ${o.id} needs a LineString from the base to the board`);
+  const { board, base } = HOOP;
+  const [rear, face] = o.line;
+  const L = Math.hypot(face[0] - rear[0], face[1] - rear[1]) / M(1);
+  const f = frame([rear[0], Math.min(ctx.groundAt(...rear), ctx.groundAt(...face)), rear[1]], [face[0] - rear[0], face[1] - rear[1]]);
+  const white = rgb(HOOP.colours.frame);
+  const pad = rgb(HOOP.colours.pad);
+  const orange = rgb(HOOP.colours.ring);
+  const S = ctx.solid;
+  const hw = base.halfWidthM;
+  const housing = [L - base.frontGapM - base.housingM, L - base.frontGapM];
+  const postS = housing[1] - base.postM / 2 - 0.1;
+  const top = board.bottomM + board.heightM;
+  // base frame: two side rails and a rear bar on the ground, the ballast box at the back, the padded housing in front
+  for (const t of [-hw, hw - 0.1]) S.box(f, [0, housing[0]], [t, t + 0.1], [-0.05, 0.1], white);
+  S.box(f, [0, 0.1], [-hw, hw], [-0.05, 0.1], white);
+  S.box(f, [0.05, 0.05 + base.ballastM], [-hw + 0.1, hw - 0.1], [-0.05, base.ballastHeightM], white);
+  S.box(f, housing, [-hw + 0.05, hw - 0.05], [-0.05, base.housingHeightM], { top: white, side: pad });
+  // post from the housing up behind the board, a cross arm and two arms to the board's back, braces down to the ballast
+  S.box(f, [postS - base.postM / 2, postS + base.postM / 2], [-base.postM / 2, base.postM / 2], [base.housingHeightM, board.bottomM + 0.45], white);
+  S.box(f, [postS - 0.04, postS + 0.04], [-0.35, 0.35], [board.bottomM + 0.3, board.bottomM + 0.4], white);
+  for (const t of [-0.3, 0.3]) S.beam(local(f, postS, t, board.bottomM + 0.35), local(f, L - board.thicknessM, t, board.bottomM + 0.35), 0.06, 0.06, white);
+  for (const t of [-0.35, 0.35]) S.beam(local(f, 0.3, t, base.ballastHeightM), local(f, postS - base.postM / 2, t / 4, board.bottomM + 0.2), 0.06, 0.06, white);
+  // clear board in a white frame, the shooter's square above the ring
+  const [b0, b1] = [L - board.thicknessM, L];
+  const hb = board.widthM / 2;
+  ctx.glass.box(f, [b0, b1], [-hb, hb], [board.bottomM, top], rgb(HOOP.colours.glass, 110), { bottom: true });
+  const fm = board.frameM;
+  S.box(f, [b0 - 0.015, b1 + 0.005], [-hb, hb], [top - fm, top], white);
+  S.box(f, [b0 - 0.015, b1 + 0.005], [-hb, hb], [board.bottomM, board.bottomM + fm], white);
+  for (const t of [-hb, hb - fm]) S.box(f, [b0 - 0.015, b1 + 0.005], [t, t + fm], [board.bottomM, top], white);
+  for (const t of [-0.295, 0.245]) S.box(f, [b1, b1 + 0.005], [t, t + 0.05], [HOOP.ringTopM, HOOP.ringTopM + 0.45], white);
+  S.box(f, [b1, b1 + 0.005], [-0.295, 0.295], [HOOP.ringTopM + 0.4, HOOP.ringTopM + 0.45], white);
+  // ring on its bracket, and the net hanging from it
+  const r = HOOP.ringInnerRadiusM + HOOP.tubeM / 2;
+  const centreS = L + HOOP.ringGapM + HOOP.ringInnerRadiusM;
+  const tubeH = HOOP.ringTopM - HOOP.tubeM / 2;
+  S.box(f, [L, L + HOOP.ringGapM + 0.02], [-0.08, 0.08], [HOOP.ringTopM - 0.05, HOOP.ringTopM], orange);
+  const rim = Array.from({ length: 16 }, (_, k) => [centreS + r * Math.cos((k / 16) * 2 * Math.PI), r * Math.sin((k / 16) * 2 * Math.PI)]);
+  for (let k = 0; k < rim.length; k += 1) {
+    const [p, q] = [rim[k], rim[(k + 1) % rim.length]];
+    S.beam(local(f, p[0], p[1], tubeH), local(f, q[0], q[1], tubeH), HOOP.tubeM, HOOP.tubeM, orange, { ends: false });
+  }
+  const netAt = (k, radius, h) => local(f, centreS + radius * Math.cos((k / 12) * 2 * Math.PI), radius * Math.sin((k / 12) * 2 * Math.PI), h);
+  for (let k = 0; k < 12; k += 1) {
+    const quad = [netAt(k, HOOP.ringInnerRadiusM, tubeH), netAt(k + 1, HOOP.ringInnerRadiusM, tubeH), netAt(k + 1, 0.14, tubeH - HOOP.netDropM), netAt(k, 0.14, tubeH - HOOP.netDropM)];
+    ctx.glass.face(quad, sub(netAt(k + 0.5, 1, tubeH), local(f, centreS, 0, tubeH)), rgb(HOOP.colours.net, 90));
+  }
 };
 
 B.footbridge = (ctx, o) => {
