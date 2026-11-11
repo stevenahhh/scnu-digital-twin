@@ -25870,7 +25870,7 @@
           "candidates": []
         }
       },
-      "RA_294e00e15d09a1d8": {
+      "RA_7f3848ccf18235a4": {
         "line": [
           [
             244193.04690698348,
@@ -25891,7 +25891,7 @@
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "role": "inferred-road-centreline",
         "seedIdentity": {
-          "role": "area:stripe",
+          "role": "area:hatched_median",
           "refs": [
             "MK00952"
           ],
@@ -25901,7 +25901,7 @@
           "verified": false,
           "distanceM": 0.22376897458191214,
           "refs": [],
-          "method": "unique reviewed road-zone containment",
+          "method": "reviewed evidence",
           "candidates": []
         }
       },
@@ -25940,7 +25940,7 @@
           "candidates": []
         }
       },
-      "RA_a4d4c4059b6b7358": {
+      "RA_d4393b7880f046b8": {
         "line": [
           [
             244203.2718468386,
@@ -25961,7 +25961,7 @@
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "role": "inferred-road-centreline",
         "seedIdentity": {
-          "role": "area:stripe",
+          "role": "area:hatched_median",
           "refs": [
             "MX00970"
           ],
@@ -25971,11 +25971,11 @@
           "verified": false,
           "distanceM": 0.20420250084634942,
           "refs": [],
-          "method": "unique reviewed road-zone containment",
+          "method": "reviewed evidence",
           "candidates": []
         }
       },
-      "RA_b648ebdd2492bad9": {
+      "RA_12d8c7cd6c6f5924": {
         "line": [
           [
             244194.7750086492,
@@ -25996,7 +25996,7 @@
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "role": "inferred-road-centreline",
         "seedIdentity": {
-          "role": "area:stripe",
+          "role": "area:hatched_median",
           "refs": [
             "MX00971"
           ],
@@ -26006,7 +26006,7 @@
           "verified": false,
           "distanceM": 0.6545767548552077,
           "refs": [],
-          "method": "unique reviewed road-zone containment",
+          "method": "reviewed evidence",
           "candidates": []
         }
       },
@@ -34473,8 +34473,8 @@
         }
       },
       {
-        "id": "RS_294e00e15d09a1d8",
-        "alignment": "RA_294e00e15d09a1d8",
+        "id": "RS_7f3848ccf18235a4",
+        "alignment": "RA_7f3848ccf18235a4",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 30.00069953704794,
@@ -34513,7 +34513,7 @@
         "curation": {
           "verified": false,
           "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "reason": "Unreviewed owner created by the 2026-11-11 marking re-fit (a lone hatch outline is drawn as a hatched zone); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
@@ -34563,8 +34563,8 @@
         }
       },
       {
-        "id": "RS_a4d4c4059b6b7358",
-        "alignment": "RA_a4d4c4059b6b7358",
+        "id": "RS_d4393b7880f046b8",
+        "alignment": "RA_d4393b7880f046b8",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 30.000699537048494,
@@ -34603,13 +34603,13 @@
         "curation": {
           "verified": false,
           "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "reason": "Unreviewed owner created by the 2026-11-11 marking re-fit (a lone hatch outline is drawn as a hatched zone); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "RS_b648ebdd2492bad9",
-        "alignment": "RA_b648ebdd2492bad9",
+        "id": "RS_12d8c7cd6c6f5924",
+        "alignment": "RA_12d8c7cd6c6f5924",
         "pathIndex": 0,
         "fromM": 0,
         "toM": 30.00069953705582,
@@ -34648,7 +34648,7 @@
         "curation": {
           "verified": false,
           "refs": [],
-          "reason": "No unique independently supported road owner. Retain geometry; do not promote nearest-RD or inferred width to verified.",
+          "reason": "Unreviewed owner created by the 2026-11-11 marking re-fit (a lone hatch outline is drawn as a hatched zone); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },

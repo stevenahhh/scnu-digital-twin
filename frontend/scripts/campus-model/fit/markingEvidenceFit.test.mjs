@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { coversDetected, detectedDashLine, guessedTextLanes, keepsDetectedDashes } from "./markingEvidenceFit.mjs";
+import { coversDetected, detectedDashLine, guessedTextLanes, keepsDetectedDashes, isHatchedZone } from "./markingEvidenceFit.mjs";
 
 test("a guessed word wider than a lane is drawn once per lane", () => {
   assert.equal(guessedTextLanes(2.4), 1);
@@ -43,4 +43,13 @@ test("dashes drawn as the photo shows them reach the seed one run each", () => {
   assert.equal(line.dashRuns, true);
   // a building or sidewalk cut stays a cut
   assert.deepEqual(detectedDashLine([[1, 2.2], [3.5, 4.6], [7, 8]], 10, [[0, 4], [7.5, 10]]).runs, [[1, 2.2], [3.5, 4], [7.5, 8]]);
+});
+
+test("a lone hatch outline wide enough to hold stripes is a hatched zone, a single stripe is not", () => {
+  // MX00970 at the main gate: a 2.6 x 10.4 m traced median was painted as one solid yellow block
+  assert.equal(isHatchedZone(10.38, 2.63), true);
+  assert.equal(isHatchedZone(4.07, 1.85), true);
+  // one rung of a ladder marking
+  assert.equal(isHatchedZone(0.97, 0.2), false);
+  assert.equal(isHatchedZone(6, 0.45), false);
 });

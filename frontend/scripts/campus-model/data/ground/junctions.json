@@ -2923,10 +2923,10 @@
         }
       },
       {
-        "id": "JA_294e00e15d09a1d8",
+        "id": "JA_7f3848ccf18235a4",
         "segment": "RD_137",
-        "section": "RS_294e00e15d09a1d8",
-        "alignment": "RA_294e00e15d09a1d8",
+        "section": "RS_7f3848ccf18235a4",
+        "alignment": "RA_7f3848ccf18235a4",
         "pathIndex": 0,
         "end": "to",
         "stopLineSetbackM": null,
@@ -2942,7 +2942,7 @@
           {
             "atM": 15.000349768530914,
             "lane": 0,
-            "style": "stripe",
+            "style": "hatched_median",
             "lengthM": 10.305875831782119,
             "widthM": 2.664087261424532,
             "colour": "yellow"
@@ -2958,24 +2958,8 @@
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [
-            "photo/evidence/markings.geojson#MK00952",
-            "backend/simulation/data/road_segments.geojson#RD_137",
-            "task-24-attempt-2/owner-source-probes.json#JA_294e00e15d09a1d8",
-            "VR scene_a19 f/r/b/l/d",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_137",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_137-paths.png",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/39",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-2.png#scene_a19",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/364",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_202",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_OSMLINK_PERI_NODE_0032",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0219",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0220_E",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings.geojson#MK00952"
-          ],
-          "reason": "JA_294e00e15d09a1d8: MK00952; EPSG:5186 (244196.618, 263741.603). 사진의 MK00952 표식은 RD_137 그룹에 놓였으나 독립 교차로 폴리곤 대응은 없다. 부모 RS_294e00e15d09a1d8의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_202는 사진 중심에서 48.011 m, 연결 도로는 RD_093이며 대안 노드는 ND_202 48.011 m, ND_190 115.708 m, ND_189 116.612 m이다. 동일 RD만 연결하는 그래프 분할점이므로 실제 교차로 경계와 일치한다고 할 수 없다.",
+          "refs": [],
+          "reason": "Unreviewed owner created by the 2026-11-11 marking re-fit (a lone hatch outline is drawn as a hatched zone); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
@@ -3021,10 +3005,10 @@
         }
       },
       {
-        "id": "JA_a4d4c4059b6b7358",
+        "id": "JA_d4393b7880f046b8",
         "segment": "RD_137",
-        "section": "RS_a4d4c4059b6b7358",
-        "alignment": "RA_a4d4c4059b6b7358",
+        "section": "RS_d4393b7880f046b8",
+        "alignment": "RA_d4393b7880f046b8",
         "pathIndex": 0,
         "end": "to",
         "stopLineSetbackM": null,
@@ -3040,7 +3024,7 @@
           {
             "atM": 15.000349768531468,
             "lane": 0,
-            "style": "stripe",
+            "style": "hatched_median",
             "lengthM": 10.381838329268442,
             "widthM": 2.6321568664666324,
             "colour": "yellow"
@@ -3056,32 +3040,16 @@
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [
-            "photo/evidence/markings-extra.geojson#MX00970",
-            "backend/simulation/data/road_segments.geojson#RD_137",
-            "task-24-attempt-2/owner-source-probes.json#JA_a4d4c4059b6b7358",
-            "VR scene_a19 f/r/b/l/d",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_137",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_137-paths.png",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/161",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-2.png#scene_a19",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/368",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_202",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_OSMLINK_PERI_NODE_0032",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0219",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0220_E",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00970"
-          ],
-          "reason": "JA_a4d4c4059b6b7358: MX00970; EPSG:5186 (244199.828, 263727.927). 사진의 MX00970 표식은 RD_137 그룹에 놓였으나 독립 교차로 폴리곤 대응은 없다. 부모 RS_a4d4c4059b6b7358의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_202는 사진 중심에서 46.011 m, 연결 도로는 RD_093이며 대안 노드는 ND_202 46.011 m, ND_190 120.137 m, ND_189 121.208 m이다. 동일 RD만 연결하는 그래프 분할점이므로 실제 교차로 경계와 일치한다고 할 수 없다.",
+          "refs": [],
+          "reason": "Unreviewed owner created by the 2026-11-11 marking re-fit (a lone hatch outline is drawn as a hatched zone); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       },
       {
-        "id": "JA_b648ebdd2492bad9",
+        "id": "JA_12d8c7cd6c6f5924",
         "segment": "RD_137",
-        "section": "RS_b648ebdd2492bad9",
-        "alignment": "RA_b648ebdd2492bad9",
+        "section": "RS_12d8c7cd6c6f5924",
+        "alignment": "RA_12d8c7cd6c6f5924",
         "pathIndex": 0,
         "end": "to",
         "stopLineSetbackM": null,
@@ -3097,7 +3065,7 @@
           {
             "atM": 15.000349768538793,
             "lane": 0,
-            "style": "stripe",
+            "style": "hatched_median",
             "lengthM": 4.071828575777545,
             "widthM": 1.8511857612697555,
             "colour": "yellow"
@@ -3113,24 +3081,8 @@
         "reason": "Evidence-fit seed; inferred road centreline and association require todo 24 curation.",
         "curation": {
           "verified": false,
-          "refs": [
-            "photo/evidence/markings-extra.geojson#MX00971",
-            "backend/simulation/data/road_segments.geojson#RD_137",
-            "task-24-attempt-2/owner-source-probes.json#JA_b648ebdd2492bad9",
-            "VR scene_a19 f/r/b/l/d",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/.cache/ngii-ortho/(B060)정사영상_2025_34702020.tif",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/road_segments.geojson#RD_137",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-network-chips/RD_137-paths.png",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/.omo/evidence/task-24-attempt-2/owner-source-probes.json#/owners/184",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next/.omo/evidence/campus-ground-truth-redesign/task-24-vr-sheets/sheet-2.png#scene_a19",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/ground/road-curation.json#/owners/370",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#ND_202",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_OSMLINK_PERI_NODE_0032",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0219",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/backend/simulation/data/campus_transport_network.geojson#EDGE_ROAD_0220_E",
-            "/Users/gahn/projects/scnu-digital-twin-dev-next-wt/gt-24/frontend/scripts/campus-model/data/photo/evidence/markings-extra.geojson#MX00971"
-          ],
-          "reason": "JA_b648ebdd2492bad9: MX00971; EPSG:5186 (244197.772, 263735.219). 사진의 MX00971 표식은 RD_137 그룹에 놓였으나 독립 교차로 폴리곤 대응은 없다. 부모 RS_b648ebdd2492bad9의 도로 귀속이 미승인이므로 자식의 verified=true는 seed 제약을 위반한다. 현재 ND_202는 사진 중심에서 46.244 m, 연결 도로는 RD_093이며 대안 노드는 ND_202 46.244 m, ND_190 117.244 m, ND_189 118.23 m이다. 동일 RD만 연결하는 그래프 분할점이므로 실제 교차로 경계와 일치한다고 할 수 없다.",
+          "refs": [],
+          "reason": "Unreviewed owner created by the 2026-11-11 marking re-fit (a lone hatch outline is drawn as a hatched zone); road ownership not reviewed.",
           "dimensionsVerified": false
         }
       }

@@ -78,6 +78,10 @@ export function detectedDashLine(intervals, length, unblocked = [[0, length]]) {
   const runs = intervals.flatMap(([a, b]) => unblocked.map(([c, d]) => [Math.max(a, c), Math.min(b, d)]).filter(([x, y]) => y - x > 1e-9));
   return { pattern: [length, 1], phaseM: 0, paintRange: [intervals[0][0], intervals.at(-1)[1]], runs, dashRuns: true };
 }
+// A hatch blob outside every ladder group whose short side could hold diagonal stripes is the outline of a hatched
+// zone (a painted median), not one stripe: it is drawn hatched, never as a solid block of paint.
+const HATCH_ZONE_MIN_WIDTH_M = 1.2;
+export const isHatchedZone = (lengthM, widthM) => Math.min(lengthM, widthM) >= HATCH_ZONE_MIN_WIDTH_M;
 const TEXT_STALL_REACH_M = 3;
 // Text and crossings take the road's direction from a road line at least TEXT_ROAD_MIN_M long; a crossing's bars are
 // set parallel to it only when they already lie within ZEBRA_ROAD_SNAP_DEG (crossings may be skewed to the road).
@@ -853,9 +857,14 @@ export function regularise(drawn, ctx) {
         model.lines.push({path:[sub(b.centre,scale(b.long,b.halfLong)),add(b.centre,scale(b.long,b.halfLong))].map(toScene),
           kind:c.kind,colour:c.colour,widthM:ctx.statute.widthFor(c.kind),dashed:c.kind==="lane_line_dashed",
           pattern:ctx.statute.dash[c.kind]??null,phaseM:0,refs:[c.id],legacyId:c.id});
-      } else model.areas.push({centre:toScene(b.centre),forward:b.long,lengthM:2*b.halfLong,widthM:2*b.halfShort,
-        style:c.kind==="zebra_bar"?"crossing_frame":c.kind==="hatch"?"stripe":c.kind==="bike_lane_blue"?"colour":c.kind,
-        colour:c.colour,refs:[c.id],legacyId:c.id});
+      } else {
+        const zone=c.kind==="hatch"&&isHatchedZone(2*b.halfLong,2*b.halfShort);
+        model.areas.push({centre:toScene(b.centre),forward:b.long,lengthM:2*b.halfLong,widthM:2*b.halfShort,
+          style:zone?"hatched_median":c.kind==="zebra_bar"?"crossing_frame":c.kind==="hatch"?"stripe":c.kind==="bike_lane_blue"?"colour":c.kind,
+          colour:c.colour,refs:[c.id],legacyId:c.id});
+        groupedAreas.add(c.id);
+        if(zone) return;
+      }
       groupedAreas.add(c.id);
     }
     for (const rings of shapesM(c)) {
