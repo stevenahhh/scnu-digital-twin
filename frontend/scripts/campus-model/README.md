@@ -143,7 +143,8 @@ Evidence tiers and `estimated` flags describe confidence, not measured accuracy.
 | `stages/trees.mjs` | `placeTrees` (the tree inventory and the hedges on the shrub planters; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
 | `stages/furniture.mjs` | `loadFurniture` (the surveyed outdoor objects and the footprints trees keep out of; runs before the trees) and `buildFurniture` (the merged `Furniture` / `Furniture_Glass` nodes and the estimated benches; runs after the ground) (see Street furniture) |
 | `stages/lights.mjs` | `placeLamps` (surveyed lamps plus estimated ones along the walkway outlines), `buildLights` (`Lamps_heads`, `Lamps_pools`) and the lamp poles drawn into `Furniture` |
-| `lib/solids.mjs` | the solid-modelling kit the furniture and lamps share (boxes, beams, poles, prisms, cones; flat-shaded, oriented by geometry) |
+| `lib/solids.mjs` | the solid-modelling kit the furniture and lamps share (boxes, beams, poles, prisms, cones, outline extrusions; flat-shaded except rounded shoulders and extruded curves, oriented by geometry) |
+| `lib/signLetters.mjs` | letter outlines for sign lettering (`gate_sign`), read from `public/fonts/WantedSansVariable.woff2` with `fontkit` and cut into chords within a tolerance in metres |
 | `lib/geometry.mjs` | plan-view ring helpers (area, centroid, point-in-ring, cleaning) |
 | `lib/ortho.mjs` | the VWorld z19 mosaic in `data/ortho/`, its Web Mercator frame, the photo colour calibration and the vegetation/shadow tests (roof colours and the markings checks only) |
 | `lib/conform.mjs` | splits flat decal triangles along the Topography grid so markings and ground layers follow the terrain |
@@ -879,11 +880,14 @@ base from the drawn terrain surface (`topographySurface`).
 Decisions taken against the survey, logged by the build and listed in the `Furniture` node extras:
 
 - OC0111, the survey point of the SCNU letter monument, is left out: the monument is built once, as `RS-GATE-A19`
-  (`gate_sign`) in `data/photo/rest-spaces.geojson`, placed by the bearings and depression of VR scene_a19 (l face)
-  about 13 m further south at the plaza's road edge. The 2025 photo shows that corner of the plaza under construction,
-  so the position is VR-only and estimated (confidence 0.4). `B.gate_sign` builds a white letter slab and name band
-  on a planted stone bed from the feature's `length_m`, `depth_m`, `height_m`, `plinth_m`, `colour` and `bandColour`;
-  the lettering itself is not modelled. Objects of `rest-spaces.geojson` are counted as estimated in the node extras.
+  (`gate_sign`) in `data/photo/rest-spaces.geojson`, on the letters' axis traced on the NGII 2025 sheet at the south
+  end of the plaza's striped paving and identified in VR scene_a19 (l face) and scene_001 (estimated, confidence 0.6).
+  `B.gate_sign` builds white block letters (`text`) on a planted stone-faced bed, with a second line (`subtext`) on a
+  rail above them, from the feature's `length_m`, `letter_m`, `depth_m`, `height_m`, `plinth_m`, `colour` and
+  `bedColour`. The letters are outlines of the dashboard font (`lib/signLetters.mjs`: Wanted Sans at weight 800, cut
+  into chords within 0.5 mm of the curve) extruded as solids whose curved edges are shaded smooth. The typeface of the
+  real sign is not recorded, so the face and weight are estimates. Objects of `rest-spaces.geojson` are counted as
+  estimated in the node extras.
 - OC0102, the survey's single 7.7 x 8.8 m soil bed in the E8 courtyard, is left out: VR scene_e8 f and the NGII 2025
   photo show two L-shaped brick hedge beds beside the entrance walk and two hedge strips at the wing walls, built as
   `RS0018` and `RS0018A-C` (`planter`, shrub fill, 0.5 m brick kerb). The paving between them is a `paving`

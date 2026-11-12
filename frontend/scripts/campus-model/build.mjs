@@ -43,6 +43,7 @@ function hashTree(dir) {
 hashTree(join(HERE, "data"));
 inputHashes["data/ground/parcels.json"] = hash(parcelsPath);
 inputHashes["public/uni.glb"] = hash(join(FRONTEND, "public/uni.glb"));
+inputHashes["public/fonts/WantedSansVariable.woff2"] = hash(join(FRONTEND, "public/fonts/WantedSansVariable.woff2"));
 inputHashes["perf/vr-stations.json"] = hash(join(HERE, "../perf/vr-stations.json"));
 const networkPath = resolve(FRONTEND, "../backend/simulation/data/campus_transport_network.geojson");
 const transformPath = resolve(FRONTEND, "../backend/simulation/data/coordinate_transform.json");

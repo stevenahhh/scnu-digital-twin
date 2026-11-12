@@ -22,6 +22,7 @@ import { pointInRing, ringArea, ringCentroid } from "../lib/geometry.mjs";
 import { glyphElements } from "../lib/markingGlyphs.mjs";
 import { COURT_TREE_CLEARANCE_M, FUTSAL_HALF_M, pitchRing, playingSurfaces, snapGoalToEndLine, trackPitchHalf } from "../lib/pitchLines.mjs";
 import { encodePng } from "../lib/png.mjs";
+import { signLetters } from "../lib/signLetters.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { Kit, along, bufferLine, frame, lineLength, local, localPlan, offsetLine, orientedRect, rgb, sub, toLocal } from "../lib/solids.mjs";
 import { GLOW_UV, POLE_KINDS, appendLampSolids, objectDistance, roadNetwork, towardRoad } from "./lights.mjs";
@@ -1818,38 +1819,13 @@ B.sign_pole = (ctx, o) => {
   ctx.solid.box(f, [-0.3, 0.3], [0.05, 0.09], [o.heightM - 0.75, o.heightM - 0.15], { top: C.white, side: C.signBlue });
 };
 
-// Stroke polylines of a line of text in the plane of a sign, lengthM long and heightM tall: s from 0 (the left end as read)
-// to lengthM, h from 0 (the foot of the letters) up to heightM; every character takes an equal slot, gapM between slots.
-// Glyphs are the road-marking set of lib/markingGlyphs.mjs (Latin capitals, digits, Hangul syllables) on unit boxes, curves
-// as polylines. Returns [{ char, slot: [s0, s1], closed, points: [[s, h], ...] }].
-export function letterStrokes(text, { lengthM, heightM, gapM = 0 }) {
-  const chars = [...text];
-  const slot = (lengthM - gapM * (chars.length - 1)) / chars.length;
-  const strokes = [];
-  chars.forEach((char, i) => {
-    if (char === " ") return;
-    const elements = glyphElements(char);
-    if (!elements) throw new Error(`furniture: no glyph for ${char}`);
-    const s0 = i * (slot + gapM);
-    const at = ([x, y]) => [s0 + x * slot, (1 - y) * heightM];
-    for (const e of elements) {
-      if (e.ellipse) {
-        const [cx, cy, rx, ry] = e.ellipse;
-        const points = Array.from({ length: 16 }, (_, k) => at([cx + rx * Math.cos((k / 16) * 2 * Math.PI), cy + ry * Math.sin((k / 16) * 2 * Math.PI)]));
-        strokes.push({ char, slot: [s0, s0 + slot], closed: true, points });
-      } else strokes.push({ char, slot: [s0, s0 + slot], closed: false, points: e.map(at) });
-    }
-  });
-  return strokes;
-}
-
 // The SCNU letter sign of the A19 gate plaza (RS-GATE-A19; VR scene_a19 l, scene_001 f and d; on the NGII 2025 photo the
 // white tops of its letters along the south edge of the striped paving): white block letters `text` letter_m tall on a
 // planted bed behind a stone-faced wall plinth_m high, the line `subtext` on a thin rail above them up to heightM, both
 // length_m long and read from the side the sign faces (facing_deg, a bearing). The LineString is the letters' axis traced
-// on the photo. Strokes SIGN_STROKE_SHARE of a character slot wide and depth_m deep (the upper line 0.4 of that); every
-// size is an estimate. Returns the plan centre of every character, in reading order.
-const SIGN_STROKE_SHARE = 0.17;
+// on the photo. The letters are the outlines of lib/signLetters.mjs (the typeface is an estimate) cut depth_m deep (the
+// upper line 0.4 of that), their curved edges shaded smooth; every size is an estimate. Returns the plan centre of every
+// character, in reading order.
 B.gate_sign = (ctx, o) => {
   const p = o.p;
   if (p.facing_deg === undefined) throw new Error(`furniture: gate_sign ${o.id} needs facing_deg (the bearing its letters face)`);
@@ -1875,36 +1851,19 @@ B.gate_sign = (ctx, o) => {
   const foot = (ctx.minGround(bedRing) - ground) / M(1) - 0.1;
   ctx.solid.box(f, [-s1, s1], [t0, t1], [foot, plinth], { top: C.shrub, side: bed });
   ctx.solid.box(f, [-s1, s1], front > 0 ? [0.55, 0.75] : [-0.75, -0.55], [plinth - 0.05, plinth + 0.03], C.stone);
-  const normal = [f.v[0], 0, f.v[1]];
   const letters = [];
-  const line = (text, gapM, h0, h1, d) => {
-    const chars = [...text];
-    const w = (SIGN_STROKE_SHARE * (length - gapM * (chars.length - 1))) / chars.length;
-    const strokes = letterStrokes(text, { lengthM: length - w, heightM: 1, gapM });
-    const hs = strokes.flatMap((st) => st.points.map((q) => q[1]));
-    const [lo, hi] = [Math.min(...hs), Math.max(...hs)];
-    // stretch the glyphs' own height range over the line, a half stroke in from both edges
-    const at = ([s, h]) => local(f, -length / 2 + w / 2 + s, 0, h0 + w / 2 + ((h - lo) / (hi - lo)) * (h1 - h0 - w));
-    for (const st of strokes) {
-      const pts = st.points.map(at);
-      for (let k = 0; k < (st.closed ? pts.length : pts.length - 1); k += 1) {
-        const [pa, pb] = [pts[k], pts[(k + 1) % pts.length]];
-        const l = Math.hypot(pb[0] - pa[0], pb[1] - pa[1], pb[2] - pa[2]);
-        if (l < 1e-9) continue;
-        const e = [((pb[0] - pa[0]) / l) * M(w / 2), ((pb[1] - pa[1]) / l) * M(w / 2), ((pb[2] - pa[2]) / l) * M(w / 2)];
-        ctx.solid.beam([pa[0] - e[0], pa[1] - e[1], pa[2] - e[2]], [pb[0] + e[0], pb[1] + e[1], pb[2] + e[2]], w, d, white, { up: normal });
-      }
-    }
-    const slot = (length - w - gapM * (chars.length - 1)) / chars.length;
-    for (const [i, char] of chars.entries()) {
-      if (char !== " ") letters.push({ char, at: localPlan(f, -length / 2 + w / 2 + i * (slot + gapM) + slot / 2, 0) });
+  const line = (text, h0, h1, d) => {
+    const place = ([s, h]) => [s - length / 2, h0 + h];
+    for (const letter of signLetters(text, { lengthM: length, heightM: h1 - h0 })) {
+      for (const { outer, holes } of letter.shapes) ctx.solid.extrusion(f, outer.map(place), holes.map((ring) => ring.map(place)), [-d / 2, d / 2], white);
+      letters.push({ char: letter.char, at: localPlan(f, letter.centre - length / 2, 0) });
     }
   };
-  line(p.text ?? "SCNU", p.gap_m ?? 0.25, plinth, plinth + letterM, depth);
+  line(p.text ?? "SCNU", plinth, plinth + letterM, depth);
   const rail = plinth + letterM;
   if (p.subtext) {
     ctx.solid.box(f, [-length / 2, length / 2], [-0.04, 0.04], [rail, rail + 0.08], C.metal);
-    line(p.subtext, p.subgap_m ?? 0.12, rail + 0.12, o.heightM, depth * 0.4);
+    line(p.subtext, rail + 0.08, o.heightM, depth * 0.4);
   }
   return { letters };
 };
