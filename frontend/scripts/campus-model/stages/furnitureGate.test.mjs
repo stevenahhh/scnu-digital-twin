@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { metres } from "../lib/frame.mjs";
 import { rgb } from "../lib/solids.mjs";
-import { B, GATE_CANOPY, letterStrokes, makeContext, postOnIsland, vaultArc } from "./furniture.mjs";
+import { B, GATE_CANOPY, makeContext, postOnIsland, vaultArc } from "./furniture.mjs";
 
 const M = metres;
 const near = (actual, expected, tolerance, label) => assert.ok(Math.abs(actual - expected) <= tolerance, `${label}: ${actual} vs ${expected}`);
@@ -86,18 +86,6 @@ test("gate_canopy: bays side by side across a vault axis, posts on the islands u
   assert.ok(ribXs.size <= 12, `ribs across the axis: ${ribXs.size} distinct x`);
 });
 
-test("letterStrokes: lines of text fill their slots left to right inside the given box", () => {
-  const strokes = letterStrokes("SCNU", { lengthM: 9, heightM: 2.7 });
-  assert.equal(strokes.length, 4, "one stroke each for S, C, N and U");
-  for (const s of strokes) for (const [x, h] of s.points) assert.ok(x >= -1e-9 && x <= 9 + 1e-9 && h >= -1e-9 && h <= 2.7 + 1e-9, `inside: ${x}, ${h}`);
-  const centres = strokes.map((s) => s.points.reduce((sum, p) => sum + p[0], 0) / s.points.length);
-  assert.deepEqual(strokes.map((s) => s.char), ["S", "C", "N", "U"]);
-  for (let i = 1; i < centres.length; i += 1) assert.ok(centres[i] > centres[i - 1], "left to right");
-  const hangul = letterStrokes("국립순천대학교", { lengthM: 9, heightM: 1.1 });
-  assert.equal(new Set(hangul.map((s) => s.char)).size, 7, "seven syllables");
-  assert.throws(() => letterStrokes("S$", { lengthM: 2, heightM: 1 }), /no glyph for \$/);
-});
-
 test("gate_sign: letters read left to right from the side the sign faces, on a stone bed", () => {
   // axis west-east (scene +x = east), facing north (bearing 0): seen from the north, left is east, so S stands east
   const sign = (facing) => {
@@ -108,7 +96,17 @@ test("gate_sign: letters read left to right from the side the sign faces, on a s
   const { ctx, result } = sign(0);
   const letters = vertices(ctx.solid.mesh, "#f4f3ee");
   assert.ok(letters.length > 100, "white letters");
-  // the letters stand on the bed top; their stroke joints may reach a little into the solid bed, never above it
+  // the edge of a round letter is shaded as one curve: its wall normals (those lying in the plane of the sign, here
+  // with no north-south part) point in many more directions than the faces of a letter built from straight bars would
+  const mesh = ctx.solid.mesh;
+  const want = rgb("#f4f3ee");
+  const wallNormals = new Set();
+  for (let k = 0; k < mesh.vertexCount; k += 1) {
+    if ([0, 1, 2].some((j) => mesh.colors[4 * k + j] !== want[j]) || Math.abs(mesh.normals[3 * k + 2]) > 1e-6) continue;
+    wallNormals.add(Math.round((Math.atan2(mesh.normals[3 * k + 1], mesh.normals[3 * k]) * 180) / Math.PI));
+  }
+  assert.ok(wallNormals.size >= 180, `smooth edges: wall normals in ${wallNormals.size} of 360 directions`);
+  // the letters stand on the bed top; round letters overshoot a little into the solid bed, none ends above it
   const foot = Math.min(...letters.map((v) => v[1]));
   assert.ok(foot >= 0.9 - 0.1 && foot <= 0.9 + 0.01, `letters stand on the bed: foot ${foot}`);
   near(Math.max(...letters.map((v) => v[1])), 4.7, 0.05, "top of the upper line");

@@ -231,6 +231,61 @@ export class Kit {
     }
   }
 
+  // Upright slab cut to an outline drawn in the s-h plane of a frame (metres, see frame()), from t0 to t1 across it:
+  // two flat faces, and an edge wall shaded smooth where the outline turns by less than creaseDeg and creased where
+  // it turns more, so a curve cut into short chords reads as a curve.
+  extrusion(f, outer, holes, [t0, t1], paint, { creaseDeg = 30 } = {}) {
+    const contour = outer.map(([s, h]) => new Vector2(s, h));
+    const holeVectors = holes.map((ring) => ring.map(([s, h]) => new Vector2(s, h)));
+    if (ShapeUtils.isClockWise(contour)) contour.reverse();
+    holeVectors.forEach((ring) => {
+      if (!ShapeUtils.isClockWise(ring)) ring.reverse();
+    });
+    const faces = ShapeUtils.triangulateShape(contour, holeVectors);
+    const all = [...contour, ...holeVectors.flat()];
+    const across = [f.v[0], 0, f.v[1]];
+    for (const [t, sign] of [[t0, -1], [t1, 1]]) {
+      const normal = scale(across, sign);
+      const base = this.mesh.vertexCount;
+      const points = all.map((v) => local(f, v.x, t, v.y));
+      for (const p of points) this.vertex(p, normal, paint);
+      for (const [a, b, c] of faces) {
+        if (dot(cross(sub(points[b], points[a]), sub(points[c], points[a])), normal) >= 0) this.mesh.triangle(base + a, base + b, base + c);
+        else this.mesh.triangle(base + a, base + c, base + b);
+      }
+    }
+    // with the outline counter-clockwise and its holes clockwise, the solid lies to the left of every edge
+    const crease = Math.cos((creaseDeg * Math.PI) / 180);
+    for (const ring of [contour, ...holeVectors]) {
+      const n = ring.length;
+      const edge = ring.map((a, i) => {
+        const b = ring[(i + 1) % n];
+        const l = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+        return [(b.y - a.y) / l, -(b.x - a.x) / l];
+      });
+      // the normal at vertex i for the edge leaving it (k = i) or the edge reaching it (k = i - 1)
+      const at = (i, k) => {
+        const [n1, n2] = [edge[(i - 1 + n) % n], edge[i]];
+        const [ns, nh] = n1[0] * n2[0] + n1[1] * n2[1] >= crease ? [n1[0] + n2[0], n1[1] + n2[1]] : edge[(k + n) % n];
+        return unit([ns * f.u[0], nh, ns * f.u[1]]);
+      };
+      for (let i = 0; i < n; i += 1) {
+        const j = (i + 1) % n;
+        const [na, nb] = [at(i, i), at(j, i)];
+        const quad = [[ring[i], t0, na], [ring[j], t0, nb], [ring[j], t1, nb], [ring[i], t1, na]].map(([v, t, nrm]) => ({ p: local(f, v.x, t, v.y), nrm }));
+        const base = this.mesh.vertexCount;
+        for (const v of quad) this.vertex(v.p, v.nrm, paint);
+        if (dot(cross(sub(quad[1].p, quad[0].p), sub(quad[2].p, quad[0].p)), add(na, nb)) >= 0) {
+          this.mesh.triangle(base, base + 1, base + 2);
+          this.mesh.triangle(base, base + 2, base + 3);
+        } else {
+          this.mesh.triangle(base, base + 2, base + 1);
+          this.mesh.triangle(base, base + 3, base + 2);
+        }
+      }
+    }
+  }
+
   toPrimitive(material) {
     return this.mesh.toPrimitive(material);
   }
