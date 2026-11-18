@@ -1,4 +1,4 @@
-// Cascaded sun shadows for the Legacy campus (medium/high tiers). No ray tracing: ordinary shadow maps from
+// Cascaded sun shadows for the Main campus (medium/high tiers). No ray tracing: ordinary shadow maps from
 // several directional lights that share the sun direction. Cascade 0..n-2 hug slices of the camera frustum, the
 // last cascade is the fixed campus-wide box of shadowFrustum.mjs, so every point of the campus has a shadow map
 // even where the camera-fitted cascades end. The fragment shader picks the first (finest) cascade whose map

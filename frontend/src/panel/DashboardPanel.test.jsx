@@ -13,6 +13,13 @@ const renderPanel = (props = {}) =>
   );
 
 describe("DashboardPanel", () => {
+  it("renders only the tabs it is given (the student screen passes 건물 and 현황)", () => {
+    renderPanel({ tabs: [{ value: "building", label: "건물" }, { value: "status", label: "현황" }] });
+    const tabs = within(screen.getByRole("tablist", { name: "대시보드 보기" })).getAllByRole("tab");
+    expect(tabs.map((tab) => tab.textContent)).toEqual(["건물", "현황"]);
+    expect(tabs[1].getAttribute("aria-selected")).toBe("true");
+  });
+
   it("renders the four dashboard tabs as one Segmented tablist with their QA hooks and one tabpanel", () => {
     renderPanel();
     const tablist = screen.getByRole("tablist", { name: "대시보드 보기" });

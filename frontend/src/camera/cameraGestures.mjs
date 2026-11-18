@@ -1,4 +1,4 @@
-// 트랙패드·터치 제스처를 카메라 명령(확대·회전·기울이기)으로 바꾼다. Legacy(OrbitControls)와 VWorld(Cesium)가 같이 쓴다.
+// 트랙패드·터치 제스처를 카메라 명령(확대·회전·기울이기)으로 바꾼다. Main(OrbitControls)와 VWorld(Cesium)가 같이 쓴다.
 // - 트랙패드 핀치(Chrome·Firefox: ctrl이 붙은 wheel, Safari: gesturechange의 scale): 확대·축소
 // - 두 손가락 가로 스와이프(|deltaX| > |deltaY|): 목표점 둘레로 회전
 // - Option(Alt) + 두 손가락 세로 스와이프: 기울이기

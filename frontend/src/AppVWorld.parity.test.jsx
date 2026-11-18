@@ -76,7 +76,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("VWorld and Legacy feature parity", () => {
+describe("VWorld and Main feature parity", () => {
   it("renders the full energy surfaces inside the energy tab", () => {
     render(<App />);
 

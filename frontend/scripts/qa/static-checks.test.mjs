@@ -23,7 +23,7 @@ const jsonNull = "const body = await response.json().catch(() => null);";
 const bigClass = "a".repeat(10) + " " + "b".repeat(200);
 
 const DIRTY = {
-  "frontend/src/AppLegacy.jsx": [
+  "frontend/src/AppMain.jsx": [
     "export default function App() {", lines(260), "// const period = 1;", badCatch, "fetch('/x');",
     "<MetricCard value={live ? `${a}대` : \"-\"} />", long, "const bg = '#ffffff';", "// 탭 버튼 공통 스타일",
     "// 클릭 없이 카메라가 건물 가까이", "// line two", "// line three", "setInterval(tick, 1000);", "}",
@@ -89,7 +89,7 @@ const CLEAN = {
     "@media (prefers-reduced-motion: reduce) {", "  * { transition-duration: 0.01ms !important; }", "}",
   ].join("\n"),
   "frontend/src/ui/primitives.jsx": ["KpiTile", "Segmented", "StatusBadge", "SectionHeader", "Alert"].map((name) => `export function ${name}() { return null; }`).join("\n"),
-  "frontend/src/AppLegacy.jsx": "export default function App() {\n  return null;\n}\n",
+  "frontend/src/AppMain.jsx": "export default function App() {\n  return null;\n}\n",
   "frontend/src/shell/AppShell.test.jsx": "it(\"keeps the 기본 현황 tab after leaving D4\", () => {});",
   "frontend/src/features/energy/editor/energyScenarioApi.test.mjs": "test(\"rejects a call without buildingId\", async () => { await assert.rejects(load({})); });",
   "frontend/index.html": "<link rel=\"preload\" as=\"font\" type=\"font/woff2\" crossorigin href=\"/fonts/WantedSansVariable.woff2\"><!-- Wanted -->",

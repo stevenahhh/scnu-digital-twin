@@ -1,6 +1,6 @@
 /* @vitest-environment happy-dom */
 import React from "react";
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BuildingAnalysis } from "./BuildingAnalysis.jsx";
@@ -150,7 +150,8 @@ describe("BuildingAnalysis", () => {
     const client = clientWith({ listRuns: vi.fn().mockResolvedValue([olderScenario, newestDirect]) });
     render(<BuildingAnalysis buildingId="D4" plans={plans} date="2026-05-18" client={client} />);
     await waitFor(() => expect(screen.getByLabelText("이전 실행 스냅샷").value).toBe("newest-direct"));
-    expect(screen.getByLabelText("이전 실행 스냅샷").options).toHaveLength(3);
+    fireEvent.click(screen.getByLabelText("이전 실행 스냅샷"));
+    expect(await screen.findAllByRole("option")).toHaveLength(3);
   });
 
   it("reloads immutable history after remount even when its live definition was deleted", async () => {

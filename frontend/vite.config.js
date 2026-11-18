@@ -51,7 +51,13 @@ function cinematicCapturePlugin() {
 
 export default defineConfig(({ mode }) => ({
   plugins: [react(), cinematicCapturePlugin(), precompressedModelPlugin()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   test: {
+    setupFiles: ['./src/test/domPolyfills.js'],
     pool: 'threads',
     isolate: true,
     // Leave capacity for the node:test suite running alongside Vitest.

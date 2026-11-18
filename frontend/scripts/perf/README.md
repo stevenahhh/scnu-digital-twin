@@ -1,6 +1,6 @@
-# Legacy dashboard perf bench
+# Main dashboard perf bench
 
-`bench.mjs` is a headless benchmark that runs on the real GPU and scores the Legacy
+`bench.mjs` is a headless benchmark that runs on the real GPU and scores the Main
 (Three.js) dashboard. It is a dev-only tool and adds 0 shipped bytes.
 
 ## Run
@@ -9,7 +9,7 @@ Start a vite dev server, then point the bench at it:
 
 ```bash
 cd frontend
-bunx vite --host 127.0.0.1 --port 5181 --strictPort        # or: bun run dev:legacy (5173)
+bunx vite --host 127.0.0.1 --port 5181 --strictPort        # or: bun run dev:main (5173)
 bun scripts/perf/bench.mjs http://127.0.0.1:5181/ <label> ../.omo/ulw-research/20261023-181400/qa/results/
 ```
 

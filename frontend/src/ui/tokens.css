@@ -43,6 +43,8 @@
   --colors-label-bg: rgba(15, 16, 17, 0.85);
   --colors-label-halo: rgba(0, 0, 0, 0.55);
   --colors-estimate-ink: var(--colors-ink-muted);
+  /* 장면 위에 바로 놓는 글자의 그림자. 하늘·지붕 어느 쪽 위에서도 읽히도록 테마와 상관없이 어둡다. */
+  --shadow-scene-text: 0 1px 2px rgba(0, 0, 0, 0.75), 0 0 14px rgba(0, 0, 0, 0.5);
 
   /* 색: 장면 의미색. 강조색(조작·선택)과 섞지 않는다. 장면은 테마와 상관없이 같은 값을 쓰고
      ui/sceneTokens.mjs가 같은 값을 되풀이한다. */
@@ -91,7 +93,7 @@
   --rounded-control: 6px;
   --rounded-card: 12px;
   --rounded-pill: 9999px;
-  /* 별칭: legacy-classes.css가 아직 쓴다. 정리 단계(todo 21)에서 지운다. */
+  /* 별칭: legacy-classes.css가 쓴다. --rounded-lg는 shadcn 컴포넌트의 rounded-lg도 받는다. */
   --rounded-xs: 4px;
   --rounded-md: 8px;
   --rounded-lg: var(--rounded-card);
@@ -123,6 +125,28 @@
   --dashboard-drawer-width: min(440px, 85vw);
   --dashboard-pane-width: min(720px, 50vw);
   --dashboard-inspector-width: 360px;
+
+  /* shadcn/ui 변수: 위 색 토큰을 HSL 채널로 옮긴 값이다(주석이 원본 토큰). 8비트 색으로 되돌리면 원본 hex와 같다.
+     토큰 색을 바꾸면 여기와 아래 밝은 테마 값도 함께 바꾼다. */
+  --background: 220 12% 5%; /* canvas */
+  --foreground: 180 7% 97%; /* ink */
+  --card: 210 6.3% 6.3%; /* surface-1 */
+  --card-foreground: 180 7% 97%; /* ink */
+  --popover: 210 6.3% 6.3%; /* surface-1 */
+  --popover-foreground: 180 7% 97%; /* ink */
+  --primary: 233.8 56.3% 59.6%; /* primary */
+  --primary-foreground: 0 0% 100%; /* on-primary */
+  --secondary: 210 4.8% 8.2%; /* surface-2 */
+  --secondary-foreground: 180 7% 97%; /* ink */
+  --muted: 210 4.8% 8.2%; /* surface-2 */
+  --muted-foreground: 217.5 20.5% 84.7%; /* ink-muted */
+  --accent: 210 4.8% 8.2%; /* surface-2 */
+  --accent-foreground: 180 7% 97%; /* ink */
+  --destructive: 0 90.6% 70.8%; /* semantic-danger */
+  --destructive-foreground: 220 12% 5%; /* canvas, destructive 위 7.07:1 */
+  --border: 223 9% 15%; /* hairline */
+  --input: 240 5.5% 21.6%; /* hairline-strong */
+  --ring: 233.8 56.3% 59.6%; /* primary */
 }
 
 [data-theme="light"] {
@@ -141,6 +165,27 @@
   --colors-semantic-danger: #dc2626;
   --colors-label-bg: rgba(247, 248, 248, 0.85);
   --colors-label-halo: rgba(255, 255, 255, 0.85);
+
+  /* shadcn/ui 변수: 밝은 테마 */
+  --background: 0 0% 100%; /* canvas */
+  --foreground: 210 6% 7%; /* ink */
+  --card: 180 7% 97%; /* surface-1 */
+  --card-foreground: 210 6% 7%; /* ink */
+  --popover: 180 7% 97%; /* surface-1 */
+  --popover-foreground: 210 6% 7%; /* ink */
+  --primary: 233.8 56.3% 59.6%; /* primary */
+  --primary-foreground: 0 0% 100%; /* on-primary */
+  --secondary: 210 15% 95%; /* surface-2 */
+  --secondary-foreground: 210 6% 7%; /* ink */
+  --muted: 210 15% 95%; /* surface-2 */
+  --muted-foreground: 213.3 5.4% 32.7%; /* ink-muted */
+  --accent: 210 15% 95%; /* surface-2 */
+  --accent-foreground: 210 6% 7%; /* ink */
+  --destructive: 0 72.2% 50.6%; /* semantic-danger */
+  --destructive-foreground: 0 0% 100%; /* #ffffff, destructive 위 4.83:1 */
+  --border: 216 9% 89%; /* hairline */
+  --input: 216 10% 80.4%; /* hairline-strong */
+  --ring: 233.8 56.3% 59.6%; /* primary */
 }
 
 @media (max-width: 639px) {

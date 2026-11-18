@@ -1,4 +1,4 @@
-// Shadow camera of the Legacy sun light, sized from the campus box in scene units (0.6242 units/m).
+// Shadow camera of the Main sun light, sized from the campus box in scene units (0.6242 units/m).
 // The light looks at the recentred origin from LIGHT_DISTANCE, so one fixed orthographic box has to
 // hold the whole campus for every sun azimuth: its half-size is the half-diagonal of the box.
 

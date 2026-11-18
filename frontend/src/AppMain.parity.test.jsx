@@ -105,7 +105,7 @@ vi.mock("./features/energy/installations/installationPlanApi.mjs", async (import
   return { ...actual, createInstallationPlanClient: () => installationClient };
 });
 
-import App from "./AppLegacy.jsx";
+import App from "./AppMain.jsx";
 import { CAMERA_PRESETS } from "./camera/cameraPresets.mjs";
 
 const C5_TABS = ["건물", "현황", "에너지", "시뮬레이션"];
@@ -168,7 +168,7 @@ afterEach(() => {
 
 const phoneMatchMedia = vi.fn((query) => ({ matches: query === "(max-width: 639px)" || query === "(max-width: 1023px)", addEventListener() {}, removeEventListener() {} }));
 
-describe("Legacy and VWorld feature parity", () => {
+describe("Main and VWorld feature parity", () => {
   it("replaces D4 details with the E3 inspector when another search result is selected (F3)", async () => {
     render(<App />);
     const entries = [

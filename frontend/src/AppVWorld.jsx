@@ -32,7 +32,7 @@ import { usePresentationMode } from "./panel/usePresentationMode.mjs";
 import { DashboardTabContent } from "./panel/DashboardTabContent";
 import { CampusEnergyOverview } from "./panel/CampusEnergyOverview";
 import { MoreMenu } from "./panel/MoreMenu";
-import { feedIssueCount } from "./panel/FeedStatus";
+import { statusTabAlerts } from "./panel/tabAlerts.mjs";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { isFeedDown } from "./hooks/feedStatusModel.mjs";
 import { urlSelectionTarget, useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
@@ -48,7 +48,7 @@ export default function App() {
   const hudRef = useRef(null);
   const overlayHostRef = useRef(null);
   const labelChromeRefs = useMemo(() => [hudRef, overlayHostRef], []);
-  // Legacy와 같은 시점 버튼·투어(VWorld 카메라로 날아간다).
+  // Main와 같은 시점 버튼·투어(VWorld 카메라로 날아간다).
   const [campusCamera, setCampusCamera] = useState(null);
   const camera = useVWorldCampusCamera(campusCamera);
   const [editorRequest, setEditorRequest] = useState(null);
@@ -56,7 +56,7 @@ export default function App() {
   const viewportMode = useViewportMode();
   const panelState = usePanelState(viewportMode);
   const navigation = useDashboardNavigation({ panelState, activeTab, setActiveTab });
-  // VWorld 라벨 항목: 인스펙터에 Legacy와 같은 정문 거리·방위를 쓴다(GAP-37).
+  // VWorld 라벨 항목: 인스펙터에 Main와 같은 정문 거리·방위를 쓴다(GAP-37).
   const [vworldLabelEntries, setVWorldLabelEntries] = useState(null);
   // D4 상세 화면(자체 대화상자)이 열린 동안에는 건물 팝업을 띄우지 않는다. 화면 뒤에 가린 팝업이 키보드 포커스를 가두지 않게 한다.
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
@@ -81,7 +81,7 @@ export default function App() {
   const sceneWeather = useSceneWeather({ weatherData: weatherFeed.data, weatherState: weatherFeed.state });
   const lighting = mapLighting(clock.sunAltitudeDegrees);
 
-  // VWorld에서 건물을 고르면 Legacy와 같은 선택 인스펙터가 건물 탭에 열린다. D4는 D4 상세(패인)로 열리므로 패널을 열지 않는다.
+  // VWorld에서 건물을 고르면 Main와 같은 선택 인스펙터가 건물 탭에 열린다. D4는 D4 상세(패인)로 열리므로 패널을 열지 않는다.
   const { selectBuilding, clearSelection } = selection;
   const { load: loadPopup, clear: clearPopup } = popup;
   const { showSelection } = navigation;
@@ -105,7 +105,7 @@ export default function App() {
     setSunHour: clock.setSunHour,
     setSunMinute: clock.setSunMinute,
   });
-  // 렌더링 품질: Legacy와 같은 설정(같은 저장 값)을 Cesium의 해상도·보정·그림자로 옮긴다. 고른 값이 없으면 높음.
+  // 렌더링 품질: Main와 같은 설정(같은 저장 값)을 Cesium의 해상도·보정·그림자로 옮긴다. 고른 값이 없으면 높음.
   const rendering = useQualityPreset();
   const qualityTier = rendering.qualitySource ? rendering.quality : VWORLD_DEFAULT_QUALITY;
   useEffect(() => {
@@ -127,7 +127,7 @@ export default function App() {
     clearSelection();
     clearPopup();
   }, [clearPopup, clearSelection]);
-  // D4 상세에 들어갈 때의 탭·스크롤을 기억했다가 나올 때 되돌린다(Legacy와 같은 규칙).
+  // D4 상세에 들어갈 때의 탭·스크롤을 기억했다가 나올 때 되돌린다(Main와 같은 규칙).
   const viewMemory = usePanelViewMemory({ activeTab, setActiveTab, scrollRef: panelScrollRef });
   const handleD4SectionChange = useCallback((open) => {
     if (open) viewMemory.save();
@@ -141,7 +141,7 @@ export default function App() {
   const openD4 = () => setD4OpenKey((value) => value + 1);
 
   const [isTimePlaying, setIsTimePlaying] = useState(false);
-  // D4 상세가 열리면 캠퍼스 카메라 투어와 시간 재생을 멈춘다(Legacy와 같은 규칙). 뒤에 가려진 장면을 계속 움직일 이유가 없다.
+  // D4 상세가 열리면 캠퍼스 카메라 투어와 시간 재생을 멈춘다(Main와 같은 규칙). 뒤에 가려진 장면을 계속 움직일 이유가 없다.
   const { stopTour } = camera;
   useEffect(() => {
     if (!isD4SectionOpen) return;
@@ -203,7 +203,7 @@ export default function App() {
     <div className={`dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink ${presentation.cursorHidden ? "cursor-none" : ""}`}>
       <div className="absolute inset-0" style={{ background: sceneBackgroundFor(clock.sunState.visible) }} />
 
-      {/* HUD는 Legacy와 같은 CampusHud 하나다(계약 C1). 검색은 렌더러가 지도 위 문구 층에 그린다. */}
+      {/* HUD는 Main와 같은 CampusHud 하나다(계약 C1). 검색은 렌더러가 지도 위 문구 층에 그린다. */}
       <CampusHud
         ref={hudRef}
         mode={viewportMode}
@@ -212,8 +212,6 @@ export default function App() {
         onTogglePresentation={presentation.toggle}
         tour={camera.touring ? tourPosition(CAMERA_PRESETS, camera.activePresetId) : null}
         moreMenu={moreMenu}
-        feedIssueCount={feedIssueCount(feeds)}
-        onOpenStatus={() => navigation.openTab("status")}
         camera={camera}
         clock={clock}
         playing={isTimePlaying}
@@ -278,6 +276,7 @@ export default function App() {
       </div>
 
       <DashboardShell
+        tabAlerts={statusTabAlerts(feeds)}
         ref={panelRef}
         mode={viewportMode}
         open={panelState.open}

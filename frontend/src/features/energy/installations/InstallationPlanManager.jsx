@@ -1,8 +1,10 @@
 import { Copy, Edit3, MoreHorizontal, Plus, Star, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { createInstallationPlanClient, InstallationPlanContractError } from "./installationPlanApi.mjs";
 import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
-import { FIELD_INPUT } from "../shared/fieldStyles.mjs";
+import { FIELD_CONTROL } from "../shared/fieldStyles.mjs";
 import { Alert } from "../../../ui/Alert.jsx";
 import { Button } from "../../../ui/Button.jsx";
 import { Popover } from "../../../ui/Popover.jsx";
@@ -265,16 +267,16 @@ export function InstallationPlanManager({
           return (
             <li key={plan.id} className="flex flex-col gap-2 border-b border-hairline py-3 last:border-b-0">
               <div className="flex items-center justify-between gap-2">
-                <label className="min-w-0 flex-1">
+                <Label className="min-w-0 flex-1">
                   <span className="sr-only">{plan.name} 계획 이름</span>
-                  <input
+                  <Input
                     aria-label={`${plan.name} 계획 이름`}
                     value={names[plan.id] ?? plan.name}
                     onChange={(event) => setNames((current) => ({ ...current, [plan.id]: event.target.value }))}
                     onBlur={() => { if (displayName.trim() && displayName !== plan.name && !busy) rename(plan); }}
-                    className={`${FIELD_INPUT} font-medium`}
+                    className={`${FIELD_CONTROL} font-medium`}
                   />
-                </label>
+                </Label>
                 {representative && (
                   <StatusBadge tone="neutral" icon={Star}>
                     대표 계획

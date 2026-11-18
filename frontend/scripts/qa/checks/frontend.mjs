@@ -112,7 +112,7 @@ export const FRONTEND_CHECKS = [
       }));
       const css = ["index.css", "ui/tokens.css"].map(readSrc).join("\n");
       const declared = new Set([...css.matchAll(/(--colors-[\w-]+)\s*:/g)].map((x) => x[1]));
-      const jsx = readSrc("AppLegacy.jsx") + readSrc("AppVWorld.jsx") + readSrc("simulation/components/TrafficSafetyPanel.jsx");
+      const jsx = readSrc("AppMain.jsx") + readSrc("AppVWorld.jsx") + readSrc("simulation/components/TrafficSafetyPanel.jsx");
       const undefinedVars = [...new Set([...jsx.matchAll(/var\((--colors-[\w-]+)\)/g)].map((x) => x[1]).filter((name) => !declared.has(name)))];
       const toned = m.riskColors.length > 0 && m.riskColors.every((c) => c !== m.ink);
       return result(toned && undefinedVars.length === 0, { ...m, undefinedVars }, "risk metrics in a semantic tone and 0 undefined CSS variables");
@@ -533,7 +533,7 @@ export const FRONTEND_CHECKS = [
     states: ["S05"], viewports: D,
     async run(ctx) {
       const dots = await ctx.inPage((qa) => qa.all("[role=dialog] span.rounded-full").filter((el) => qa.visible(el) && el.getBoundingClientRect().width <= 8 && !qa.txt(el)).length);
-      const hardcoded = ["AppLegacy.jsx", "AppVWorld.jsx"].map(readSrc).join("\n").includes("정상 운영 중");
+      const hardcoded = ["AppMain.jsx", "AppVWorld.jsx"].map(readSrc).join("\n").includes("정상 운영 중");
       const statusBadge = /StatusBadge/.test(readSrc("vworld/D4SectionExperience.jsx") + readSrc("components/D4WingFloorSelect.jsx"));
       return result(dots === 0 && !hardcoded && statusBadge, { decorativeDots: dots, hardcodedStatusString: hardcoded, usesStatusBadge: statusBadge }, "dots/badges bound to state through StatusBadge; 0 hard-coded status strings; no decorative dots");
     },
@@ -572,7 +572,7 @@ export const FRONTEND_CHECKS = [
     states: ["S01"], viewports: D,
     async run(ctx) {
       const shadows = await ctx.inPage((qa) => ["[data-qa=dashboard-panel]", "[data-qa=camera-preset-bar]", "[data-qa=time-slider]", "button[data-qa=campus-label]", "[data-qa=dashboard-panel] .rounded-xl"].flatMap((sel) => qa.all(sel).filter(qa.visible).filter((el) => getComputedStyle(el).boxShadow !== "none").map(() => sel)));
-      const code = ["AppLegacy.jsx", "AppVWorld.jsx", "CityModel.jsx", "components/CameraPresetBar.jsx", "components/TimeSlider.jsx"].map(readSrc).join("\n");
+      const code = ["AppMain.jsx", "AppVWorld.jsx", "CityModel.jsx", "components/CameraPresetBar.jsx", "components/TimeSlider.jsx"].map(readSrc).join("\n");
       const arbitrary = (code.match(/shadow-\[|shadow-2xl|shadow-lg/g) ?? []).length;
       return result(shadows.length === 0 && arbitrary === 0, { surfacesWithShadow: [...new Set(shadows)], shadowClassesInCode: arbitrary }, "no shadow on rail/cards/chips/HUD; only --shadow-popover on modals");
     },
@@ -627,7 +627,7 @@ export const FRONTEND_CHECKS = [
         return { alertToFirstCardPx: distance, alertBelowCards: ar && firstCard ? ar.top > firstCard.bottom : null };
       });
       // MicroclimatePanel was replaced by the selection inspector (todo 31); its retry now lives there.
-      const reloads = ["AppLegacy.jsx", "AppVWorld.jsx", "panel/SelectionInspector.jsx", "components/PanelErrorBoundary.jsx"].map(readSrc).join("\n").match(/window\.location\.reload/g)?.length ?? 0;
+      const reloads = ["AppMain.jsx", "AppVWorld.jsx", "panel/SelectionInspector.jsx", "components/PanelErrorBoundary.jsx"].map(readSrc).join("\n").match(/window\.location\.reload/g)?.length ?? 0;
       const microRetry = /다시 시도/.test(readSrc("panel/SelectionInspector.jsx"));
       const placed = m.alertToFirstCardPx != null && m.alertToFirstCardPx >= 0 && m.alertToFirstCardPx <= 16;
       return result(placed && microRetry && reloads === 0, { ...m, microclimateRetry: microRetry, reloadCalls: reloads, opened }, "alert within 16 px above the failed group; every error has a retry; 0 reload calls");

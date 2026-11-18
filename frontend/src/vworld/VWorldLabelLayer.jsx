@@ -8,7 +8,7 @@ import { CAMPUS_GLTF_OVERLAY_CONFIG } from "./campusGltfOverlay.mjs";
 import { buildVWorldLabelEntries, glbNodeBoxes, readGlbJson } from "./labelAnchors.mjs";
 import { createVWorldLabelProjector } from "./labelProjection.mjs";
 
-// campus-buildings.glb 단위(Legacy 장면과 같이 1 m = 0.6242 units)와 모델 끝 사각형의 여유.
+// campus-buildings.glb 단위(Main 장면과 같이 1 m = 0.6242 units)와 모델 끝 사각형의 여유.
 const MODEL_UNITS_PER_METER = 0.62421715;
 const FOOTPRINT_CLEARANCE_METERS = 60;
 
@@ -30,7 +30,7 @@ function collectChromeRects(element, out) {
 
 const rectKey = (rect) => `${Math.round(rect.left)},${Math.round(rect.top)},${Math.round(rect.right)},${Math.round(rect.bottom)}`;
 
-// VWorld 지도 위의 건물 라벨: Legacy와 같은 CampusLabelLayer(계층·충돌 배치·12 px 하한·움직이는 동안 흐림)를
+// VWorld 지도 위의 건물 라벨: Main와 같은 CampusLabelLayer(계층·충돌 배치·12 px 하한·움직이는 동안 흐림)를
 // Cesium 카메라 투영(labelProjection)으로 그린다. scene: Cesium Scene. getModelMatrix: 캠퍼스 GLB 오버레이 위치.
 // onSelectEntry(entry, event)는 칩을 눌렀을 때, onSelectCluster(members)는 묶음 칩을 눌렀을 때 부른다.
 export function VWorldLabelLayer({
@@ -43,7 +43,7 @@ export function VWorldLabelLayer({
   hidden = false,
   presentation = false,
   occluderRef = null,
-  // 지금 시점이 땅 높이 시점(정문)이면 Legacy처럼 거리 단계(street)로 1단 건물을 멀리까지 남긴다.
+  // 지금 시점이 땅 높이 시점(정문)이면 Main처럼 거리 단계(street)로 1단 건물을 멀리까지 남긴다.
   presetFromGround = false,
   chromeRefs = [],
   onSelectEntry,

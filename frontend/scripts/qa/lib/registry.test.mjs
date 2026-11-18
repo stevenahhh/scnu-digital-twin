@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { appliesTo } from "./registry.mjs";
 
-const scenario = (state, fixtures) => ({ entry: "legacy", state, viewport: "D", theme: "dark", fixtures });
+const scenario = (state, fixtures) => ({ entry: "main", state, viewport: "D", theme: "dark", fixtures });
 
 test("a per-state fixtures map applies each state only under its own fixture mode", () => {
   const check = { states: ["S01", "S12"], fixtures: { S01: "down", S12: "delay" } };
@@ -31,9 +31,9 @@ test("without --only a run requests only the checks that can apply to the scenar
     ["AGG", { id: "AGG", aggregate: true, states: [] }],
     ["SMOKE-x", { id: "SMOKE-x", states: ["S01"] }],
   ]);
-  const legacyDark = plannedScenarios({ entries: ["legacy"], viewports: ["D"], themes: ["dark"], stateIds: ["S01", "S12", "S13", "S17"], fixtureLabel: "down" }, ids);
-  assert.deepEqual(defaultRequestedIds(checks, legacyDark), ["A", "UP", "AGG"]);
-  const delayed = plannedScenarios({ entries: ["legacy"], viewports: ["D"], themes: ["dark"], stateIds: ["S12"], fixtureLabel: "delay" }, ids);
+  const mainDark = plannedScenarios({ entries: ["main"], viewports: ["D"], themes: ["dark"], stateIds: ["S01", "S12", "S13", "S17"], fixtureLabel: "down" }, ids);
+  assert.deepEqual(defaultRequestedIds(checks, mainDark), ["A", "UP", "AGG"]);
+  const delayed = plannedScenarios({ entries: ["main"], viewports: ["D"], themes: ["dark"], stateIds: ["S12"], fixtureLabel: "delay" }, ids);
   assert.deepEqual(defaultRequestedIds(checks, delayed), ["DELAY", "AGG"]);
   const vworldBoth = plannedScenarios({ entries: ["vworld"], viewports: ["D"], themes: ["dark", "light"], stateIds: ["S01"], fixtureLabel: "down" }, ids);
   assert.deepEqual(defaultRequestedIds(checks, vworldBoth), ["A", "VW", "LIGHT", "AGG"]);
@@ -72,23 +72,23 @@ test("a check's parts are requested with it: a part that applies makes the id re
   const part = { id: "X", part: true, mutates: true, scenarios: [{ states: ["S13"], viewports: ["D"] }] };
   const check = { id: "X", scenarios: [], parts: [part] };
   assert.deepEqual(expandParts(check), [check, part]);
-  const planned = [{ entry: "legacy", viewport: "D", theme: "dark", state: "S13", fixtures: "down" }];
+  const planned = [{ entry: "main", viewport: "D", theme: "dark", state: "S13", fixtures: "down" }];
   assert.deepEqual(defaultRequestedIds(new Map([["X", check]]), planned), ["X"]);
   assert.deepEqual(defaultRequestedIds(new Map([["X", check]]), [{ ...planned[0], state: "S01" }]), []);
 });
 
-test("plannedScenarios plans the S17 sub-states for VWorld too, and S16 for Legacy only", () => {
+test("plannedScenarios plans the S17 sub-states for VWorld too, and S16 for Main only", () => {
   const ids = { chainIds: ["S01"], vworldStateIds: ["S01"], s17SubStates: ["S01", "S13"] };
-  const plan = plannedScenarios({ entries: ["legacy", "vworld"], viewports: ["D"], themes: ["dark"], stateIds: ["S01", "S16", "S17"], fixtureLabel: "down" }, ids);
-  assert.deepEqual(plan.filter((s) => s.fixtures === "up").map((s) => `${s.entry}:${s.state}`), ["legacy:S01", "legacy:S13", "vworld:S01", "vworld:S13"]);
-  assert.deepEqual(plan.filter((s) => s.state === "S16").map((s) => s.entry), ["legacy"]);
+  const plan = plannedScenarios({ entries: ["main", "vworld"], viewports: ["D"], themes: ["dark"], stateIds: ["S01", "S16", "S17"], fixtureLabel: "down" }, ids);
+  assert.deepEqual(plan.filter((s) => s.fixtures === "up").map((s) => `${s.entry}:${s.state}`), ["main:S01", "main:S13", "vworld:S01", "vworld:S13"]);
+  assert.deepEqual(plan.filter((s) => s.state === "S16").map((s) => s.entry), ["main"]);
 });
 
 test("CLI: --list-checks prints IS-01..IS-40 and --only IS-99 is a usage error (exit 2)", () => {
   const list = spawnSync("bun", [VISUAL_QA, "--list-checks"], { encoding: "utf8" });
   assert.equal(list.status, 0, list.stderr);
   for (const id of IS_IDS) assert.match(list.stdout, new RegExp(`^${id}\\t`, "m"));
-  const unknown = spawnSync("bun", [VISUAL_QA, "--only", "IS-99", "--entry", "legacy", "--states", "S01"], { encoding: "utf8" });
+  const unknown = spawnSync("bun", [VISUAL_QA, "--only", "IS-99", "--entry", "main", "--states", "S01"], { encoding: "utf8" });
   assert.equal(unknown.status, 2);
   assert.match(unknown.stderr, /unknown check id IS-99/);
 });

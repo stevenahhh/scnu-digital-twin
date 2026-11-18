@@ -4,7 +4,10 @@ import { simulationStore, useSimulationStore } from "../stores/simulationStore";
 import { describeSimulationError, postJson, SimulationHttpError } from "../api/simulationHttp.mjs";
 import { simulationDebugEnabled } from "../utils/simulationDebug.mjs";
 import { demandProfileLabel, interactionLabel, predictionModelLabel, safetyEventLabel, timelineTypeLabel } from "../utils/simulationLabels.mjs";
-import { FIELD_INPUT, FIELD_LABEL } from "../../features/energy/shared/fieldStyles.mjs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { FieldSelect } from "../../features/energy/shared/FieldSelect.jsx";
+import { FIELD_CONTROL, FIELD_LABEL } from "../../features/energy/shared/fieldStyles.mjs";
 import { Alert } from "../../ui/Alert.jsx";
 import { Button } from "../../ui/Button.jsx";
 import { Disclosure } from "../../ui/Disclosure.jsx";
@@ -286,18 +289,18 @@ export function TrafficSafetyPanel() {
 
       <section className="flex flex-col gap-3">
         <div className="grid grid-cols-[1fr_auto] gap-2">
-          <label className={FIELD_LABEL}>
-            시나리오
-            <select value={scenario} onChange={(event) => setScenario(event.target.value)} className={FIELD_INPUT}>
-              {SCENARIOS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-            </select>
-          </label>
-          <label className={FIELD_LABEL}>
-            속도
-            <select value={speed} onChange={(event) => setSimulationSpeed(event.target.value)} className={FIELD_INPUT}>
-              {[0.5, 1, 2, 4].map((value) => <option key={value} value={value}>×{value}</option>)}
-            </select>
-          </label>
+          <FieldSelect
+            label="시나리오"
+            value={scenario}
+            onValueChange={setScenario}
+            options={SCENARIOS.map(([value, label]) => ({ value, label }))}
+          />
+          <FieldSelect
+            label="속도"
+            value={String(speed)}
+            onValueChange={setSimulationSpeed}
+            options={[0.5, 1, 2, 4].map((value) => ({ value: String(value), label: `×${value}` }))}
+          />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <Button size="sm" variant="primary" onClick={runControl.onClick} icon={<RunIcon aria-hidden="true" className="h-4 w-4" />}>{runControl.label}</Button>
@@ -325,15 +328,15 @@ export function TrafficSafetyPanel() {
         <div className="flex flex-col gap-4 pt-2">
           <div className="grid grid-cols-3 gap-2">
             {[["car", "자동차"], ["person", "보행자"], ["scooter", "킥보드"]].map(([type, label]) => (
-              <label key={type} className={FIELD_LABEL}>{`${label} 수`}
-                <input type="number" min="0" max="500" value={counts[type]} onChange={(event) => updateCount(type, event.target.value)} className={FIELD_INPUT} />
-              </label>
+              <Label key={type} className={FIELD_LABEL}>{`${label} 수`}
+                <Input type="number" min="0" max="500" value={counts[type]} onChange={(event) => updateCount(type, event.target.value)} className={FIELD_CONTROL} />
+              </Label>
             ))}
           </div>
-          <label className="flex items-center gap-2 whitespace-nowrap text-caption text-ink-muted">
+          <Label className="flex items-center gap-2 whitespace-nowrap text-caption text-ink-muted">
             <input type="checkbox" className="h-4 w-4 accent-primary" checked={eventsEnabled} onChange={(event) => setEventsEnabled(event.target.checked)} />
             위험 이벤트 생성
-          </label>
+          </Label>
           <MetricList items={details} columns={2} />
           <section className="flex flex-col gap-2">
             <SectionHeader

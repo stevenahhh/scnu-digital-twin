@@ -8,12 +8,12 @@ afterEach(cleanup);
 const clock = {
   sceneMinuteOfDay: 19 * 60, setSceneMinuteOfDay: vi.fn(), sceneDate: "2026-10-25", setSceneDate: vi.fn(), snapToNow: vi.fn(), isLiveMode: false,
 };
-const legacyCamera = () => ({
+const mainCamera = () => ({
   controlsRef: { current: null }, activePresetId: "overview", selectPreset: vi.fn(), goHome: vi.fn(), touring: false, toggleTour: vi.fn(),
 });
 
 const renderHud = (props = {}) => render(
-  <CampusHud insetRight="56px" camera={legacyCamera()} clock={clock} playing={false} onPlayingChange={vi.fn()} onTogglePresentation={vi.fn()} {...props} />,
+  <CampusHud insetRight="56px" camera={mainCamera()} clock={clock} playing={false} onPlayingChange={vi.fn()} onTogglePresentation={vi.fn()} {...props} />,
 );
 
 describe("CampusHud", () => {
@@ -29,20 +29,13 @@ describe("CampusHud", () => {
     expect(hud.textContent.match(/19:00/g)).toHaveLength(1);
   });
 
-  it("shows one status chip with the count only while a feed is down, and it opens the status tab", () => {
-    const onOpenStatus = vi.fn();
-    const { rerender } = renderHud({ feedIssueCount: 0, onOpenStatus });
-    expect(document.querySelector('[data-qa="feed-status-chip"]')).toBeNull();
-    rerender(
-      <CampusHud insetRight="56px" camera={legacyCamera()} clock={clock} playing={false} onPlayingChange={vi.fn()} feedIssueCount={3} onOpenStatus={onOpenStatus} />,
-    );
-    const chip = document.querySelector('[data-qa="feed-status-chip"]');
-    expect(chip.textContent).toContain("3");
-    // A status element: its warning hue is status colour, not a second accent (V-Q-10).
-    expect(chip.dataset.status).toBe("warning");
-    expect(screen.queryByRole("button", { name: /새로고침|다시 시도/ })).toBeNull();
-    fireEvent.click(chip);
-    expect(onOpenStatus).toHaveBeenCalledTimes(1);
+  it("shows the school name once as plain scene text, with no status box or retry control in the HUD", () => {
+    renderHud();
+    const brand = screen.getByRole("img", { name: "국립순천대학교 디지털 트윈" });
+    expect(brand.textContent).toBe("국립순천대학교 디지털 트윈");
+    expect(brand.closest("h1").className).toContain("left-1/2");
+    expect(brand.closest("h1").className).not.toMatch(/\bbg-/);
+    expect(screen.queryByRole("button", { name: /연결 끊김|새로고침|다시 시도/ })).toBeNull();
   });
 
   // Phone: the search field gets about 80 px beside the 시점, chip and more buttons; the long example placeholder was cut mid-word.
@@ -51,7 +44,7 @@ describe("CampusHud", () => {
     const { unmount } = renderHud({ search });
     expect(screen.getByRole("combobox", { name: "건물 검색" }).getAttribute("placeholder")).toBe("건물 이름, 코드 (예: 도서관, D4)");
     unmount();
-    renderHud({ search, mode: "phone", feedIssueCount: 3 });
+    renderHud({ search, mode: "phone" });
     expect(screen.getByRole("combobox", { name: "건물 검색" }).getAttribute("placeholder")).toBe("건물 검색");
   });
 
@@ -72,7 +65,7 @@ describe("CampusHud", () => {
 
   it("mounts the VWorld camera through zoomBy and rotateBy and hides camera tools until it is ready", () => {
     const zoomBy = vi.fn();
-    const camera = { ...legacyCamera(), controlsRef: undefined, zoomBy, rotateBy: vi.fn(), ready: true };
+    const camera = { ...mainCamera(), controlsRef: undefined, zoomBy, rotateBy: vi.fn(), ready: true };
     const { rerender } = renderHud({ camera });
     fireEvent.click(screen.getByRole("button", { name: "확대" }));
     expect(zoomBy).toHaveBeenCalledTimes(1);

@@ -11,10 +11,10 @@ export const STATE_IDS = Object.freeze(["S01", "S02", "S03", "S04", "S05", "S06"
 // replayed only when it is requested, so a run without them replays the audit chain unchanged.
 export const CHAIN_IDS = Object.freeze(["S01", "S18", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S09E", "S10", "S11", "S12", "S12E", "S13", "S14", "S15"]);
 export const S17_SUBSTATES = Object.freeze(["S01", "S04", "S06", "S08", "S13"]);
-// Legacy-only states: S15 is the D4 roof editor (Legacy GLB roof planning only) and S16 the light-theme reload.
-export const LEGACY_ONLY_STATE_IDS = Object.freeze(["S15", "S16"]);
-// VWorld replays every chained state that exists there (all but the Legacy-only roof editor) and the S17 sub-states.
-export const VWORLD_STATE_IDS = Object.freeze(CHAIN_IDS.filter((id) => !LEGACY_ONLY_STATE_IDS.includes(id)));
+// Main-only states: S15 is the D4 roof editor (Main GLB roof planning only) and S16 the light-theme reload.
+export const MAIN_ONLY_STATE_IDS = Object.freeze(["S15", "S16"]);
+// VWorld replays every chained state that exists there (all but the Main-only roof editor) and the S17 sub-states.
+export const VWORLD_STATE_IDS = Object.freeze(CHAIN_IDS.filter((id) => !MAIN_ONLY_STATE_IDS.includes(id)));
 // S17 replays the chain with the fixtures up but skips the states between S08 and S13.
 export const S17_SKIPPED_IDS = Object.freeze(["S09", "S09E", "S10", "S11", "S12", "S12E", "S18"]);
 export const SAMPLE_OFFSETS_MS = Object.freeze([500, 2000, 2500]);
@@ -57,7 +57,7 @@ async function wait(ctx, ms) {
 async function settleCamera(ctx) {
   const result = await ctx.b.cameraSettle();
   // The settled pose goes into the action log, so two runs of the same state can be compared (VWorld: the Cesium camera;
-  // Legacy: the cam= link state).
+  // Main: the cam= link state).
   const pose = await ctx.b.run(() => {
     const viewer = window.ws3d?.viewer;
     const Cesium = window.Cesium;
@@ -113,7 +113,7 @@ async function domSample(ctx) {
 
 // In-page, self-contained: the live camera pose { source, heading (deg), position [x, y, z] (m) }, or null.
 // VWorld: the Cesium camera of window.ws3d.viewer (the same handle checks/common.mjs saveCamera uses).
-// Legacy: the OrbitControls instance AppLegacy hands its DOM-side components as `controlsRef`, found through React props;
+// Main: the OrbitControls instance AppMain hands its DOM-side components as `controlsRef`, found through React props;
 // heading is the camera's azimuth around the controls target.
 export function readCameraPose() {
   const cam = window.ws3d?.viewer?.camera;
@@ -176,10 +176,10 @@ async function samplesAfterTrigger(ctx, label, { shots = false } = {}) {
 }
 
 async function waitForReady(ctx) {
-  const legacy = ctx.entry === "legacy";
+  const main = ctx.entry === "main";
   for (let index = 0; index < 120; index += 1) {
-    const ready = await ctx.b.run((isLegacy) => Boolean(document.querySelector("canvas"))
-      && (isLegacy ? document.querySelectorAll("button[data-qa=campus-label]").length > 5 : Boolean(document.querySelector("[data-qa=dashboard-panel]"))), legacy);
+    const ready = await ctx.b.run((isMain) => Boolean(document.querySelector("canvas:not([data-qa=loading-veil])")) && !document.querySelector("[data-qa=loading-veil]")
+      && (isMain ? document.querySelectorAll("button[data-qa=campus-label]").length > 5 : Boolean(document.querySelector("[data-qa=dashboard-panel]"))), main);
     if (ready) return true;
     await sleep(500);
   }
@@ -317,10 +317,10 @@ export const STATES = Object.freeze([
   {
     id: "S03", name: "zoomed-in-plaza-labels",
     steps: async (ctx) => {
-      // Legacy zooms toward the orbit target (the campus centre). The VWorld SDK zooms toward the cursor and its wheel moves the
+      // Main zooms toward the orbit target (the campus centre). The VWorld SDK zooms toward the cursor and its wheel moves the
       // camera along the tilted view direction, which carries the view off campus; so VWorld approaches a fixed campus anchor:
       // the ground point of the 도서관 (where the app's own 도서관 search flight centres the view), along the current view
-      // direction, to 406 m - the distance Legacy's 14 wheel ticks (OrbitControls x0.95 each from the 520-unit cap) leave.
+      // direction, to 406 m - the distance Main's 14 wheel ticks (OrbitControls x0.95 each from the 520-unit cap) leave.
       // A fixed point, not the chip: on a phone the 도서관 chip is cap-hidden at S02 and carries no anchor.
       const { x, y } = ctx.map;
       if (ctx.entry === "vworld") {
@@ -339,7 +339,7 @@ export const STATES = Object.freeze([
           viewer.scene.requestRender();
           return true;
         }, ...VWORLD_LIBRARY_GROUND);
-        ctx.actions.push(`VWorld: camera toward the 도서관 ground point ${VWORLD_LIBRARY_GROUND.join(",")} to 406 m (Legacy S03 distance)${zoomed ? "" : " FAILED"}`);
+        ctx.actions.push(`VWorld: camera toward the 도서관 ground point ${VWORLD_LIBRARY_GROUND.join(",")} to 406 m (Main S03 distance)${zoomed ? "" : " FAILED"}`);
       } else {
         await ctx.b.wheel(x, y, -300, 14);
         ctx.actions.push(`14x mouseWheel deltaY=-300 at ${x},${y}`);

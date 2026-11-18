@@ -123,10 +123,10 @@ export default function VWorldRenderer({
   labelChromeRefs = null,
   // HUD 안의 지도 위 문구·버튼 자리(DOM 요소). 없으면 지도 안에 그대로 그린다.
   overlayHost = null,
-  // 폰의 D4 패인에 둘 캠퍼스 시점 줄(Legacy D4 패인과 같다)과 고른 시점으로 가는 함수.
+  // 폰의 D4 패인에 둘 캠퍼스 시점 줄(Main D4 패인과 같다)과 고른 시점으로 가는 함수.
   d4Presets = null,
   onSelectPreset,
-  // 지금 시점이 땅 높이 시점(정문)인지: 라벨 거리 단계에 쓴다(Legacy CityModel의 presetFromGround와 같다).
+  // 지금 시점이 땅 높이 시점(정문)인지: 라벨 거리 단계에 쓴다(Main CityModel의 presetFromGround와 같다).
   labelPresetFromGround = false,
   // 라벨 항목(앵커 위치 포함)이 준비되면 받는다.
   onLabelEntries,
@@ -184,7 +184,7 @@ export default function VWorldRenderer({
   const [isD4SectionOpen, setIsD4SectionOpen] = useState(false);
   const onClearSelectionRef = useRef(onClearSelection);
   onClearSelectionRef.current = onClearSelection;
-  // D4 상세에서 돌아오면 Legacy처럼 선택이 풀린 캠퍼스 지도로 돌아간다(D4 인스펙터가 남지 않는다).
+  // D4 상세에서 돌아오면 Main처럼 선택이 풀린 캠퍼스 지도로 돌아간다(D4 인스펙터가 남지 않는다).
   const dismissD4Section = useCallback(() => {
     setIsD4SectionOpen(false);
     setDetailRequest(null);
@@ -234,7 +234,7 @@ export default function VWorldRenderer({
     fallbackModelMatrixRef.current ??= createCampusModelMatrix(viewer, window.Cesium);
     return fallbackModelMatrixRef.current;
   }, []);
-  // 캠퍼스 카메라(Legacy 시점을 VWorld로 옮긴 것). 오버레이·GLB가 준비되면 아래 효과가 채운다.
+  // 캠퍼스 카메라(Main 시점을 VWorld로 옮긴 것). 오버레이·GLB가 준비되면 아래 효과가 채운다.
   const campusCameraRef = useRef(null);
   // 고른 건물로 한 번 비행한다(라벨 칩·SDK 건물·D4 표지가 같은 길). 이미 화면 가운데 부분(가로·세로 가운데 60%)에 보이면
   // 그대로 둔다. 도착하면 카메라는 멈춘다(자동 회전 없음). focus: 요소 id 목록, position: 장면 좌표, lonLat: 경위도.
@@ -254,14 +254,14 @@ export default function VWorldRenderer({
   }, [getLabelModelMatrix, labelScene]);
   const focusBuildingRef = useRef(focusBuilding);
   focusBuildingRef.current = focusBuilding;
-  // 칩으로 고르면 SDK 건물을 누른 것과 같은 선택(요소 id·건물 코드·이름)을 보내고 지도 가운데를 그 건물로 옮긴다(Legacy 칩과 같다).
+  // 칩으로 고르면 SDK 건물을 누른 것과 같은 선택(요소 id·건물 코드·이름)을 보내고 지도 가운데를 그 건물로 옮긴다(Main 칩과 같다).
   const handleLabelSelect = useCallback((entry) => {
     const elementId = entry.dataElementId ?? entry.elementId;
     onSelectionRef.current({ elementId, buildingId: elementId.replace(/^BLD_/, ""), displayName: entry.displayName });
     setSelectedLabelId(entry.elementId);
     focusBuilding({ focus: [entry.elementId], position: entry.position });
   }, [focusBuilding]);
-  // 검색으로 고르면 Legacy(camera.flyToBuilding)처럼 그 건물을 가까이 보는 시점(건물 경계 상자 + D4 시점과 같은 거리)으로
+  // 검색으로 고르면 Main(camera.flyToBuilding)처럼 그 건물을 가까이 보는 시점(건물 경계 상자 + D4 시점과 같은 거리)으로
   // 날아간다. 캠퍼스 카메라 전에는 칩과 같이 지도 가운데만 옮긴다.
   const handleSearchPick = useCallback((entry) => {
     const elementId = entry.dataElementId ?? entry.elementId;
@@ -291,7 +291,7 @@ export default function VWorldRenderer({
     };
   }, [campusGlb, getLabelModelMatrix, labelScene]);
 
-  // 트랙패드 제스처(Legacy OrbitGestures와 같은 조작): Cesium은 ctrl wheel(Chrome·Firefox 핀치)을 확대로 쓰지 않고 가로 스와이프도
+  // 트랙패드 제스처(Main OrbitGestures와 같은 조작): Cesium은 ctrl wheel(Chrome·Firefox 핀치)을 확대로 쓰지 않고 가로 스와이프도
   // 버리므로 여기서 핀치 확대, 가로 스와이프 회전, Option+세로 스와이프 기울이기, Safari 핀치·비틀기를 처리한다.
   // 터치 화면의 두 손가락 핀치·비틀기·기울이기는 Cesium이 스스로 한다(여기서 또 돌리면 비틀기가 두 배로 돈다).
   // 캔버스를 감싼 요소의 캡처 단계에서 Cesium보다 먼저 받는다.
@@ -434,7 +434,7 @@ export default function VWorldRenderer({
           console.warn("Campus GLB overlay could not be loaded; keeping the D4 fallback model.", error);
         }
         const labelViewerScene = map._wsViewer?.scene;
-        // 휠·핀치 확대·축소 범위를 Legacy 캠퍼스 궤도와 같게 둔다(지구본까지 빠지면 라벨·선택이 뜻이 없다).
+        // 휠·핀치 확대·축소 범위를 Main 캠퍼스 궤도와 같게 둔다(지구본까지 빠지면 라벨·선택이 뜻이 없다).
         applyCampusZoomLimits(labelViewerScene);
         if (labelViewerScene && window.Cesium) setLabelScene({ Cesium: window.Cesium, scene: labelViewerScene });
         trafficSimulationRef.current?.dispose();
@@ -556,7 +556,7 @@ export default function VWorldRenderer({
     onUserCameraStart?.();
   };
 
-  // 지도(캔버스)에 포커스가 있을 때 방향키로 땅 위를 옮긴다(Legacy 장면과 같은 키보드 조작). 한 번에 화면 가운데까지 거리의 10%.
+  // 지도(캔버스)에 포커스가 있을 때 방향키로 땅 위를 옮긴다(Main 장면과 같은 키보드 조작). 한 번에 화면 가운데까지 거리의 10%.
   const handleMapKey = (event) => {
     const step = { ArrowLeft: [-PAN_STEP, 0], ArrowRight: [PAN_STEP, 0], ArrowUp: [0, PAN_STEP], ArrowDown: [0, -PAN_STEP] }[event.key];
     if (!step || !campusCameraRef.current) return;
@@ -613,7 +613,7 @@ export default function VWorldRenderer({
 
   return (
     <div className="relative h-full w-full">
-      {/* 지도 자체에 Legacy 캔버스와 같은 이름을 준다(화면 읽기·랜드마크). */}
+      {/* 지도 자체에 Main 캔버스와 같은 이름을 준다(화면 읽기·랜드마크). */}
       <div id={VWORLD_MAP_ID} role="region" aria-label="순천대 캠퍼스 3D 지도" data-qa="campus-map-layer" data-selected-id={selectedLabelId ?? undefined} className="h-full w-full" onPointerDown={handleUserCameraStart} onWheel={handleUserCameraStart} onKeyDown={handleMapKey} />
       {mapBackdrop}
       {labelScene && (
@@ -648,7 +648,7 @@ export default function VWorldRenderer({
           feedDown={energyFeedDown}
         />
       )}
-      {/* 지도 위 문구 묶음은 HUD 안의 자리(overlayHost)에 그린다: 탭 순서가 Legacy처럼 HUD -> 칩 -> 패널이 된다. */}
+      {/* 지도 위 문구 묶음은 HUD 안의 자리(overlayHost)에 그린다: 탭 순서가 Main처럼 HUD -> 칩 -> 패널이 된다. */}
       {overlayHost ? createPortal(mapOverlays, overlayHost) : mapOverlays}
       {/* D4 상세는 대시보드 셸의 패인 자리(d4PaneHost)에 그린다. 진입 경로(MODEL_NAME, D4 좌표 표지)는 그대로다. */}
       {isD4SectionOpen && d4PaneHost && createPortal(

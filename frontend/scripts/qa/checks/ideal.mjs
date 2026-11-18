@@ -179,7 +179,7 @@ async function actAndSample(ctx, { selector = null, key = null, kind, offsets, e
       on.dispatchEvent(new KeyboardEvent("keydown", { key: a.key, code: a.key, bubbles: true, cancelable: true }));
       on.dispatchEvent(new KeyboardEvent("keyup", { key: a.key, code: a.key, bubbles: true, cancelable: true }));
     }
-    // Offsets count from the moment the click/key handler returned: under SwiftShader a Legacy handler can hold the main
+    // Offsets count from the moment the click/key handler returned: under SwiftShader a Main handler can hold the main
     // thread for over a second, and no frame (so no transition) starts before it returns.
     const t0 = performance.now();
     const handlerMs = Math.round(t0 - started);
@@ -284,7 +284,7 @@ async function offCentreChip(ctx) {
 
 // Records every pose the app sends to VWorld map.lookat.moveTo (cameraFocus.mjs focus + orbit) into window.__qaMoveTo.
 // Under headless SwiftShader the SDK does not apply the per-frame calls, so the commanded pose is read alongside the
-// rendered camera. True when the hook is in place (always false on Legacy, which has no such map).
+// rendered camera. True when the hook is in place (always false on Main, which has no such map).
 async function recordMoveTo(ctx) {
   return ctx.b.run(() => {
     const lookat = window.__scnuVWorldMapInstance?.lookat;
@@ -346,7 +346,7 @@ async function stopOrbitAndReplayS04(ctx) {
   const before = await ctx.b.run(() => window.__qaMoveTo?.length ?? 0);
   await sleepMs(500);
   const after = await ctx.b.run(() => window.__qaMoveTo?.length ?? 0);
-  // Legacy D4 칩 선택은 D4 실내 패인을 연다. 열린 채로 두면 다음 검사(IS-32)의 HUD 배치가 패널 여닫기에 따라 바뀐다.
+  // Main D4 칩 선택은 D4 실내 패인을 연다. 열린 채로 두면 다음 검사(IS-32)의 HUD 배치가 패널 여닫기에 따라 바뀐다.
   if (await tapVisible(ctx, BACK_TO_CAMPUS)) await sleepMs(600);
   await ctx.b.tap("[data-qa=camera-preset-library]", null, { timeoutMs: 4000 });
   await ctx.b.cameraSettle();
@@ -427,16 +427,16 @@ export const IDEAL_CHECKS_LIST = [
       const rows = [];
       for (const viewport of ctx.args.viewports.filter((v) => v === "D" || v === "P")) {
         for (const theme of ctx.args.themes) {
-          const legacy = ctx.runMemo.get(`IS-03:legacy:${viewport}:${theme}`);
+          const main = ctx.runMemo.get(`IS-03:main:${viewport}:${theme}`);
           const vworld = ctx.runMemo.get(`IS-03:vworld:${viewport}:${theme}`);
-          if (!legacy || !vworld) {
-            rows.push({ viewport, theme, same: false, missing: `${!legacy ? "legacy" : ""}${!legacy && !vworld ? "+" : ""}${!vworld ? "vworld" : ""} S01-${viewport} not collected (entry not run or unavailable)` });
+          if (!main || !vworld) {
+            rows.push({ viewport, theme, same: false, missing: `${!main ? "main" : ""}${!main && !vworld ? "+" : ""}${!vworld ? "vworld" : ""} S01-${viewport} not collected (entry not run or unavailable)` });
             continue;
           }
-          rows.push({ viewport, theme, ...compareNameSets(legacy, vworld) });
+          rows.push({ viewport, theme, ...compareNameSets(main, vworld) });
         }
       }
-      return verdict(rows.length > 0 && rows.every((row) => row.same), rows.length ? rows : "no S01-D/P frame in this run", "Legacy and VWorld S01 control names are the same set");
+      return verdict(rows.length > 0 && rows.every((row) => row.same), rows.length ? rows : "no S01-D/P frame in this run", "Main and VWorld S01 control names are the same set");
     },
   }),
   defineIdeal("IS-04", {
@@ -501,13 +501,14 @@ export const IDEAL_CHECKS_LIST = [
         const hud = document.querySelector("[data-qa=campus-hud]");
         if (!hud) return null;
         const marks = [...hud.querySelectorAll("[data-qa=freshness-stamp], [data-qa=feed-status-chip]")].filter(I.isVisible).length;
+        // 점은 aria-hidden 장식이므로 점을 담은 요소가 보이는지로 잰다.
+        const dots = [...document.querySelectorAll("[data-qa=dashboard-panel] [data-qa=alert-dot]")].filter((dot) => I.isVisible(dot.parentElement)).length;
         const buttons = [...hud.querySelectorAll("button")].filter(I.isVisible).map(I.nameOf).filter((n) => n.includes("새로고침") || n.includes("다시 시도"));
-        return { marks, buttons, chip: Boolean(document.querySelector("[data-qa=feed-status-chip]")) };
+        return { marks, buttons, dots };
       });
-      const expected = "<= 1 HUD status mark ([data-qa=feed-status-chip]) and 0 새로고침/다시 시도 buttons in the HUD";
+      const expected = "0 HUD status marks, 0 새로고침/다시 시도 buttons in the HUD and an alert dot on the panel";
       if (!m) return hookMissing("[data-qa=campus-hud]", expected);
-      if (!m.chip) return hookMissing("[data-qa=feed-status-chip]", expected, m);
-      return verdict(m.marks <= 1 && m.buttons.length === 0, m, expected);
+      return verdict(m.marks === 0 && m.buttons.length === 0 && m.dots > 0, m, expected);
     },
   }),
   defineIdeal("IS-10", {
@@ -947,7 +948,7 @@ export const IDEAL_CHECKS_LIST = [
         let result;
         const saved = await saveCamera(ctx);
         try {
-          // VWorld: 칩 선택이 카메라를 그 건물에 맞추게 한다(origin/dev는 여기서 재정렬 대상이 생긴다). Legacy 칩 선택은
+          // VWorld: 칩 선택이 카메라를 그 건물에 맞추게 한다(origin/dev는 여기서 재정렬 대상이 생긴다). Main 칩 선택은
           // 카메라를 움직이지 않고, 근접 자동 진입(D4 실내 패인)이 HUD 배치를 바꾸므로 S04 선택 그대로 시작한다.
           let chip = null;
           if (ctx.entry === "vworld") {

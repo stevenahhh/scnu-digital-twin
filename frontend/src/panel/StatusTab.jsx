@@ -7,6 +7,7 @@ import { formatHHmm } from "../ui/format.mjs";
 import { TRAFFIC_STATE_TONES } from "../hooks/feedStatus.mjs";
 import { isFeedDown } from "../hooks/feedStatusModel.mjs";
 import { FeedAlert, FeedStatusRow } from "./FeedStatus.jsx";
+import { RestrictionNotices } from "../restrictions/RestrictionNotices.jsx";
 
 function temperatureValue(summary) {
   const temperature = summary.weather?.temperature;
@@ -87,10 +88,11 @@ function ParkingSection({ trafficFeed, status, onRetry }) {
   );
 }
 
-// 현황 탭: 측정된 현재 기상(경보 포함), D4 주차, 단기 예보 순서. 피드 상태와 다시 시도는 각 묶음 안에 한 번씩 있다.
-export function StatusTab({ summary, feeds, retry, trafficFeed }) {
+// 현황 탭: 통제·공사 알림, 측정된 현재 기상(경보 포함), D4 주차, 단기 예보 순서. 피드 상태와 다시 시도는 각 묶음 안에 한 번씩 있다.
+export function StatusTab({ summary, feeds, retry, trafficFeed, restrictions = [] }) {
   return (
     <>
+      <RestrictionNotices items={restrictions} />
       <WeatherSection summary={summary} status={feeds.weather} onRetry={retry.weather} />
       <ParkingSection trafficFeed={trafficFeed} status={feeds.traffic} onRetry={retry.traffic} />
       {summary.timeline.length > 0 && (

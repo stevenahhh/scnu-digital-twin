@@ -1,4 +1,4 @@
-// 두 대시보드(Legacy·VWorld)의 상태 표시줄이 같은 색 토큰과 시각 표기를 쓰도록 모은 공용 도우미.
+// 두 대시보드(Main·VWorld)의 상태 표시줄이 같은 색 토큰과 시각 표기를 쓰도록 모은 공용 도우미.
 export const FEED_TONE_COLORS = Object.freeze({
   success: "var(--colors-semantic-success)",
   warning: "var(--colors-semantic-warning)",

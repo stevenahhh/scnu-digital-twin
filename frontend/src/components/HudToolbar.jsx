@@ -1,9 +1,9 @@
-import { useRef } from "react";
 import {
-  BookOpen, Building, Check, ChevronDown, DoorOpen, Eye, GraduationCap, Landmark, Sprout, Wrench,
+  BookOpen, Building, ChevronDown, DoorOpen, Eye, GraduationCap, Landmark, Sprout, Wrench,
 } from "lucide-react";
+import { DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { OVERVIEW_PRESET_ID } from "../camera/cameraPresets.mjs";
-import { Button, COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
+import { Button } from "../ui/Button.jsx";
 import { Popover } from "../ui/Popover.jsx";
 import { cx } from "../ui/cx.mjs";
 
@@ -16,60 +16,32 @@ const PRESET_ICONS = {
   headquarters: Landmark,
   humanities: GraduationCap,
 };
-// 지금 보고 있는 시점의 모양 하나: surface-2 바탕 + ink 글자 + 확인 표시. 강조색 테두리는 쓰지 않는다.
-const ACTIVE_ITEM = "bg-surface-2 text-ink";
 // 트리거는 data-active일 때 같은 바탕을 쓴다(속성 선택자라 변형의 바탕보다 앞선다).
 const ACTIVE_TRIGGER = "data-[active=true]:bg-surface-2 data-[active=true]:text-ink";
 
-// 시점 메뉴: 위아래 화살표로 항목을 옮기고 Enter로 고른다. Esc는 Popover가 닫고 포커스를 트리거로 돌린다.
-function PresetMenu({ presets, activeId, onSelect, close }) {
-  const listRef = useRef(null);
-  const moveFocus = (event) => {
-    const items = [...listRef.current.querySelectorAll("[role=menuitemradio]")];
-    const index = items.indexOf(document.activeElement);
-    let next = null;
-    if (event.key === "ArrowDown") next = items[(index + 1) % items.length];
-    else if (event.key === "ArrowUp") next = items[(index - 1 + items.length) % items.length];
-    else if (event.key === "Home") next = items[0];
-    else if (event.key === "End") next = items[items.length - 1];
-    if (!next) return;
-    event.preventDefault();
-    next.focus();
-  };
+// 시점 메뉴: 지금 시점에 확인 표시가 붙는다. 이미 고른 시점을 다시 골라도 카메라가 그 시점으로 돌아가도록 항목마다 onSelect를 건다.
+function PresetMenu({ presets, activeId, onSelect }) {
   return (
-    <ul ref={listRef} className="flex flex-col gap-0.5" onKeyDown={moveFocus}>
+    <DropdownMenuRadioGroup value={activeId}>
       {presets.map((preset) => {
         const Icon = PRESET_ICONS[preset.id] ?? Building;
-        const active = preset.id === activeId;
         return (
-          <li key={preset.id} role="none">
-            <button
-              type="button"
-              role="menuitemradio"
-              aria-checked={active}
-              data-qa={`camera-preset-${preset.id}`}
-              onClick={() => {
-                close();
-                onSelect(preset);
-              }}
-              className={cx(
-                "flex min-h-10 w-full items-start gap-2 rounded-control px-2 py-1.5 text-left hover:bg-surface-2",
-                COARSE_TARGET,
-                FOCUS_RING,
-                active && ACTIVE_ITEM,
-              )}
-            >
-              <Icon aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" />
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-body font-medium text-ink">{preset.shortName ?? preset.title}</span>
-                {preset.description && <span className="break-keep text-caption text-ink-muted">{preset.description}</span>}
-              </span>
-              {active && <Check aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />}
-            </button>
-          </li>
+          <DropdownMenuRadioItem
+            key={preset.id}
+            value={preset.id}
+            data-qa={`camera-preset-${preset.id}`}
+            onSelect={() => onSelect(preset)}
+            className="items-start"
+          >
+            <Icon aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted" />
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-body font-medium text-ink">{preset.shortName ?? preset.title}</span>
+              {preset.description && <span className="break-keep text-caption text-ink-muted">{preset.description}</span>}
+            </span>
+          </DropdownMenuRadioItem>
         );
       })}
-    </ul>
+    </DropdownMenuRadioGroup>
   );
 }
 
@@ -106,7 +78,7 @@ export function HudToolbar({ presets, activeId, onSelect, compact = false, class
           </Button>
         )}
       >
-        {({ close }) => <PresetMenu presets={named} activeId={activeId} onSelect={onSelect} close={close} />}
+        <PresetMenu presets={named} activeId={activeId} onSelect={onSelect} />
       </Popover>
     </div>
   );

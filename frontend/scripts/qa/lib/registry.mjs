@@ -49,7 +49,7 @@ export const SMOKE_CHECKS = Object.freeze([
   {
     id: "SMOKE-labels",
     states: ["*"],
-    doc: "Legacy: more than five campus label buttons are mounted (the SCREENS readiness rule). VWorld: the map overlay layer is mounted.",
+    doc: "Main: more than five campus label buttons are mounted (the SCREENS readiness rule). VWorld: the map overlay layer is mounted.",
     async run(ctx) {
       if (ctx.entry === "vworld") {
         const present = await ctx.inPage((qa) => Boolean(qa.one("[data-qa=vworld-map-overlays]")));
@@ -142,7 +142,7 @@ export function makeImageCache(pngBytes) {
   };
 }
 
-// The scenarios a run captures (visual-qa.mjs main loop): the chained states of each entry, S16 (Legacy, light theme) and
+// The scenarios a run captures (visual-qa.mjs main loop): the chained states of each entry, S16 (Main, light theme) and
 // S17's fixtures-up sub-states. stateIds/entries/viewports/themes come from parseArgs; fixtureLabel is "down" or "delay".
 export function plannedScenarios({ entries, viewports, themes, stateIds, fixtureLabel }, { chainIds, vworldStateIds, s17SubStates }) {
   const out = [];
@@ -152,7 +152,7 @@ export function plannedScenarios({ entries, viewports, themes, stateIds, fixture
       for (const theme of themes) {
         for (const state of stateIds.filter((id) => available.includes(id))) out.push({ entry, viewport, theme, state, fixtures: fixtureLabel });
       }
-      if (entry === "legacy" && stateIds.includes("S16")) out.push({ entry, viewport, theme: "light", state: "S16", fixtures: fixtureLabel });
+      if (entry === "main" && stateIds.includes("S16")) out.push({ entry, viewport, theme: "light", state: "S16", fixtures: fixtureLabel });
       if (stateIds.includes("S17")) for (const theme of themes) for (const state of s17SubStates) out.push({ entry, viewport, theme, state, fixtures: "up" });
     }
   }
@@ -160,7 +160,7 @@ export function plannedScenarios({ entries, viewports, themes, stateIds, fixture
 }
 
 // Without --only, a run requests the checks that apply to at least one scenario it captures (plus the aggregate rows,
-// evaluated once at the end). A check that cannot apply to this run - a VWorld-only row in a Legacy run, a delayed-fixture
+// evaluated once at the end). A check that cannot apply to this run - a VWorld-only row in a Main run, a delayed-fixture
 // row in a normal run, a light-theme row in a dark run - is not requested, so it is neither run nor counted as a FAIL.
 // An explicit --only list stays as given: a listed id that never applies is still a FAIL.
 export function defaultRequestedIds(checks, scenarios) {

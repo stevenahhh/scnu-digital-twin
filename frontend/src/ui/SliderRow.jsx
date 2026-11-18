@@ -1,3 +1,4 @@
+import { COARSE_TARGET } from "./Button.jsx";
 import { cx } from "./cx.mjs";
 
 const KEY_STEPS = { ArrowDown: -1, ArrowLeft: -1, ArrowRight: 1, ArrowUp: 1, PageDown: -10, PageUp: 10 };
@@ -52,7 +53,7 @@ export function SliderRow({ label, valueLabel, min, max, step = 1, value, onValu
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onTouchStart={stopMapHandling}
-        className="pointer-events-auto w-full accent-[var(--colors-primary)]"
+        className={cx("pointer-events-auto w-full accent-[var(--colors-primary)]", COARSE_TARGET)}
       />
     </div>
   );

@@ -7,8 +7,8 @@ import { EXIT, exitCodeFor, rollupChecks, writeReport } from "./report.mjs";
 
 const pass = { id: "SMOKE-canvas", pass: true, measured: 1 };
 const fail = { id: "GAP-01", pass: false, measured: { width: 440 } };
-const matched = { key: "legacy/S01-D-dark", baseline: { pass: true, problems: [] } };
-const drifted = { key: "legacy/S01-D-dark", baseline: { pass: false, problems: [{ detail: "dHash distance 12 bits > 8" }] } };
+const matched = { key: "main/S01-D-dark", baseline: { pass: true, problems: [] } };
+const drifted = { key: "main/S01-D-dark", baseline: { pass: false, problems: [{ detail: "dHash distance 12 bits > 8" }] } };
 
 test("exit code mapping: 0 clean, 1 regression, 2 usage, 3 entry unavailable", () => {
   assert.equal(exitCodeFor({ entries: [pass], scenarios: [matched] }), EXIT.OK);

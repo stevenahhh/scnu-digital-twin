@@ -43,7 +43,7 @@ export function usePanelState(mode) {
     else setOpen(false);
   }, [mode]);
 
-  // 기존 흐름(useLegacyBuildingFlow)은 setIsPanelOpen(boolean)으로 패널을 연다.
+  // 기존 흐름(useMainBuildingFlow)은 setIsPanelOpen(boolean)으로 패널을 연다.
   const setProgrammaticOpen = useCallback((next) => (next ? reveal() : conceal()), [conceal, reveal]);
 
   return { open, setOpen, setUserOpen, detent, setDetent, reveal, conceal, setProgrammaticOpen };

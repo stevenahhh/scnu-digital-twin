@@ -59,7 +59,7 @@ export function getSunState({ date, latitude, longitude }) {
   };
 }
 
-// Scene frame of the Legacy campus model: +x east, +y up, +z south. SunCalc's azimuth is measured
+// Scene frame of the Main campus model: +x east, +y up, +z south. SunCalc's azimuth is measured
 // from south and grows toward the west, so a western sun sits at -x.
 export function getSunVector({ altitude, azimuth, distance = 220 }) {
   const x = -Math.sin(azimuth) * Math.cos(altitude) * distance;

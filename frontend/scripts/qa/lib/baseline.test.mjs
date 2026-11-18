@@ -48,12 +48,12 @@ test("rect fingerprint tolerance is 4 px per edge", () => {
 
 test("the mid-drag state S11 is gated by key rects only", () => {
   const base = { dhash: "0000000000000000", rects: { panel: { x: 0, y: 0, w: 10, h: 10 } } };
-  const drift = compareScenario({ key: "legacy/S11-P-dark", dhash: "0000000000000fff", rects: base.rects }, base);
+  const drift = compareScenario({ key: "main/S11-P-dark", dhash: "0000000000000fff", rects: base.rects }, base);
   assert.equal(drift.pass, true);
   assert.equal(drift.dhashGating, false);
-  const moved = compareScenario({ key: "legacy/S11-P-dark", dhash: "0000000000000000", rects: { panel: { x: 9, y: 0, w: 10, h: 10 } } }, base);
+  const moved = compareScenario({ key: "main/S11-P-dark", dhash: "0000000000000000", rects: { panel: { x: 9, y: 0, w: 10, h: 10 } } }, base);
   assert.equal(moved.pass, false);
-  assert.equal(compareScenario({ key: "legacy/S01-P-dark", dhash: "0000000000000fff", rects: base.rects }, base).pass, false);
+  assert.equal(compareScenario({ key: "main/S01-P-dark", dhash: "0000000000000fff", rects: base.rects }, base).pass, false);
 });
 
 test("hash drift above the limit and a missing baseline are regressions", () => {
@@ -64,10 +64,10 @@ test("hash drift above the limit and a missing baseline are regressions", () => 
 });
 
 test("variant runs (delayed fixtures, another model) keep their own baseline keys; plain runs keep the old key", () => {
-  assert.equal(scenarioKey({ entry: "legacy", state: "S01", viewport: "D", theme: "dark" }), "legacy/S01-D-dark");
+  assert.equal(scenarioKey({ entry: "main", state: "S01", viewport: "D", theme: "dark" }), "main/S01-D-dark");
   assert.equal(scenarioVariant({}), "");
   assert.equal(scenarioVariant({ delayMs: 3000 }), "delay3000");
   assert.equal(scenarioVariant({ urlSuffix: "?model=uni" }), "model=uni");
-  assert.equal(scenarioKey({ entry: "legacy", state: "S01", viewport: "P", theme: "dark", variant: scenarioVariant({ urlSuffix: "?model=uni" }) }), "legacy/S01-P-dark@model=uni");
-  assert.equal(isPixelVolatile("legacy/S11-D-dark@delay3000"), true);
+  assert.equal(scenarioKey({ entry: "main", state: "S01", viewport: "P", theme: "dark", variant: scenarioVariant({ urlSuffix: "?model=uni" }) }), "main/S01-P-dark@model=uni");
+  assert.equal(isPixelVolatile("main/S11-D-dark@delay3000"), true);
 });

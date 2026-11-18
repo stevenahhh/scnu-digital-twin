@@ -38,6 +38,18 @@ describe("MoreMenu", () => {
     expect(document.activeElement).toBe(screen.getByRole("button", { name: "더보기" }));
   });
 
+  it("drops 발표 모드 and adds the account line and 로그아웃 when the screen passes an account", async () => {
+    const user = userEvent.setup();
+    const onLogout = vi.fn();
+    renderMenu({ onTogglePresentation: null, accountLabel: "게스트 · 학생", onLogout });
+    await user.click(screen.getByRole("button", { name: "더보기" }));
+    expect(screen.getAllByRole("menuitem").map((item) => item.textContent)).toEqual(["설정", "링크 복사", "로그아웃"]);
+    expect(screen.getByText("게스트 · 학생")).toBeTruthy();
+    await user.click(screen.getByRole("menuitem", { name: "로그아웃" }));
+    expect(onLogout).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("menu")).toBeNull();
+  });
+
   it("toggles presentation mode from the menu", async () => {
     const user = userEvent.setup();
     const onTogglePresentation = vi.fn();

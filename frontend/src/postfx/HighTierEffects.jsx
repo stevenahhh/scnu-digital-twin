@@ -9,7 +9,7 @@ import { QUALITY_EFFECTS } from "../settings/qualityPreset.mjs";
 import { useSelectedMeshes } from "../labels/useSelectedMeshes.mjs";
 import { SELECTION_HEX } from "../ui/sceneTokens.mjs";
 
-// Medium/High 품질 단계의 후처리. AppLegacy가 React.lazy로 불러오므로 low 단계는 이 청크를 받지 않는다.
+// Medium/High 품질 단계의 후처리. AppMain가 React.lazy로 불러오므로 low 단계는 이 청크를 받지 않는다.
 // EffectComposer는 우선순위 1 useFrame으로 R3F의 기본 렌더를 대신할 뿐 스스로 프레임을 요청하지 않는다.
 // 그래서 demand 루프(정지 화면 0프레임)는 그대로이고, 마운트·설정 변경 때만 한 번 invalidate한다.
 // 화면 공간 AO(N8AO, 깊이 버퍼를 따라 광선을 진행하는 패스)는 쓰지 않는다. 접촉 그늘은 모든 단계에서 GLB에 구워 둔

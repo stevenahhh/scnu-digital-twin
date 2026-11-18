@@ -1,4 +1,5 @@
 import { WEATHER_API_URL } from "../../../simulation/utils/apiConfig.js";
+import { authorizedFetch } from "../../../auth/session.mjs";
 
 export class InstallationPlanContractError extends TypeError {
   constructor(field, message) {
@@ -145,7 +146,7 @@ async function checked(response, options = {}) {
   return options.parse ? options.parse(value) : value;
 }
 
-export function createInstallationPlanClient(apiBase = WEATHER_API_URL, fetchImpl = fetch) {
+export function createInstallationPlanClient(apiBase = WEATHER_API_URL, fetchImpl = authorizedFetch) {
   const jsonHeaders = { Accept: "application/json", "Content-Type": "application/json" };
   const planPath = (id) => `${apiBase}/energy/installation-plans/${encodeURIComponent(id)}`;
   const representativePath = (buildingId) => `${apiBase}/energy/buildings/${encodeURIComponent(buildingId)}/representative-plan`;

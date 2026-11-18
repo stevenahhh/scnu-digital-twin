@@ -4,7 +4,7 @@ import { EnergyChart, KpiDetails, KpiGrid, ProvenancePanel, RoomBreakdown } from
 import { useEnergyDashboard } from "./useEnergyDashboard.js";
 import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
 import { kstToday, weatherPresetLabel } from "../shared/energyContext.mjs";
-import { FIELD_INPUT, FIELD_LABEL } from "../shared/fieldStyles.mjs";
+import { FieldSelect } from "../shared/FieldSelect.jsx";
 import { Alert } from "../../../ui/Alert.jsx";
 import { Disclosure } from "../../../ui/Disclosure.jsx";
 import { MetricList } from "../../../ui/MetricList.jsx";
@@ -44,22 +44,14 @@ export function EnergyDashboard({ buildingId = "D4", date: dateProp, initialDate
   return (
     <section data-qa="energy-dashboard" className="flex flex-col gap-4 pb-4" aria-label="태양광 현황">
       <SectionHeader title={title} />
-      <label className={FIELD_LABEL}>
-        시나리오
-        <select
-          data-qa="energy-scenario"
-          aria-label="설치 시나리오"
-          value={scenarioId}
-          onChange={(event) => setScenarioId(event.target.value)}
-          className={FIELD_INPUT}
-        >
-          {options.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <FieldSelect
+        data-qa="energy-scenario"
+        aria-label="설치 시나리오"
+        label="시나리오"
+        value={scenarioId}
+        onValueChange={setScenarioId}
+        options={options.map((item) => ({ value: item.id, label: item.label }))}
+      />
       {state.status === "loading" && (
         <div data-qa="energy-loading" className="flex flex-col gap-3">
           <Skeleton shape="block" />

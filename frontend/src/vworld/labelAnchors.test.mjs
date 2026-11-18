@@ -11,14 +11,14 @@ const glb = readFileSync(new URL("../../public/campus-buildings.glb", import.met
 const json = readGlbJson(glb);
 const elementNames = new Map(commonElements.elements.map(({ element_id: id, name }) => [id, name]));
 
-test("reads one anchor per building element from campus-buildings.glb, named like the Legacy labels", () => {
+test("reads one anchor per building element from campus-buildings.glb, named like the Main labels", () => {
   const anchors = glbLabelAnchors(json, { elementNames });
   const ids = anchors.map((anchor) => anchor.elementId);
   assert.equal(new Set(ids).size, ids.length);
   assert.ok(anchors.length >= 25, `only ${anchors.length} anchors`);
   const library = anchors.find((anchor) => anchor.elementId === "BLD_C1");
   assert.equal(library.displayName, "도서관");
-  // BLD_C1.001 is blocked by the shared map (CAMPUS_BLOCKED_ELEMENT_IDS), BLD_A12 nodes resolve to A17 like Legacy.
+  // BLD_C1.001 is blocked by the shared map (CAMPUS_BLOCKED_ELEMENT_IDS), BLD_A12 nodes resolve to A17 like Main.
   assert.ok(!ids.includes("BLD_C1001"));
   assert.ok(ids.includes("BLD_A17"));
 });
@@ -50,7 +50,7 @@ test("rejects a file that is not a GLB", () => {
   assert.throws(() => readGlbJson(new Uint8Array(32)), /not a GLB/);
 });
 
-test("turns a VWorld label anchor back into Legacy scene coordinates for the distance from 정문", () => {
+test("turns a VWorld label anchor back into Main scene coordinates for the distance from 정문", () => {
   const entries = buildVWorldLabelEntries({ json: readGlbJson(glb), elements: commonElements.elements, presets: CAMERA_PRESETS });
   // The 정문 zone sits on the gate preset target, so it is under 10 m from the gate anchor once moved back.
   assert.equal(gateTextFor(gateScenePositionOf(entries, "ZONE_gate")), "정문에서 추정 직선 거리 10 m 미만");

@@ -1,7 +1,7 @@
 import { simulationToWgs84 } from "../geo/epsg5186.mjs";
 
 // Simulation metres (true east/north of the D4 anchor) to WGS84 through the shared EPSG:5186 module, the same frame
-// the Legacy scene and the network generator use; the D4 anchor maps to (127.4764043, 34.9700548).
+// the Main scene and the network generator use; the D4 anchor maps to (127.4764043, 34.9700548).
 export function simulationPointToVWorld(position) {
   const [longitude, latitude] = simulationToWgs84({ x: Number(position.x), z: Number(position.z) });
   return { longitude, latitude };

@@ -1,4 +1,5 @@
 import { SIMULATION_API_URL } from "../utils/apiConfig";
+import { authorizedFetch } from "../../auth/session.mjs";
 
 // 시뮬레이션 서버가 2xx가 아닌 답을 줬다. detail은 서버가 보낸 설명(있으면)이다.
 export class SimulationHttpError extends Error {
@@ -21,9 +22,9 @@ async function readDetail(response) {
 }
 
 async function request(path, init, fetchImpl) {
-  const response = await (fetchImpl ?? globalThis.fetch)(`${SIMULATION_API_URL}${path}`, init);
+  const response = await (fetchImpl ?? authorizedFetch)(`${SIMULATION_API_URL}${path}`, init);
   if (!response.ok) throw new SimulationHttpError(response.status, await readDetail(response));
-  return response.json();
+  return response.status === 204 ? null : response.json();
 }
 
 // 시뮬레이션 HTTP API의 GET 하나. 2xx가 아니면 SimulationHttpError, 연결 실패는 fetch의 TypeError 그대로다.
@@ -37,6 +38,10 @@ export function postJson(path, body, { fetchImpl } = {}) {
     headers: { "Content-Type": "application/json" },
     ...(body ? { body: JSON.stringify(body) } : {}),
   }, fetchImpl);
+}
+
+export function deleteJson(path, { fetchImpl } = {}) {
+  return request(path, { method: "DELETE" }, fetchImpl);
 }
 
 // 알려진 실패를 한국어 문구로. 그 밖의 오류는 부르는 쪽이 다시 던진다(null을 돌려준다).

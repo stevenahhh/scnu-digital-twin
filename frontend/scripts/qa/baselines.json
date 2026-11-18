@@ -2,7 +2,7 @@
   "version": 1,
   "hash": "dhash-64",
   "scenarios": {
-    "legacy/S01-D-dark": {
+    "main/S01-D-dark": {
       "dhash": "2733532f561693d3",
       "rects": {
         "panel": {
@@ -32,7 +32,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S01-D-dark@delay3000": {
+    "main/S01-D-dark@delay3000": {
       "dhash": "3533532d463683c3",
       "rects": {
         "panel": {
@@ -62,7 +62,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S01-D-dark@model=uni": {
+    "main/S01-D-dark@model=uni": {
       "dhash": "d96f6999ebd19185",
       "rects": {
         "panel": {
@@ -92,7 +92,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S01-D-dark@reduced-motion": {
+    "main/S01-D-dark@reduced-motion": {
       "dhash": "2733532f561693d3",
       "rects": {
         "panel": {
@@ -122,7 +122,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S01-D-light": {
+    "main/S01-D-light": {
       "dhash": "7472521652167272",
       "rects": {
         "panel": {
@@ -152,7 +152,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S01-D-light@reduced-motion": {
+    "main/S01-D-light@reduced-motion": {
       "dhash": "7472521652167272",
       "rects": {
         "panel": {
@@ -182,7 +182,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S01-P-dark": {
+    "main/S01-P-dark": {
       "dhash": "63333b3be1242cee",
       "rects": {
         "panel": {
@@ -212,7 +212,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S01-P-dark@delay3000": {
+    "main/S01-P-dark@delay3000": {
       "dhash": "776c3b3bb3212c63",
       "rects": {
         "panel": {
@@ -242,7 +242,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S01-P-dark@model=uni": {
+    "main/S01-P-dark@model=uni": {
       "dhash": "7344868e1bdbab66",
       "rects": {
         "panel": {
@@ -272,7 +272,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S01-P-light": {
+    "main/S01-P-light": {
       "dhash": "25303b39c30b5c37",
       "rects": {
         "panel": {
@@ -302,7 +302,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S02-D-dark": {
+    "main/S02-D-dark": {
       "dhash": "a537371d0555a1c9",
       "rects": {
         "panel": {
@@ -332,7 +332,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S02-D-dark@delay3000": {
+    "main/S02-D-dark@delay3000": {
       "dhash": "2436371d2d55c1c9",
       "rects": {
         "panel": {
@@ -362,7 +362,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S02-D-dark@reduced-motion": {
+    "main/S02-D-dark@reduced-motion": {
       "dhash": "a537371d0555a1c9",
       "rects": {
         "panel": {
@@ -392,7 +392,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S02-D-light": {
+    "main/S02-D-light": {
       "dhash": "7436361e04546068",
       "rects": {
         "panel": {
@@ -422,7 +422,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S02-D-light@reduced-motion": {
+    "main/S02-D-light@reduced-motion": {
       "dhash": "7436361e04546068",
       "rects": {
         "panel": {
@@ -452,7 +452,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S02-P-dark": {
+    "main/S02-P-dark": {
       "dhash": "62e2933293b125ec",
       "rects": {
         "panel": {
@@ -482,7 +482,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S02-P-dark@delay3000": {
+    "main/S02-P-dark@delay3000": {
       "dhash": "736cb39693ba2563",
       "rects": {
         "panel": {
@@ -512,7 +512,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S02-P-light": {
+    "main/S02-P-light": {
       "dhash": "25e0913391b15d35",
       "rects": {
         "panel": {
@@ -542,7 +542,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S03-D-dark": {
+    "main/S03-D-dark": {
       "dhash": "b591514555d34399",
       "rects": {
         "panel": {
@@ -572,7 +572,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S03-D-dark@delay3000": {
+    "main/S03-D-dark@delay3000": {
       "dhash": "f591514717d3cf99",
       "rects": {
         "panel": {
@@ -602,7 +602,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S03-D-dark@reduced-motion": {
+    "main/S03-D-dark@reduced-motion": {
       "dhash": "b591514555d34399",
       "rects": {
         "panel": {
@@ -632,7 +632,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S03-D-light": {
+    "main/S03-D-light": {
       "dhash": "74b2542636926e78",
       "rects": {
         "panel": {
@@ -662,7 +662,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S03-D-light@reduced-motion": {
+    "main/S03-D-light@reduced-motion": {
       "dhash": "74b2542636926e78",
       "rects": {
         "panel": {
@@ -692,7 +692,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S03-P-dark": {
+    "main/S03-P-dark": {
       "dhash": "4669bb98a86966ce",
       "rects": {
         "panel": {
@@ -722,7 +722,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S03-P-dark@delay3000": {
+    "main/S03-P-dark@delay3000": {
       "dhash": "706dbb9bb3642e67",
       "rects": {
         "panel": {
@@ -752,7 +752,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S03-P-light": {
+    "main/S03-P-light": {
       "dhash": "35517599a8795e17",
       "rects": {
         "panel": {
@@ -782,7 +782,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S04-D-dark": {
+    "main/S04-D-dark": {
       "dhash": "b23329cb4e0e26ce",
       "rects": {
         "panel": {
@@ -817,7 +817,7 @@
         }
       }
     },
-    "legacy/S04-D-dark@delay3000": {
+    "main/S04-D-dark@delay3000": {
       "dhash": "b3392ecb4b8ae3c5",
       "rects": {
         "panel": {
@@ -852,7 +852,7 @@
         }
       }
     },
-    "legacy/S04-D-dark@reduced-motion": {
+    "main/S04-D-dark@reduced-motion": {
       "dhash": "b23329cb4e0e26ce",
       "rects": {
         "panel": {
@@ -887,7 +887,7 @@
         }
       }
     },
-    "legacy/S04-D-light": {
+    "main/S04-D-light": {
       "dhash": "713028c888286060",
       "rects": {
         "panel": {
@@ -922,7 +922,7 @@
         }
       }
     },
-    "legacy/S04-D-light@reduced-motion": {
+    "main/S04-D-light@reduced-motion": {
       "dhash": "713028c888286060",
       "rects": {
         "panel": {
@@ -957,7 +957,7 @@
         }
       }
     },
-    "legacy/S04-P-dark": {
+    "main/S04-P-dark": {
       "dhash": "323c218eec513f27",
       "rects": {
         "panel": {
@@ -992,7 +992,7 @@
         }
       }
     },
-    "legacy/S04-P-dark@delay3000": {
+    "main/S04-P-dark@delay3000": {
       "dhash": "736e378e626f6759",
       "rects": {
         "panel": {
@@ -1027,7 +1027,7 @@
         }
       }
     },
-    "legacy/S04-P-light": {
+    "main/S04-P-light": {
       "dhash": "755c279e138ec0d0",
       "rects": {
         "panel": {
@@ -1062,7 +1062,7 @@
         }
       }
     },
-    "legacy/S05-D-dark": {
+    "main/S05-D-dark": {
       "dhash": "258511199d9ed8e0",
       "rects": {
         "panel": {
@@ -1092,7 +1092,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S05-D-dark@delay3000": {
+    "main/S05-D-dark@delay3000": {
       "dhash": "e5b511191e1ed8f0",
       "rects": {
         "panel": {
@@ -1122,7 +1122,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S05-D-dark@reduced-motion": {
+    "main/S05-D-dark@reduced-motion": {
       "dhash": "258511199d9ed8e0",
       "rects": {
         "panel": {
@@ -1152,7 +1152,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S05-D-light": {
+    "main/S05-D-light": {
       "dhash": "e288080682816161",
       "rects": {
         "panel": {
@@ -1182,7 +1182,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S05-D-light@reduced-motion": {
+    "main/S05-D-light@reduced-motion": {
       "dhash": "e288080682816161",
       "rects": {
         "panel": {
@@ -1212,7 +1212,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S05-P-dark": {
+    "main/S05-P-dark": {
       "dhash": "57333733176d7ca4",
       "rects": {
         "panel": {
@@ -1242,7 +1242,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S05-P-dark@delay3000": {
+    "main/S05-P-dark@delay3000": {
       "dhash": "573337332b4f3c60",
       "rects": {
         "panel": {
@@ -1272,7 +1272,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S05-P-light": {
+    "main/S05-P-light": {
       "dhash": "b8cce8ccea928313",
       "rects": {
         "panel": {
@@ -1302,7 +1302,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S06-D-dark": {
+    "main/S06-D-dark": {
       "dhash": "b273562e561696d6",
       "rects": {
         "panel": {
@@ -1332,7 +1332,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S06-D-dark@delay3000": {
+    "main/S06-D-dark@delay3000": {
       "dhash": "3472523d4636e3c7",
       "rects": {
         "panel": {
@@ -1362,7 +1362,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S06-D-dark@reduced-motion": {
+    "main/S06-D-dark@reduced-motion": {
       "dhash": "b273562e561696d6",
       "rects": {
         "panel": {
@@ -1392,7 +1392,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S06-D-light": {
+    "main/S06-D-light": {
       "dhash": "7178581050107070",
       "rects": {
         "panel": {
@@ -1422,7 +1422,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S06-D-light@reduced-motion": {
+    "main/S06-D-light@reduced-motion": {
       "dhash": "7178581050107070",
       "rects": {
         "panel": {
@@ -1452,7 +1452,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S06-P-dark": {
+    "main/S06-P-dark": {
       "dhash": "23173f3e9ef832c8",
       "rects": {
         "panel": {
@@ -1482,7 +1482,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S06-P-dark@delay3000": {
+    "main/S06-P-dark@delay3000": {
       "dhash": "736e3a3bb3213c63",
       "rects": {
         "panel": {
@@ -1512,7 +1512,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S06-P-light": {
+    "main/S06-P-light": {
       "dhash": "372901012df85a13",
       "rects": {
         "panel": {
@@ -1542,7 +1542,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S07-D-dark": {
+    "main/S07-D-dark": {
       "dhash": "0e27166e0616968e",
       "rects": {
         "panel": {
@@ -1572,7 +1572,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S07-D-dark@delay3000": {
+    "main/S07-D-dark@delay3000": {
       "dhash": "3125176b0537938b",
       "rects": {
         "panel": {
@@ -1602,7 +1602,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S07-D-dark@reduced-motion": {
+    "main/S07-D-dark@reduced-motion": {
       "dhash": "0e27166e0616968e",
       "rects": {
         "panel": {
@@ -1632,7 +1632,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S07-D-light": {
+    "main/S07-D-light": {
       "dhash": "2130101800107068",
       "rects": {
         "panel": {
@@ -1662,7 +1662,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S07-D-light@reduced-motion": {
+    "main/S07-D-light@reduced-motion": {
       "dhash": "2130101800107068",
       "rects": {
         "panel": {
@@ -1692,7 +1692,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S07-P-dark": {
+    "main/S07-P-dark": {
       "dhash": "e896bebedaf8a2e8",
       "rects": {
         "panel": {
@@ -1722,7 +1722,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S07-P-dark@delay3000": {
+    "main/S07-P-dark@delay3000": {
       "dhash": "c481631b1226ac63",
       "rects": {
         "panel": {
@@ -1752,7 +1752,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S07-P-light": {
+    "main/S07-P-light": {
       "dhash": "3129010121f83231",
       "rects": {
         "panel": {
@@ -1782,7 +1782,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S08-D-dark": {
+    "main/S08-D-dark": {
       "dhash": "0e26166e0617978e",
       "rects": {
         "panel": {
@@ -1812,7 +1812,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S08-D-dark@delay3000": {
+    "main/S08-D-dark@delay3000": {
       "dhash": "1727166e0636968e",
       "rects": {
         "panel": {
@@ -1842,7 +1842,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S08-D-dark@reduced-motion": {
+    "main/S08-D-dark@reduced-motion": {
       "dhash": "0e26166e0617978e",
       "rects": {
         "panel": {
@@ -1872,7 +1872,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S08-D-light": {
+    "main/S08-D-light": {
       "dhash": "2131111900107068",
       "rects": {
         "panel": {
@@ -1902,7 +1902,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S08-D-light@reduced-motion": {
+    "main/S08-D-light@reduced-motion": {
       "dhash": "2131111900107068",
       "rects": {
         "panel": {
@@ -1932,7 +1932,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S08-P-dark": {
+    "main/S08-P-dark": {
       "dhash": "88a362956c592367",
       "rects": {
         "panel": {
@@ -1962,7 +1962,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S08-P-dark@delay3000": {
+    "main/S08-P-dark@delay3000": {
       "dhash": "c481635be26f653d",
       "rects": {
         "panel": {
@@ -1992,7 +1992,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S08-P-light": {
+    "main/S08-P-light": {
       "dhash": "3058169593a6dc98",
       "rects": {
         "panel": {
@@ -2022,7 +2022,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09-D-dark": {
+    "main/S09-D-dark": {
       "dhash": "0f0747676666a68e",
       "rects": {
         "panel": {
@@ -2052,7 +2052,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09-D-dark@delay3000": {
+    "main/S09-D-dark@delay3000": {
       "dhash": "9707564666468e96",
       "rects": {
         "panel": {
@@ -2082,7 +2082,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09-D-dark@reduced-motion": {
+    "main/S09-D-dark@reduced-motion": {
       "dhash": "0f0747676666a68e",
       "rects": {
         "panel": {
@@ -2112,7 +2112,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09-D-light": {
+    "main/S09-D-light": {
       "dhash": "100040606060e060",
       "rects": {
         "panel": {
@@ -2142,7 +2142,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09-D-light@reduced-motion": {
+    "main/S09-D-light@reduced-motion": {
       "dhash": "100040606060e060",
       "rects": {
         "panel": {
@@ -2172,7 +2172,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09-P-dark": {
+    "main/S09-P-dark": {
       "dhash": "8a8330a3ec512f61",
       "rects": {
         "panel": {
@@ -2202,7 +2202,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09-P-dark@delay3000": {
+    "main/S09-P-dark@delay3000": {
       "dhash": "9a8022a7ab89a263",
       "rects": {
         "panel": {
@@ -2232,7 +2232,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09-P-light": {
+    "main/S09-P-light": {
       "dhash": "75500ca313aed096",
       "rects": {
         "panel": {
@@ -2262,7 +2262,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09E-D-dark": {
+    "main/S09E-D-dark": {
       "dhash": "0e0747676766a78f",
       "rects": {
         "panel": {
@@ -2292,7 +2292,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09E-D-dark@reduced-motion": {
+    "main/S09E-D-dark@reduced-motion": {
       "dhash": "0e0747676766a78f",
       "rects": {
         "panel": {
@@ -2322,7 +2322,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09E-D-light": {
+    "main/S09E-D-light": {
       "dhash": "110040606061e060",
       "rects": {
         "panel": {
@@ -2352,7 +2352,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09E-D-light@reduced-motion": {
+    "main/S09E-D-light@reduced-motion": {
       "dhash": "110040606061e060",
       "rects": {
         "panel": {
@@ -2382,7 +2382,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09E-P-dark": {
+    "main/S09E-P-dark": {
       "dhash": "8a8330a3ec55172f",
       "rects": {
         "panel": {
@@ -2412,7 +2412,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S09E-P-light": {
+    "main/S09E-P-light": {
       "dhash": "75500ca313aae8d0",
       "rects": {
         "panel": {
@@ -2442,7 +2442,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S10-D-dark": {
+    "main/S10-D-dark": {
       "dhash": "1f1b5b676666a68e",
       "rects": {
         "panel": {
@@ -2472,7 +2472,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S10-D-dark@delay3000": {
+    "main/S10-D-dark@delay3000": {
       "dhash": "9707564766468e96",
       "rects": {
         "panel": {
@@ -2502,7 +2502,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S10-D-dark@reduced-motion": {
+    "main/S10-D-dark@reduced-motion": {
       "dhash": "1f1b5b676666a68e",
       "rects": {
         "panel": {
@@ -2532,7 +2532,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S10-D-light": {
+    "main/S10-D-light": {
       "dhash": "000644606060e060",
       "rects": {
         "panel": {
@@ -2562,7 +2562,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S10-D-light@reduced-motion": {
+    "main/S10-D-light@reduced-motion": {
       "dhash": "000644606060e060",
       "rects": {
         "panel": {
@@ -2592,7 +2592,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S10-P-dark": {
+    "main/S10-P-dark": {
       "dhash": "8a8330a3ece92d13",
       "rects": {
         "panel": {
@@ -2622,7 +2622,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S10-P-dark@delay3000": {
+    "main/S10-P-dark@delay3000": {
       "dhash": "9a8022a7ece92d13",
       "rects": {
         "panel": {
@@ -2652,7 +2652,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S10-P-light": {
+    "main/S10-P-light": {
       "dhash": "75500ca31332d2ec",
       "rects": {
         "panel": {
@@ -2682,7 +2682,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S11-D-dark": {
+    "main/S11-D-dark": {
       "dhash": "8fcf97af66568e9e",
       "rects": {
         "panel": {
@@ -2712,7 +2712,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S11-D-dark@delay3000": {
+    "main/S11-D-dark@delay3000": {
       "dhash": "076fc64646ae8e86",
       "rects": {
         "panel": {
@@ -2742,7 +2742,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S11-D-dark@reduced-motion": {
+    "main/S11-D-dark@reduced-motion": {
       "dhash": "8fcf97af66568e9e",
       "rects": {
         "panel": {
@@ -2772,7 +2772,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S11-D-light": {
+    "main/S11-D-light": {
       "dhash": "e8c880a86050e070",
       "rects": {
         "panel": {
@@ -2802,7 +2802,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S11-D-light@reduced-motion": {
+    "main/S11-D-light@reduced-motion": {
       "dhash": "e8c880a86050e070",
       "rects": {
         "panel": {
@@ -2832,7 +2832,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S11-P-dark": {
+    "main/S11-P-dark": {
       "dhash": "9a1e6c9723a9e2cc",
       "rects": {
         "panel": {
@@ -2862,7 +2862,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S11-P-dark@delay3000": {
+    "main/S11-P-dark@delay3000": {
       "dhash": "dc84838f676ba363",
       "rects": {
         "panel": {
@@ -2892,7 +2892,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S11-P-light": {
+    "main/S11-P-light": {
       "dhash": "3e3e679723a95a07",
       "rects": {
         "panel": {
@@ -2922,7 +2922,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S12-D-dark": {
+    "main/S12-D-dark": {
       "dhash": "363f3f6f2e8e2e8e",
       "rects": {
         "panel": {
@@ -2957,7 +2957,7 @@
         }
       }
     },
-    "legacy/S12-D-dark@delay3000": {
+    "main/S12-D-dark@delay3000": {
       "dhash": "973f3e7f2fcf8f8f",
       "rects": {
         "panel": {
@@ -2992,7 +2992,7 @@
         }
       }
     },
-    "legacy/S12-D-dark@reduced-motion": {
+    "main/S12-D-dark@reduced-motion": {
       "dhash": "363f3f6f2e8e2e8e",
       "rects": {
         "panel": {
@@ -3027,7 +3027,7 @@
         }
       }
     },
-    "legacy/S12-D-light": {
+    "main/S12-D-light": {
       "dhash": "7138286828886060",
       "rects": {
         "panel": {
@@ -3062,7 +3062,7 @@
         }
       }
     },
-    "legacy/S12-D-light@reduced-motion": {
+    "main/S12-D-light@reduced-motion": {
       "dhash": "7138286828886060",
       "rects": {
         "panel": {
@@ -3097,7 +3097,7 @@
         }
       }
     },
-    "legacy/S12-P-dark": {
+    "main/S12-P-dark": {
       "dhash": "a8af6aaeec513f27",
       "rects": {
         "panel": {
@@ -3132,7 +3132,7 @@
         }
       }
     },
-    "legacy/S12-P-dark@delay3000": {
+    "main/S12-P-dark@delay3000": {
       "dhash": "d0848a86626f6759",
       "rects": {
         "panel": {
@@ -3167,7 +3167,7 @@
         }
       }
     },
-    "legacy/S12-P-light": {
+    "main/S12-P-light": {
       "dhash": "305c678e138ec0d0",
       "rects": {
         "panel": {
@@ -3202,7 +3202,7 @@
         }
       }
     },
-    "legacy/S12E-D-dark": {
+    "main/S12E-D-dark": {
       "dhash": "363f3f6f2f8e2f8f",
       "rects": {
         "panel": {
@@ -3237,7 +3237,7 @@
         }
       }
     },
-    "legacy/S12E-D-dark@reduced-motion": {
+    "main/S12E-D-dark@reduced-motion": {
       "dhash": "363f3f6f2f8e2f8f",
       "rects": {
         "panel": {
@@ -3272,7 +3272,7 @@
         }
       }
     },
-    "legacy/S12E-D-light": {
+    "main/S12E-D-light": {
       "dhash": "7138286828896060",
       "rects": {
         "panel": {
@@ -3307,7 +3307,7 @@
         }
       }
     },
-    "legacy/S12E-D-light@reduced-motion": {
+    "main/S12E-D-light@reduced-motion": {
       "dhash": "7138286828896060",
       "rects": {
         "panel": {
@@ -3342,7 +3342,7 @@
         }
       }
     },
-    "legacy/S12E-P-dark": {
+    "main/S12E-P-dark": {
       "dhash": "a8af6aaeec55172f",
       "rects": {
         "panel": {
@@ -3377,7 +3377,7 @@
         }
       }
     },
-    "legacy/S12E-P-light": {
+    "main/S12E-P-light": {
       "dhash": "305c678e13aae8d0",
       "rects": {
         "panel": {
@@ -3412,7 +3412,7 @@
         }
       }
     },
-    "legacy/S13-D-dark": {
+    "main/S13-D-dark": {
       "dhash": "373f3f6f2e8e2e8e",
       "rects": {
         "panel": {
@@ -3447,7 +3447,7 @@
         }
       }
     },
-    "legacy/S13-D-dark@delay3000": {
+    "main/S13-D-dark@delay3000": {
       "dhash": "973f3e7f2fcf8f8f",
       "rects": {
         "panel": {
@@ -3482,7 +3482,7 @@
         }
       }
     },
-    "legacy/S13-D-dark@reduced-motion": {
+    "main/S13-D-dark@reduced-motion": {
       "dhash": "373f3f6f2e8e2e8e",
       "rects": {
         "panel": {
@@ -3517,7 +3517,7 @@
         }
       }
     },
-    "legacy/S13-D-light": {
+    "main/S13-D-light": {
       "dhash": "7038286828886060",
       "rects": {
         "panel": {
@@ -3552,7 +3552,7 @@
         }
       }
     },
-    "legacy/S13-D-light@reduced-motion": {
+    "main/S13-D-light@reduced-motion": {
       "dhash": "7038286828886060",
       "rects": {
         "panel": {
@@ -3587,7 +3587,7 @@
         }
       }
     },
-    "legacy/S13-P-dark": {
+    "main/S13-P-dark": {
       "dhash": "a8af6aaeec512f61",
       "rects": {
         "panel": {
@@ -3622,7 +3622,7 @@
         }
       }
     },
-    "legacy/S13-P-dark@delay3000": {
+    "main/S13-P-dark@delay3000": {
       "dhash": "d0848a86626f6759",
       "rects": {
         "panel": {
@@ -3657,7 +3657,7 @@
         }
       }
     },
-    "legacy/S13-P-light": {
+    "main/S13-P-light": {
       "dhash": "305c678e13aed096",
       "rects": {
         "panel": {
@@ -3692,7 +3692,7 @@
         }
       }
     },
-    "legacy/S14-D-dark": {
+    "main/S14-D-dark": {
       "dhash": "1c1c9893959cd8b8",
       "rects": {
         "panel": {
@@ -3722,7 +3722,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S14-D-dark@delay3000": {
+    "main/S14-D-dark@delay3000": {
       "dhash": "9e9c91139c189898",
       "rects": {
         "panel": {
@@ -3752,7 +3752,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S14-D-dark@reduced-motion": {
+    "main/S14-D-dark@reduced-motion": {
       "dhash": "1c1c9893959cd8b8",
       "rects": {
         "panel": {
@@ -3782,7 +3782,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S14-D-light": {
+    "main/S14-D-light": {
       "dhash": "a301818682814161",
       "rects": {
         "panel": {
@@ -3812,7 +3812,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S14-D-light@reduced-motion": {
+    "main/S14-D-light@reduced-motion": {
       "dhash": "a301818682814161",
       "rects": {
         "panel": {
@@ -3842,7 +3842,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S14-P-dark": {
+    "main/S14-P-dark": {
       "dhash": "6c3b2469697ba4a4",
       "rects": {
         "panel": {
@@ -3872,7 +3872,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S14-P-dark@delay3000": {
+    "main/S14-P-dark@delay3000": {
       "dhash": "6c2b3c69693b64a4",
       "rects": {
         "panel": {
@@ -3902,7 +3902,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S14-P-light": {
+    "main/S14-P-light": {
       "dhash": "93c4db9696841313",
       "rects": {
         "panel": {
@@ -3932,7 +3932,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S15-D-dark": {
+    "main/S15-D-dark": {
       "dhash": "860797879796d785",
       "rects": {
         "panel": {
@@ -3962,7 +3962,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S15-D-dark@delay3000": {
+    "main/S15-D-dark@delay3000": {
       "dhash": "9e9c91139c1b9997",
       "rects": {
         "panel": {
@@ -3992,7 +3992,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S15-D-dark@reduced-motion": {
+    "main/S15-D-dark@reduced-motion": {
       "dhash": "860797879796d785",
       "rects": {
         "panel": {
@@ -4022,7 +4022,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S15-D-light": {
+    "main/S15-D-light": {
       "dhash": "6100888090917060",
       "rects": {
         "panel": {
@@ -4052,7 +4052,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S15-D-light@reduced-motion": {
+    "main/S15-D-light@reduced-motion": {
       "dhash": "6100888090917060",
       "rects": {
         "panel": {
@@ -4082,7 +4082,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S15-P-dark": {
+    "main/S15-P-dark": {
       "dhash": "a0a36295ec557133",
       "rects": {
         "panel": {
@@ -4112,7 +4112,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S15-P-dark@delay3000": {
+    "main/S15-P-dark@delay3000": {
       "dhash": "6c6b693b3c69e6e4",
       "rects": {
         "panel": {
@@ -4142,7 +4142,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S15-P-light": {
+    "main/S15-P-light": {
       "dhash": "1c58169513aa8ecc",
       "rects": {
         "panel": {
@@ -4172,7 +4172,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S16-D-light": {
+    "main/S16-D-light": {
       "dhash": "7472521652167272",
       "rects": {
         "panel": {
@@ -4202,7 +4202,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S16-D-light@delay3000": {
+    "main/S16-D-light@delay3000": {
       "dhash": "7871591141316161",
       "rects": {
         "panel": {
@@ -4232,7 +4232,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S16-D-light@reduced-motion": {
+    "main/S16-D-light@reduced-motion": {
       "dhash": "7472521652167272",
       "rects": {
         "panel": {
@@ -4262,7 +4262,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S16-P-light": {
+    "main/S16-P-light": {
       "dhash": "25303b39c30b5c37",
       "rects": {
         "panel": {
@@ -4292,7 +4292,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S16-P-light@delay3000": {
+    "main/S16-P-light@delay3000": {
       "dhash": "6f7f3c3891565d9c",
       "rects": {
         "panel": {
@@ -4322,7 +4322,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S01-D-dark": {
+    "main/S17-S01-D-dark": {
       "dhash": "2733532f561693d3",
       "rects": {
         "panel": {
@@ -4352,7 +4352,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S01-D-dark@delay3000": {
+    "main/S17-S01-D-dark@delay3000": {
       "dhash": "b333562e46368ec6",
       "rects": {
         "panel": {
@@ -4382,7 +4382,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S01-D-dark@reduced-motion": {
+    "main/S17-S01-D-dark@reduced-motion": {
       "dhash": "2733532f561693d3",
       "rects": {
         "panel": {
@@ -4412,7 +4412,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S01-D-light": {
+    "main/S17-S01-D-light": {
       "dhash": "6472521652167272",
       "rects": {
         "panel": {
@@ -4442,7 +4442,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S01-D-light@reduced-motion": {
+    "main/S17-S01-D-light@reduced-motion": {
       "dhash": "6472521652167272",
       "rects": {
         "panel": {
@@ -4472,7 +4472,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S01-P-dark": {
+    "main/S17-S01-P-dark": {
       "dhash": "62333b3be12424ee",
       "rects": {
         "panel": {
@@ -4502,7 +4502,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S01-P-dark@delay3000": {
+    "main/S17-S01-P-dark@delay3000": {
       "dhash": "776c3b3bb3212c63",
       "rects": {
         "panel": {
@@ -4532,7 +4532,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S01-P-light": {
+    "main/S17-S01-P-light": {
       "dhash": "05303b39c30b5c37",
       "rects": {
         "panel": {
@@ -4562,7 +4562,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S04-D-dark": {
+    "main/S17-S04-D-dark": {
       "dhash": "f2332ec84b0b27ce",
       "rects": {
         "panel": {
@@ -4597,7 +4597,7 @@
         }
       }
     },
-    "legacy/S17-S04-D-dark@delay3000": {
+    "main/S17-S04-D-dark@delay3000": {
       "dhash": "b3312ac94b8be3c3",
       "rects": {
         "panel": {
@@ -4632,7 +4632,7 @@
         }
       }
     },
-    "legacy/S17-S04-D-dark@reduced-motion": {
+    "main/S17-S04-D-dark@reduced-motion": {
       "dhash": "f2332ec84b0b27ce",
       "rects": {
         "panel": {
@@ -4667,7 +4667,7 @@
         }
       }
     },
-    "legacy/S17-S04-D-light": {
+    "main/S17-S04-D-light": {
       "dhash": "713029c988286060",
       "rects": {
         "panel": {
@@ -4702,7 +4702,7 @@
         }
       }
     },
-    "legacy/S17-S04-D-light@reduced-motion": {
+    "main/S17-S04-D-light@reduced-motion": {
       "dhash": "713029c988286060",
       "rects": {
         "panel": {
@@ -4737,7 +4737,7 @@
         }
       }
     },
-    "legacy/S17-S04-P-dark": {
+    "main/S17-S04-P-dark": {
       "dhash": "383c218eec515b61",
       "rects": {
         "panel": {
@@ -4772,7 +4772,7 @@
         }
       }
     },
-    "legacy/S17-S04-P-dark@delay3000": {
+    "main/S17-S04-P-dark@delay3000": {
       "dhash": "736e378e626f6759",
       "rects": {
         "panel": {
@@ -4807,7 +4807,7 @@
         }
       }
     },
-    "legacy/S17-S04-P-light": {
+    "main/S17-S04-P-light": {
       "dhash": "5d5c27be13aea696",
       "rects": {
         "panel": {
@@ -4842,7 +4842,7 @@
         }
       }
     },
-    "legacy/S17-S06-D-dark": {
+    "main/S17-S06-D-dark": {
       "dhash": "a273562e561696d6",
       "rects": {
         "panel": {
@@ -4872,7 +4872,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S06-D-dark@delay3000": {
+    "main/S17-S06-D-dark@delay3000": {
       "dhash": "b373523e4236e2c2",
       "rects": {
         "panel": {
@@ -4902,7 +4902,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S06-D-dark@reduced-motion": {
+    "main/S17-S06-D-dark@reduced-motion": {
       "dhash": "a273562e561696d6",
       "rects": {
         "panel": {
@@ -4932,7 +4932,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S06-D-light": {
+    "main/S17-S06-D-light": {
       "dhash": "6178581050107070",
       "rects": {
         "panel": {
@@ -4962,7 +4962,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S06-D-light@reduced-motion": {
+    "main/S17-S06-D-light@reduced-motion": {
       "dhash": "6178581050107070",
       "rects": {
         "panel": {
@@ -4992,7 +4992,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S06-P-dark": {
+    "main/S17-S06-P-dark": {
       "dhash": "23173f3e9ef832c8",
       "rects": {
         "panel": {
@@ -5022,7 +5022,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S06-P-dark@delay3000": {
+    "main/S17-S06-P-dark@delay3000": {
       "dhash": "736e3a3bb3213c63",
       "rects": {
         "panel": {
@@ -5052,7 +5052,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S06-P-light": {
+    "main/S17-S06-P-light": {
       "dhash": "052901012df85a13",
       "rects": {
         "panel": {
@@ -5082,7 +5082,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S08-D-dark": {
+    "main/S17-S08-D-dark": {
       "dhash": "2e26166f0617978e",
       "rects": {
         "panel": {
@@ -5112,7 +5112,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S08-D-dark@delay3000": {
+    "main/S17-S08-D-dark@delay3000": {
       "dhash": "0727166e0e36968e",
       "rects": {
         "panel": {
@@ -5142,7 +5142,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S08-D-dark@reduced-motion": {
+    "main/S17-S08-D-dark@reduced-motion": {
       "dhash": "2e26166f0617978e",
       "rects": {
         "panel": {
@@ -5172,7 +5172,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S08-D-light": {
+    "main/S17-S08-D-light": {
       "dhash": "2131111900107068",
       "rects": {
         "panel": {
@@ -5202,7 +5202,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S08-D-light@reduced-motion": {
+    "main/S17-S08-D-light@reduced-motion": {
       "dhash": "2131111900107068",
       "rects": {
         "panel": {
@@ -5232,7 +5232,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S08-P-dark": {
+    "main/S17-S08-P-dark": {
       "dhash": "a0a362956c592367",
       "rects": {
         "panel": {
@@ -5262,7 +5262,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S08-P-dark@delay3000": {
+    "main/S17-S08-P-dark@delay3000": {
       "dhash": "c481635be26f653d",
       "rects": {
         "panel": {
@@ -5292,7 +5292,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S08-P-light": {
+    "main/S17-S08-P-light": {
       "dhash": "1c58169593a6dc98",
       "rects": {
         "panel": {
@@ -5322,7 +5322,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S13-D-dark": {
+    "main/S17-S13-D-dark": {
       "dhash": "2f26166f0716968e",
       "rects": {
         "panel": {
@@ -5352,7 +5352,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S13-D-dark@delay3000": {
+    "main/S17-S13-D-dark@delay3000": {
       "dhash": "0727176e0f37968f",
       "rects": {
         "panel": {
@@ -5382,7 +5382,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S13-D-dark@reduced-motion": {
+    "main/S17-S13-D-dark@reduced-motion": {
       "dhash": "2f26166f0716968e",
       "rects": {
         "panel": {
@@ -5412,7 +5412,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S13-D-light": {
+    "main/S17-S13-D-light": {
       "dhash": "2031111800117168",
       "rects": {
         "panel": {
@@ -5442,7 +5442,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S13-D-light@reduced-motion": {
+    "main/S17-S13-D-light@reduced-motion": {
       "dhash": "2031111800117168",
       "rects": {
         "panel": {
@@ -5472,7 +5472,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S13-P-dark": {
+    "main/S17-S13-P-dark": {
       "dhash": "a0a36295ec514565",
       "rects": {
         "panel": {
@@ -5502,7 +5502,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S13-P-dark@delay3000": {
+    "main/S17-S13-P-dark@delay3000": {
       "dhash": "c481635be26f753c",
       "rects": {
         "panel": {
@@ -5532,7 +5532,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S17-S13-P-light": {
+    "main/S17-S13-P-light": {
       "dhash": "1c58169513aeba92",
       "rects": {
         "panel": {
@@ -5562,7 +5562,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S18-D-dark": {
+    "main/S18-D-dark": {
       "dhash": "a637522656169313",
       "rects": {
         "panel": {
@@ -5582,7 +5582,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S18-D-dark@reduced-motion": {
+    "main/S18-D-dark@reduced-motion": {
       "dhash": "a637522e56169313",
       "rects": {
         "panel": {
@@ -5602,7 +5602,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S18-D-light": {
+    "main/S18-D-light": {
       "dhash": "a437521652169313",
       "rects": {
         "panel": {
@@ -5622,7 +5622,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S18-D-light@reduced-motion": {
+    "main/S18-D-light@reduced-motion": {
       "dhash": "a437521652169313",
       "rects": {
         "panel": {
@@ -5642,7 +5642,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S18-P-dark": {
+    "main/S18-P-dark": {
       "dhash": "6bb32b3be124b462",
       "rects": {
         "panel": {
@@ -5662,7 +5662,7 @@
         "selectedChip": null
       }
     },
-    "legacy/S18-P-light": {
+    "main/S18-P-light": {
       "dhash": "2b932b13830bb462",
       "rects": {
         "panel": {

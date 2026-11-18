@@ -76,7 +76,7 @@ async function tabSettle(ctx, timeoutMs = 3000) {
 // probe replay's later states and checks see the page as their own steps left it. tab: dashboard tab id, or null for the
 // state's own tab. Checks using it are `mutates: true`.
 // Probe-replay cleanup for checks that move the camera: VWorld's first view is the SDK's own start pose (not the 전체
-// preset), so the exact pose is saved before and set back after; Legacy starts on the 전체 preset, so it returns there.
+// preset), so the exact pose is saved before and set back after; Main starts on the 전체 preset, so it returns there.
 export async function saveCamera(ctx) {
   if (ctx.entry !== "vworld") return null;
   return ctx.inPage(() => {
@@ -275,7 +275,7 @@ export async function sceneRegion(ctx) {
 }
 
 // Luminance step across the model's bounding edge (AUDIT GAP-25/V-S-102: "sample ground luminance along the model's bounding
-// rectangle and 20 px outward"). The app writes the ground rectangle's four screen corners as data-model-edge (Legacy: the GLB
+// rectangle and 20 px outward"). The app writes the ground rectangle's four screen corners as data-model-edge (Main: the GLB
 // ground meshes; VWorld: the campus overlay footprint). Every 40 px along each edge, compare 20 px inside with 20 px outside;
 // samples off the scene region or under a HUD rect are skipped. Returns { step, samples, edge } or { edge: null }.
 export async function modelEdgeStep(ctx) {

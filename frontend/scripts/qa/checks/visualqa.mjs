@@ -351,10 +351,10 @@ export const VISUALQA_CHECKS = [
     async run(ctx) {
       const dirs = [ctx.outDir, process.env.QA_EVIDENCE_DIR ? path.join(process.env.QA_EVIDENCE_DIR, "before") : null].filter((dir) => dir && existsSync(dir));
       const files = new Set(dirs.flatMap((dir) => readdirSync(dir)));
-      // Screenshots are written as <state>-<viewport>-<theme>.png for Legacy and vworld-<state>-... for VWorld: every entry
+      // Screenshots are written as <state>-<viewport>-<theme>.png for Main and vworld-<state>-... for VWorld: every entry
       // captured in the run needs all 24 pairs.
       const entries = [];
-      if ([...files].some((file) => /^S\d{2}-/.test(file))) entries.push("legacy");
+      if ([...files].some((file) => /^S\d{2}-/.test(file))) entries.push("main");
       if ([...files].some((file) => /^vworld-S\d{2}-/.test(file))) entries.push("vworld");
       const prefixes = entries.length ? entries.map((entry) => (entry === "vworld" ? "vworld-" : "")) : [""];
       const missing = [];
@@ -437,7 +437,7 @@ export const VISUALQA_CHECKS = [
     },
   }),
   defineCheck("V-Q-23", {
-    states: ["S01", "S05"], viewports: DP, entries: ["legacy", "vworld"],
+    states: ["S01", "S05"], viewports: DP, entries: ["main", "vworld"],
     async run(ctx) {
       const shell = await ctx.inPage((qa) => ({
         tabs: qa.all("[data-qa^=dashboard-tab-]").filter(qa.visible).length,
@@ -452,8 +452,8 @@ export const VISUALQA_CHECKS = [
       const kept = shell.tabs === atS01.tabs && shell.title && shell.timeCard && shell.presetBar && shell.backStyles <= 1;
       const vworldRequested = ctx.args.entries.includes("vworld") && Boolean(process.env.VITE_VWORLD_API_KEY);
       if (ctx.entry === "vworld" && ctx.state === "S05") {
-        const legacy = ctx.runMemo.get(`V-Q-23:legacy:${ctx.viewport}:S05`) ?? null;
-        return result(kept && legacy && JSON.stringify(legacy) === JSON.stringify(shell), { shell, atS01, legacyS05: legacy }, "VWorld shell matches Legacy at D and P");
+        const main = ctx.runMemo.get(`V-Q-23:main:${ctx.viewport}:S05`) ?? null;
+        return result(kept && main && JSON.stringify(main) === JSON.stringify(shell), { shell, atS01, mainS05: main }, "VWorld shell matches Main at D and P");
       }
       if (ctx.state === "S05") ctx.runMemo.set(`${key}:S05`, shell);
       return result(kept && vworldRequested, { shell, atS01, vworldCapturedInThisRun: vworldRequested }, "D4 view keeps title, tabs, clock, time card and preset bar; tab count constant; one back style; VWorld captured");

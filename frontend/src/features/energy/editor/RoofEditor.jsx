@@ -22,6 +22,7 @@ import {
 } from "./roofEditorState.mjs";
 import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
 import { WEATHER_API_URL } from "../../../simulation/utils/apiConfig.js";
+import { authorizedFetch } from "../../../auth/session.mjs";
 import { ROOF_SCENE } from "../../../ui/sceneTokens.mjs";
 
 const LEGEND_CLASS = [
@@ -132,7 +133,7 @@ export function RoofEditor({
         });
       } else {
         const payload = toScenarioPayload(editor.committedArrays, editor.modules[0]);
-        scenario = await saveEnergyScenario(apiBase, editor.scenarioId, payload, fetch, { buildingId, signal });
+        scenario = await saveEnergyScenario(apiBase, editor.scenarioId, payload, authorizedFetch, { buildingId, signal });
       }
       if (!isFresh()) return;
       setEditor((current) => replaceScenarioArrays(current, scenario));

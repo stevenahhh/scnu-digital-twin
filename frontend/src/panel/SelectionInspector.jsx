@@ -9,6 +9,7 @@ import { Skeleton } from "../ui/Skeleton.jsx";
 import { Spinner } from "../ui/Spinner.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { formatHHmm } from "../ui/format.mjs";
+import { describeRestriction } from "../restrictions/restrictionModel.mjs";
 
 // 고른 건물 하나의 인스펙터(두 대시보드 공용). 데이터는 `/microclimate/elements/{id}/popup` 한 번의 응답(usePopupData)이다.
 // 머리: 레지스트리 이름(title) + 코드 배지 + 닫기(Esc도 같다). 대표값: 국지 기온 추정 하나와 위험도.
@@ -162,8 +163,9 @@ function Sections({ payload, estimate }) {
 }
 
 // compare는 비교 대상이 있을 때 부르는 쪽이 넘기는 `비교 열기` 단추, onOpenIndoor는 D4를 골랐을 때의 `실내 보기`다.
+// notice는 이 건물에 걸린 공사·행사 알림(시뮬레이션 시나리오)이다.
 export function SelectionInspector({
-  title, popup, estimate: glbEstimate = null, gateText = null, onClose, onShowAll, onCompare = null, compare = null, onOpenIndoor = null, className,
+  notice = null, title, popup, estimate: glbEstimate = null, gateText = null, onClose, onShowAll, onCompare = null, compare = null, onOpenIndoor = null, className,
 }) {
   const { data, loading = false, error = null, errorStatus = null, errorDetail, retry, lastData } = popup;
   const payload = isObject(data) ? data : null;
@@ -180,6 +182,7 @@ export function SelectionInspector({
   const estimate = (value, unit) => <EstimateValue value={value} unit={unit} source={INSPECTOR_STRINGS.source} at={at} stale={stale} />;
   const thermal = isObject(shown?.thermal) ? shown.thermal : null;
   const freshness = describeFreshness(weather);
+  const noticeText = notice && describeRestriction(notice);
 
   const handleKeyDown = (event) => {
     if (event.key !== "Escape") return;
@@ -222,6 +225,8 @@ export function SelectionInspector({
         </div>
         <Button variant="ghost" iconOnly label={INSPECTOR_STRINGS.close} icon={<X aria-hidden="true" className="h-4 w-4" />} onClick={onClose} className="shrink-0" />
       </div>
+
+      {noticeText && <Alert tone="warning" source="campus-restriction" title={noticeText.status} message={noticeText.detail || "시뮬레이션 시나리오입니다"} />}
 
       {shown && !loading && (
         <div data-qa="inspector-headline" className="flex flex-wrap items-center justify-between gap-2">

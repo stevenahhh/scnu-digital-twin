@@ -1,3 +1,4 @@
+import { D4_MODEL_CENTRE } from "./loading/veilView.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
@@ -98,6 +99,12 @@ test("campus-v2.glb gives every named SCNU campus building a labelled pick proxy
     assert.ok(node.extras?.nameSource, `${node.name} has no nameSource`);
     if (node.extras.nameSource.startsWith("estimated")) assert.match(node.extras.label, /\(추정\)$/, `${node.name} estimate is not labelled`);
   }
+});
+
+test("campus-v2.glb keeps BLD_D4 centred where the loading veil places the terrain before the model arrives", async () => {
+  const campus = await readGlbJson("campus-v2.glb");
+  const centre = nodeBox(campus, campus.nodes.find((node) => node.name === "BLD_D4")).getCenter(new THREE.Vector3());
+  assert.ok(Math.abs(centre.x - D4_MODEL_CENTRE[0]) < 0.01 && Math.abs(centre.z - D4_MODEL_CENTRE[2]) < 0.01, `BLD_D4 centre ${centre.x}, ${centre.z}`);
 });
 
 test("campus-v2.glb is Frame v2 and every GIS-mapped BLD_* node stands over its GIS footprint centre", async () => {

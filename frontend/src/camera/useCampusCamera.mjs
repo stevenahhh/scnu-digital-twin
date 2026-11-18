@@ -6,7 +6,7 @@ import { isFlyToEvent, useFlyTo } from "./useFlyTo.mjs";
 import { isCameraStepEvent } from "./cameraCommands.mjs";
 import { useCameraTour } from "./useCameraTour.mjs";
 
-// Legacy 3D 캠퍼스의 시점 버튼·투어·궤도 조작. 눌린 시점(activePresetId)은 사용자가 직접 궤도 조작을 시작하면 지운다.
+// Main 3D 캠퍼스의 시점 버튼·투어·궤도 조작. 눌린 시점(activePresetId)은 사용자가 직접 궤도 조작을 시작하면 지운다.
 // activePresetRef는 "카메라가 시점 버튼으로 간 자리에 있는가"를 렌더 없이 읽어야 하는 근접 판정용이다.
 export function useCampusCamera({ controlsRef, getScene, onOrbitStart, onOrbitEnd }) {
   const [activePresetId, setActivePresetId] = useState(OVERVIEW_PRESET_ID);

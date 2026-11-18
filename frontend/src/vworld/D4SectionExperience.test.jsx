@@ -166,7 +166,7 @@ describe("D4SectionExperience pane", () => {
     const opener = addOutsideButton("열기");
     opener.focus();
     const { unmount } = render(<D4SectionExperience onClose={vi.fn()} />);
-    // Legacy 캠퍼스 라벨처럼 닫히는 순간에는 아직 포커스를 받을 수 없는 열기 요소를 흉내 낸다.
+    // Main 캠퍼스 라벨처럼 닫히는 순간에는 아직 포커스를 받을 수 없는 열기 요소를 흉내 낸다.
     opener.disabled = true;
     unmount();
     expect(document.activeElement).not.toBe(opener);

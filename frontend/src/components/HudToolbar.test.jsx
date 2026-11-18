@@ -1,11 +1,14 @@
 /* @vitest-environment happy-dom */
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CAMERA_PRESETS } from "../camera/cameraPresets.mjs";
 import { HudToolbar } from "./HudToolbar.jsx";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 const renderBar = (props = {}) => render(
   <HudToolbar presets={CAMERA_PRESETS} activeId="overview" onSelect={vi.fn()} {...props} />,
@@ -57,15 +60,22 @@ describe("HudToolbar", () => {
   });
 
   // Phone: with the feed chip after it the trigger sits mid-row, so a menu aligned to the trigger ran off the left edge.
-  // The compact menu is positioned by the HUD row (no containing block of its own); desktop keeps the trigger anchor.
+  // The compact menu lines up with the HUD row's right edge; desktop keeps the trigger's left edge.
   it("anchors the compact (phone) menu to the HUD row, not to the trigger", async () => {
     const user = userEvent.setup();
-    for (const compact of [false, true]) {
+    const row = { left: 0, right: 390 };
+    const triggerRect = { x: 200, y: 16, left: 200, right: 244, top: 16, bottom: 60, width: 44, height: 44 };
+    // happy-dom's viewport has no size, so every placement would count as a collision.
+    vi.spyOn(document.documentElement, "clientWidth", "get").mockReturnValue(1024);
+    vi.spyOn(document.documentElement, "clientHeight", "get").mockReturnValue(768);
+    for (const [compact, expectedX] of [[false, triggerRect.left], [true, row.right]]) {
       const { unmount } = renderBar({ compact });
-      await user.click(screen.getByRole("button", { name: /시점/ }));
-      const menu = screen.getByRole("menu", { name: "시점" });
-      expect(menu.className.split(/\s+/)).toContain(compact ? "right-0" : "left-0");
-      expect(menu.parentElement.className.split(/\s+/).includes("relative")).toBe(!compact);
+      const trigger = screen.getByRole("button", { name: /시점/ });
+      Object.defineProperty(trigger, "offsetParent", { value: { getBoundingClientRect: () => row } });
+      trigger.getBoundingClientRect = () => triggerRect;
+      await user.click(trigger);
+      const placed = screen.getByRole("menu", { name: "시점" }).parentElement;
+      await waitFor(() => expect(placed.style.transform).toMatch(new RegExp(`^translate\\(${expectedX}px,`)));
       unmount();
     }
   });

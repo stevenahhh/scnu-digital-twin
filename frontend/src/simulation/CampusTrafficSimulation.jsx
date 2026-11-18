@@ -9,6 +9,7 @@ import { useRouteEditorStore } from "./stores/routeEditorStore";
 import { CAMPUS_TRAFFIC_COORDINATE_CONFIG, campusModelCenter } from "./utils/campusTrafficCoordinates.mjs";
 import { CAMPUS_MODEL_URL, CAMPUS_MODEL_URLS } from "../campusModelAsset.mjs";
 import { CAMPUS_HEIGHTFIELD_URLS, loadHeightfield, sampleHeight } from "../terrain/heightfield.mjs";
+import { RestrictionOverlay } from "../restrictions/RestrictionOverlay";
 
 export { CAMPUS_TRAFFIC_COORDINATE_CONFIG };
 
@@ -33,7 +34,7 @@ function modelCenterOf(scene, frameVersion) {
 }
 
 // contactShadows: blob shadows under agents (high tier). Agents never cast into the on-demand sun shadow maps.
-export function CampusTrafficSimulation({ contactShadows = false } = {}) {
+export function CampusTrafficSimulation({ contactShadows = false, restrictions = [], labelRegistry = null, labelsHidden = false } = {}) {
   const { scene, asset } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
   const frameVersion = asset?.extras?.frameVersion;
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
@@ -83,6 +84,16 @@ export function CampusTrafficSimulation({ contactShadows = false } = {}) {
       showRiskEvents
       contactShadows={contactShadows}
     />
+    {restrictions.length > 0 && (
+      <RestrictionOverlay
+        restrictions={restrictions}
+        labelRegistry={labelRegistry}
+        coordinateConfig={CAMPUS_TRAFFIC_COORDINATE_CONFIG}
+        resolveHeight={resolveHeight}
+        modelCenter={modelCenter}
+        labelsHidden={labelsHidden}
+      />
+    )}
     <NetworkDebugLayer coordinateConfig={CAMPUS_TRAFFIC_COORDINATE_CONFIG} resolveHeight={resolveHeight} enabled={editorEnabled && showNetwork} />
     <RouteDigitizerLayer coordinateConfig={CAMPUS_TRAFFIC_COORDINATE_CONFIG} resolveHeight={resolveHeight} />
   </>;

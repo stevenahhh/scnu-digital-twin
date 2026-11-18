@@ -767,14 +767,14 @@ export const GAP_CHECKS = [
         }
         return new Set([...seen].map((file) => path.relative(srcRoot, file)).filter((rel) => rel.startsWith(`ui${path.sep}`)));
       };
-      // The real entry points (index.html -> index.jsx -> App -> AppLegacy; index-vworld.html -> index-vworld.jsx).
-      const legacy = reached("index.jsx");
+      // The real entry points (index.html -> index.jsx -> App -> AppMain; index-vworld.html -> index-vworld.jsx).
+      const main = reached("index.jsx");
       const vworld = reached("index-vworld.jsx");
       const has = (set, name) => [...set].some((rel) => path.basename(rel).startsWith(name));
-      const shared = ["SceneLabel", "Segmented", "Alert", "tokens"].map((name) => ({ name, legacy: has(legacy, name), vworld: has(vworld, name) }));
-      const uiShared = [...legacy].filter((rel) => vworld.has(rel));
-      return result(uiShared.length > 0 && shared.every((s) => s.legacy && s.vworld), { sharedUiImports: uiShared.slice(0, 12), sharedCount: uiShared.length, primitives: shared, note: "the GAP-01..33 PASS-set comparison needs a --entry both run" },
-        "same PASS set as Legacy; both entries import the same SceneLabel, Segmented, Alert and token modules");
+      const shared = ["SceneLabel", "Segmented", "Alert", "tokens"].map((name) => ({ name, main: has(main, name), vworld: has(vworld, name) }));
+      const uiShared = [...main].filter((rel) => vworld.has(rel));
+      return result(uiShared.length > 0 && shared.every((s) => s.main && s.vworld), { sharedUiImports: uiShared.slice(0, 12), sharedCount: uiShared.length, primitives: shared, note: "the GAP-01..33 PASS-set comparison needs a --entry both run" },
+        "same PASS set as Main; both entries import the same SceneLabel, Segmented, Alert and token modules");
     },
   }),
   defineCheck("GAP-35", {

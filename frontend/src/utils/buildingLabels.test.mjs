@@ -57,7 +57,7 @@ const glbNodeNames = [
   "BLD_Dormitory_Building.004",
 ];
 
-test("resolves all Legacy GLB nodes in raw and sanitized forms", () => {
+test("resolves all Main GLB nodes in raw and sanitized forms", () => {
   for (const rawName of glbNodeNames) {
     for (const name of [rawName, rawName.replaceAll(".", "").replaceAll(" ", "_")]) {
       const meta = resolveBuildingMeta(name, options);

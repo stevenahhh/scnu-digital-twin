@@ -4,7 +4,7 @@ const SANITIZED_SUFFIX_PATTERN = /^(BLD_[A-Z]\d+)00\d+$/;
 
 const PROXY_NAME_PREFIX = "BLD_SCNU_";
 
-// GLB 노드 이름 -> 요소 id 보조 표(옛 한글 노드 이름)와 고르지 않는 노드. Legacy(CityModel)와 VWorld 라벨 앵커가 같이 쓴다.
+// GLB 노드 이름 -> 요소 id 보조 표(옛 한글 노드 이름)와 고르지 않는 노드. Main(CityModel)와 VWorld 라벨 앵커가 같이 쓴다.
 export const CAMPUS_BLOCKED_ELEMENT_IDS = new Set(["BLD_C1001"]);
 export const CAMPUS_BUILDING_MAP = Object.freeze({
   대학본부: "BLD_A1",

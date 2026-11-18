@@ -5,7 +5,7 @@ SwiftShader GL), evaluates the audit checks, compares every captured scenario wi
 `baselines.json`, and exits non-zero on any regression. No Playwright/Puppeteer dependency.
 
 ```bash
-bun frontend/scripts/qa/visual-qa.mjs --entry legacy|vworld|both --viewport D|P|T|D,P,T|both|all \
+bun frontend/scripts/qa/visual-qa.mjs --entry main|vworld|both --viewport D|P|T|D,P,T|both|all \
   --theme dark|light|both --states S01..S17,S09E,S12E,S18 --only <ids> --out <dir> [--reduced-motion] [--update-baseline]
 bun frontend/scripts/qa/visual-qa.mjs --list-checks
 bun frontend/scripts/qa/static-checks.mjs [--only <ids>] [--json <path>]
@@ -27,8 +27,8 @@ node --test frontend/scripts/qa/lib/*.test.mjs frontend/scripts/qa/checks/*.test
   `[data-qa=d4-room-grid]`), S15 = S05 then 태양광 설치 then the first 편집 button (fixtures up for this state only: with
   backends down the plan list is empty and has no 편집), S16 = a fresh
   load with 설정 > 테마 > 라이트 applied, S17 = S01/S04/S06/S08/S13 with the fixture backends up.
-  VWorld runs every chained state except the Legacy-only roof editor S15 (S16 is Legacy-only too), and the S17
-  sub-states (`LEGACY_ONLY_STATE_IDS` in `lib/states.mjs`).
+  VWorld runs every chained state except the Main-only roof editor S15 (S16 is Main-only too), and the S17
+  sub-states (`MAIN_ONLY_STATE_IDS` in `lib/states.mjs`).
 - `--theme light` applies 설정 > 테마 > 라이트 through the dialog after load; `dark` keeps the
   default 시스템 theme with `prefers-color-scheme: dark` emulated (as in the audit run).
 - Runs are hermetic: `api.open-meteo.com` (live cloud cover for the sky) is blocked through CDP,
@@ -50,7 +50,7 @@ The harness starts one Vite dev server (`--port`, default 5181) with
 Backends are "down" by default: requests are dropped, so the app sees network failures as in the
 audit run. S17 switches them "up". `--fail <route>` (repeatable) answers that route with the
 weather 503 envelope and `--delay-ms <n>` delays every answer; both imply fixtures up for the
-whole run. Keeping everything on one port means a run never claims 8010-8012; Legacy and VWorld
+whole run. Keeping everything on one port means a run never claims 8010-8012; Main and VWorld
 are two entries of the same server. Chrome is driven over a pipe and opens no TCP port.
 
 ## Switches
@@ -100,15 +100,15 @@ of each PNG, plus the rects of `[data-qa=dashboard-panel]`, `[data-qa=campus-hud
 
 `checks/ideal.mjs` measures every row of `.omo/ui-hig-2026-11-09/audit/ideal-state.md` section 6.2 with the section 6.1
 helpers (installed as `window.__qaIdeal`); `checks/ideal-eval.mjs` holds the pure PASS/FAIL logic and `checks/ideal-rows.mjs`
-the literal row text. A row that needs a hook the product does not have yet (`feed-status-chip`, `more-menu`, `hud-bar`,
+the literal row text. A row that needs a hook the product does not have yet (`alert-dot`, `more-menu`, `hud-bar`,
 `d4-open`, `traffic-simulation-panel`) FAILs with measured `hook missing`. IS-04/IS-05/IS-16 measure the HUD bar
 (`[data-qa=hud-bar]`, else the first row child of `[data-qa=campus-hud]`, whose root spans the viewport). Rows that act on
 the page (IS-13 S04, IS-22, IS-25 S09E, IS-26..IS-28, IS-32, IS-34..IS-40) run as `parts` in the probe replay and put the
 page back. IS-31 reads the camera, not a dHash: the S04 scenario records the pose next to its 1500/3500 ms screenshots, and a part
 taps the chip farthest from the map centre from the 전체 preset (S04's central 도서관 chip never focuses the VWorld camera).
 VWorld is judged on the Cesium camera (`window.ws3d.viewer.camera`) and on the pose the app sends to
-`map.lookat.moveTo` (the cameraFocus.mjs orbit; headless SwiftShader does not apply it); Legacy on the OrbitControls
-that AppLegacy passes as `controlsRef`. More than 0.5 deg or 1 m between the two reads fails. IS-38 D uses the same
+`map.lookat.moveTo` (the cameraFocus.mjs orbit; headless SwiftShader does not apply it); Main on the OrbitControls
+that AppMain passes as `controlsRef`. More than 0.5 deg or 1 m between the two reads fails. IS-38 D uses the same
 off-centre chip and readings under `prefers-reduced-motion: reduce`: the pose ~100 ms after the tap must already equal the
 pose at 1500 ms (`cameraVerdict` in checks/ideal-eval.mjs combines the rendered and commanded readings for both rows).
 IS-34..IS-37 sample the DOM every 50 ms in the page; IS-38 switches to reduced motion itself; IS-39 makes its own
