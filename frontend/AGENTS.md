@@ -2,18 +2,23 @@
 
 ## OVERVIEW
 
-React 18/Vite dashboard with two supported entry points: the Three.js Legacy
-view and the VWorld WebGL view. Both consume the weather API and share building
-selection, detail panels, and D4 room data.
+React 18/Vite dashboard. The default entry is Main (Three.js, the former
+Legacy view): it opens on a login and then shows the student screen or the
+admin dashboard, by account role. The VWorld WebGL entry is frozen: it must
+keep building, and gets no feature work or QA. Both consume the weather API and
+share building selection, detail panels, and D4 room data.
 
 ## STRUCTURE
 
 ```text
 frontend/
-├── index.html                 # `/src/index.jsx` -> App -> AppLegacy
-├── index-vworld.html          # VWorld SDK -> `/src/index-vworld.jsx`
-├── src/AppLegacy.jsx          # Three.js dashboard
-├── src/AppVWorld.jsx          # VWorld dashboard
+├── index.html                 # `/src/index.jsx` -> App (login, then AppMain or AppStudent)
+├── index-vworld.html          # VWorld SDK -> `/src/index-vworld.jsx` (frozen)
+├── src/App.jsx                # Role routing; lazy-loads the screen for the session
+├── src/AppMain.jsx            # Admin dashboard: every feature
+├── src/student/AppStudent.jsx # Student screen: read-only, 건물 and 현황 tabs
+├── src/auth/                  # Session store, login screen, token on writes
+├── src/AppVWorld.jsx          # VWorld dashboard (frozen)
 ├── src/CityModel.jsx          # GLB selection and camera focus
 ├── src/components/            # Building and room drill-down UI
 ├── src/ui/                    # Design tokens (tokens.css) and shared UI primitives
@@ -26,8 +31,10 @@ frontend/
 
 | Task | Location | Notes |
 |---|---|---|
-| Shared/default entry | `src/App.jsx` | Re-exports `AppLegacy` |
-| Legacy layout/data flow | `src/AppLegacy.jsx` | Composes `src/panel/` and `src/hooks/` |
+| Default entry | `src/App.jsx` | No session: `LoginScreen`. Role `admin`: `AppMain`. Role `student`: `AppStudent` |
+| Main (admin) layout/data flow | `src/AppMain.jsx` | Composes `src/panel/` and `src/hooks/` |
+| Student layout/data flow | `src/student/AppStudent.jsx` | Same scene, hooks and shell; tabs 건물 and 현황 only |
+| Session, login, token | `src/auth/session.mjs` | `sessionStore`, `authorizedFetch` (token on non-GET requests) |
 | VWorld layout/data flow | `src/AppVWorld.jsx` | Same panel and hooks, VWorld renderer |
 | Dashboard panel and tabs | `src/panel/` | One implementation for both entries |
 | 3D building mapping | `src/CityModel.jsx` | GLB names to `BLD_*` |
@@ -38,7 +45,7 @@ frontend/
 
 ## CONVENTIONS
 
-- Legacy: `bun run dev:legacy`, `index.html`, `src/index.jsx`, `AppLegacy`.
+- Main: `bun run dev:main`, `index.html`, `src/index.jsx`, `App` -> `AppMain` or `AppStudent`.
 - VWorld: `bun run dev:vworld`, `index-vworld.html`,
   `src/index-vworld.jsx`, `AppVWorld`.
 - `vite.config.js` selects the HTML build input from mode; validate both outputs.
@@ -77,11 +84,45 @@ Both dashboards show the same Korean strings. Change them in both or neither.
 - Button names: `패널 열기`, `패널 닫기`, `설정`, `기상 데이터 새로고침`, `닫기`.
 - Errors: `이 영역을 표시하는 중 문제가 발생했습니다`, `설치 계획을 불러오지 못했습니다`.
 
-## LEGACY / VWORLD PARITY
+## SCREENS AND ROLES
 
-Every dashboard fix lands in both entries unless it's listed as intentional below.
+- The login screen has an id/password form (password exactly 8 characters) and
+  two guest buttons, `게스트 · 학생 모드` and `게스트 · 관리자 모드`. The session
+  lives in `localStorage` under `scnu.session`; `더보기` -> `로그아웃` ends it.
+- The role picks the screen and nothing else. The server checks the token:
+  GET is public, every other method needs an admin token. A 401 on a write ends
+  the session and returns to the login screen with a notice.
+- When the auth server can't be reached, a guest button still opens its screen
+  without a token, so the map works with no backend. Account login needs the server.
+- A client that writes to the weather or simulation API takes `authorizedFetch`
+  as its default fetch. Don't call bare `fetch` for POST/PUT/DELETE.
+- The student screen imports nothing that writes: no energy tab, simulation
+  tab, comparison, or presentation mode. Its D4 pane is the shared
+  `D4SectionExperience`, loaded lazily and opened without plan ids, so the roof
+  editor has no entry there.
+- The QA harness (`scripts/qa/visual-qa.mjs`) seeds a guest-admin session before
+  each Main pass, so its states still start on the dashboard, and it waits for
+  `[data-qa=loading-veil]` to leave before measuring.
+- `src/loading/` owns the path from login to the first scene frame:
+  `index.jsx` starts the model download while the login screen is up,
+  `campusLoad.mjs` holds the progress, and `CampusLoadingVeil.jsx` draws it.
+- Disconnected feeds and active restrictions show as a dot on the 현황 tab
+  (`panel/tabAlerts.mjs`), not as a box on the map.
+- `src/restrictions/` holds the road and building scenarios: admins set them in
+  the 시뮬레이션 tab, both screens poll `/api/simulation/restrictions`, list them
+  in 현황 and draw them over the 3D scene. They are simulation scenarios, and the
+  UI must not present them as real notices.
 
-| Area | Legacy | VWorld |
+## MAIN AND VWORLD
+
+Fixes land in Main. VWorld shares `src/panel/`, `src/ui/` and the hooks, so a
+shared change must leave `build:vworld` and the existing VWorld tests passing.
+Nothing else is owed to it: no new VWorld features, no VWorld QA passes. VWorld
+has no login screen; its writes carry a token only when a Main session exists
+in the same browser. The table records what the two entries shared when VWorld
+was frozen.
+
+| Area | Main | VWorld |
 |---|---|---|
 | Tabs | 건물 (`building`, only with a selection), 현황 (`status`), 에너지 (`energy`), 시뮬레이션 (`simulation`) | same tab set |
 | Feeds | weather, traffic, simulation hooks | same hooks |
@@ -95,7 +136,7 @@ Every dashboard fix lands in both entries unless it's listed as intentional belo
 
 ## ANTI-PATTERNS
 
-- Do not collapse Legacy and VWorld entry points into one build accidentally.
+- Do not collapse Main and VWorld entry points into one build accidentally.
 - The live D4 path is `vworld/D4SectionExperience.jsx` with
   `components/D4WingFloorSelect.jsx` and `components/D4RoomGridSelect.jsx`
   (both entries). Dead components are deleted, not parked. The one exception is
@@ -121,13 +162,14 @@ bun run test   # runs both test layers (scripts/run-tests.mjs)
 node --test src/vworld/*.test.mjs
 bun run build
 bun run build:vworld
-bun run dev:legacy
+bun run dev:main
 bun run dev:vworld
 ```
 
 ## CHECKS
 
-- Legacy renders at `http://127.0.0.1:5173`.
+- Main opens on the login screen at `http://127.0.0.1:5173`. `게스트 · 관리자 모드`
+  opens the dashboard and `게스트 · 학생 모드` the student screen.
 - VWorld renders at `http://127.0.0.1:5173/index-vworld.html`.
 - A native VWorld building opens the matching `BLD_*` detail.
 - The D4 coordinate marker opens the same detail path.

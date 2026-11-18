@@ -1,6 +1,17 @@
-## Frontend (Legacy + VWorld)
+## Frontend (Main + VWorld)
 
-이 디렉터리에는 두 개의 대시보드가 함께 들어 있습니다. Legacy(`index.html`, Three.js)와 VWorld(`index-vworld.html`)는 별개의 제품이라 공통 동작을 바꾸면 두 빌드를 모두 확인해야 합니다.
+제품은 Main(`index.html`, Three.js)입니다. 로그인 화면이 먼저 뜨고 계정 역할에 따라 학생 화면(`src/student/AppStudent.jsx`)이나 관리자 대시보드(`src/AppMain.jsx`)가 열립니다. VWorld(`index-vworld.html`)는 기능 개발과 검수를 멈춘 엔트리입니다. 공용 코드를 바꾸면 `build:vworld`가 통과하는지만 확인합니다.
+
+### 로그인과 역할
+
+| 들어가는 방법 | 열리는 화면 |
+|---|---|
+| `게스트 · 학생 모드` 단추, 또는 학생 계정 `20239901` | 학생 화면. 지도, 건물 검색, 건물 정보, 현재 기상과 주차, D4 강의실 현황 |
+| `게스트 · 관리자 모드` 단추, 또는 관리자 계정 `admin` | 관리자 대시보드. 에너지, 시뮬레이션, 비교, 발표 모드를 포함한 전체 기능 |
+
+시제품용 계정의 비밀번호는 둘 다 `12341234`이고 비밀번호 칸은 8자리만 받습니다. 로그아웃은 지도 오른쪽 위 `더보기` 메뉴에 있습니다.
+
+역할은 어느 화면을 열지만 정합니다. 권한은 서버가 토큰으로 확인합니다. GET은 누구에게나 열려 있고 그 밖의 요청은 관리자 토큰이 있어야 합니다. 인증 서버(weather 서비스)가 꺼져 있으면 게스트 단추는 토큰 없이 화면만 엽니다. 이때 저장 같은 쓰기를 시도하면 로그인 화면으로 돌아갑니다.
 
 ### 환경 변수
 
@@ -23,7 +34,7 @@ cd frontend; cp .env.example .env
 | `VITE_SIMULATION_WS_URL` | `ws://127.0.0.1:8002/ws/simulation` | 공통 | 교통 시뮬레이션 WebSocket. |
 | `VITE_VWORLD_API_KEY` | 빈 값 | VWorld | VWorld 지도 SDK 키. 없으면 VWorld 화면에 키 누락 안내가 뜹니다. |
 
-Legacy 모드는 `VITE_API_URL` 만 있어도 뜹니다. 영상 분석이나 시뮬레이션 서버가 꺼져 있으면 해당 패널만 연결 없음 상태로 표시됩니다.
+Main은 `VITE_API_URL` 만 있어도 뜹니다. 영상 분석이나 시뮬레이션 서버가 꺼져 있으면 해당 패널만 연결 없음 상태로 표시됩니다.
 
 ### 개발 서버
 
@@ -35,14 +46,14 @@ cd frontend && bun install
 cd frontend; bun install
 ```
 
-Legacy (`http://127.0.0.1:5173`):
+Main (`http://127.0.0.1:5173`):
 
 ```bash
-cd frontend && bun run dev:legacy
+cd frontend && bun run dev:main
 ```
 
 ```powershell
-cd frontend; bun run dev:legacy
+cd frontend; bun run dev:main
 ```
 
 VWorld (`http://127.0.0.1:5173/index-vworld.html`):
