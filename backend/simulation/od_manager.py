@@ -14,6 +14,13 @@ except ImportError:
     from mobility_graph import MobilityGraph
 
 
+TRIP_POI_KINDS = {
+    "car": {"external", "parking"},
+    "person": {"building", "external", "parking"},
+    "scooter": {"building", "external", "scooter_parking"},
+}
+
+
 class ODManager:
     def __init__(self, path: str | Path, graph: MobilityGraph, random_source: random.Random) -> None:
         self.config = load_json(path)
@@ -27,15 +34,13 @@ class ODManager:
         self.coverage_pairs = self._build_coverage_pairs()
         self.validation = self._validate()
 
+    def trip_pois(self, agent_type: str) -> List[Dict]:
+        return [poi for poi in self.graph.pois_for(agent_type) if poi.get("kind") in TRIP_POI_KINDS[agent_type]]
+
     def _build_coverage_pairs(self) -> Dict[str, List[Tuple[str, str]]]:
-        allowed_kinds = {
-            "car": {"external", "parking"},
-            "person": {"building", "external", "parking"},
-            "scooter": {"building", "external", "scooter_parking"},
-        }
         result: Dict[str, List[Tuple[str, str]]] = {}
-        for agent_type, kinds in allowed_kinds.items():
-            pois = [poi for poi in self.graph.pois_for(agent_type) if poi.get("kind") in kinds]
+        for agent_type in TRIP_POI_KINDS:
+            pois = self.trip_pois(agent_type)
             pairs = []
             for origin in pois:
                 for destination in pois:

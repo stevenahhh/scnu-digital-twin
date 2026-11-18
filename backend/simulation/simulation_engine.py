@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import random
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 try:
     from .data_loader import load_json
@@ -15,7 +15,9 @@ try:
     from .od_manager import ODManager
     from .risk_engine import RiskEngine
     from .polygon_index import PolygonIndex
+    from .restriction_manager import Restriction, RestrictionManager
     from .runtime_network import load_polygon_indexes, load_runtime_graph
+    from .schemas import RestrictionRequest
     from .scenario_manager import ScenarioManager
     from .statistics_manager import StatisticsManager
     from .trip_manager import TripManager
@@ -29,7 +31,9 @@ except ImportError:
     from od_manager import ODManager
     from risk_engine import RiskEngine
     from polygon_index import PolygonIndex
+    from restriction_manager import Restriction, RestrictionManager
     from runtime_network import load_polygon_indexes, load_runtime_graph
+    from schemas import RestrictionRequest
     from scenario_manager import ScenarioManager
     from statistics_manager import StatisticsManager
     from trip_manager import TripManager
@@ -41,6 +45,8 @@ ACCELERATION = {
     "person": {"up": 1.0, "down": 1.8},
     "scooter": {"up": 1.7, "down": 3.2},
 }
+# A new next edge can change the lane offset on the current one (about 1 m at most); fade that out instead of snapping.
+REROUTE_BLEND_S = 1.0
 
 
 class SimulationEngine:
@@ -61,7 +67,8 @@ class SimulationEngine:
         self.scenarios = ScenarioManager(self.data_dir / "sample_scenario.json")
         self.risk_engine = RiskEngine(self.data_dir / "risk_config.json")
         self.od = ODManager(self.data_dir / "od_demand.json", self.graph, self.random)
-        self.trip_manager = TripManager(self.graph, self.od, self.random)
+        self.restrictions = RestrictionManager(self.graph)
+        self.trip_manager = TripManager(self.graph, self.od, self.random, self.restrictions.blocked)
         self.interactions = InteractionManager(self.risk_engine)
         self.conflict_areas = ConflictAreaManager(self.data_dir / "conflict_areas.json")
         self.behaviors = BehaviorManager(Path(__file__).resolve().parent / "config" / "behavior_profiles.json", self.random)
@@ -224,6 +231,30 @@ class SimulationEngine:
         self.weather.update(weather)
         self.risk_engine.set_weather(self.weather)
 
+    def add_restriction(self, request: RestrictionRequest) -> Tuple[Restriction, int]:
+        restriction = self.restrictions.add(request)
+        rerouted = 0
+        for entity in self.entities.values():
+            if not entity.get("active") or entity.get("trip_status") != "MOVING":
+                continue
+            path = self.trip_manager.reroute(entity, self.paths[entity["id"]])
+            if path is not None:
+                self.paths[entity["id"]] = path
+                self.planned_edges[entity["type"]].update(path.edge_ids)
+                x, z, _, _ = self.graph.interpolate(path, entity["route_distance"], entity["type"])
+                entity["_reroute_blend"] = (entity["x"] - x, entity["z"] - z, self.simulation_time + REROUTE_BLEND_S)
+                self._update_spatial_state(entity, path, entity["current_segment"])
+                rerouted += 1
+        return restriction, rerouted
+
+    def remove_restriction(self, restriction_id: str) -> None:
+        self.restrictions.remove(restriction_id)
+
+    def _with_reroute_blend(self, entity: Dict, x: float, z: float) -> Tuple[float, float]:
+        dx, dz, until = entity.get("_reroute_blend", (0.0, 0.0, 0.0))
+        share = max(0.0, until - self.simulation_time) / REROUTE_BLEND_S
+        return x + dx * share, z + dz * share
+
     def _update_traffic_lights(self) -> None:
         phase = self.simulation_time % 24.0
         for index, light in enumerate(self.traffic_lights):
@@ -363,6 +394,7 @@ class SimulationEngine:
             travelled = entity["speed"] * dt
             entity["route_distance"] = min(path.total_length, float(entity["route_distance"]) + travelled)
             x, z, raw_heading, segment = self.graph.interpolate(path, entity["route_distance"], entity["type"])
+            x, z = self._with_reroute_blend(entity, x, z)
             heading_delta = (raw_heading - float(entity["heading"]) + 180) % 360 - 180
             entity["heading"] = (float(entity["heading"]) + heading_delta * min(1.0, dt * 4.0)) % 360
             entity["x"], entity["z"] = x, z
@@ -444,7 +476,7 @@ class SimulationEngine:
         }
 
     def entity_list(self) -> List[Dict]:
-        excluded = {"desired_speed", "route_distance", "braking_last_step", "hard_braking_last_step", "destination_external", "_predicted_trajectory"}
+        excluded = {"desired_speed", "route_distance", "braking_last_step", "hard_braking_last_step", "destination_external", "_predicted_trajectory", "_reroute_blend"}
         return [
             {key: value for key, value in entity.items() if key not in excluded}
             for entity in self.entities.values()
@@ -460,7 +492,7 @@ class SimulationEngine:
         destination = self.graph.poi(entity["destination"])
         related = [event for event in self.risk_engine.recent_events(200) if agent_id in event.get("object_ids", ())]
         return {
-            **{key: value for key, value in entity.items() if key not in {"desired_speed", "route_distance", "_predicted_trajectory"}},
+            **{key: value for key, value in entity.items() if key not in {"desired_speed", "route_distance", "_predicted_trajectory", "_reroute_blend"}},
             "origin_name": origin.get("name", entity["origin"]),
             "destination_name": destination.get("name", entity["destination"]),
             "trajectory": self.statistics_manager.trajectory(agent_id),
