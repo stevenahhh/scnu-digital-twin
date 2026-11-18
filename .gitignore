@@ -53,6 +53,7 @@ dist-vworld/
 dist-solar/
 dist-paper/
 docs/vworld-key.local.js
+.scnu-auth-secret
 
 # =========================
 # Streamlit 캐시
