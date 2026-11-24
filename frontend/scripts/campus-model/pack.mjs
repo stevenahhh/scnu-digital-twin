@@ -7,8 +7,9 @@
 //      and OuterTerrain (a different Ground material with COLOR_0 and no UVs) keep their structure.
 //      The dashboard finds terrain by the parent name (traffic) and the /^Topography/ mesh name (camera).
 //   2. gltf-transform optimize: WebP textures capped at 4096 px, float (unquantized) geometry, with no
-//      flatten, join, palette or simplify, so every BLD_* root node and mesh name the
-//      dashboard selects by survives packing. Geometry is not quantized: meshopt quantization rounds positions to
+//      flatten, join, instance, palette or simplify, so every BLD_* root node and mesh name the
+//      dashboard selects by, and every editable object node (lib/objectNodes.mjs), survives packing. Each object
+//      mesh carries its own constant _OBJECT_ID, so dedup never merges two objects' meshes. Geometry is not quantized: meshopt quantization rounds positions to
 //      14 bits of each mesh's extent (about 5 cm over the campus, vertically too), coarser than the 6 mm lift steps
 //      between the Ground_* layers and the 3 mm between a raised walkway decal and its kerb top (stages/surfaces.mjs,
 //      stages/kerbs.mjs); the layers would z-fight (plan uhf-ground-roads-routing: no size limit applies).
@@ -53,6 +54,7 @@ const AO_MATERIALS = ["Facade_Atlas", "Facade_Atlas_D4", "Roof_Membrane", "Roof_
 const OPTIMIZE_ARGS = [
   "--flatten", "false",
   "--join", "false",
+  "--instance", "false",
   "--palette", "false",
   "--simplify", "false",
   "--compress", "false",

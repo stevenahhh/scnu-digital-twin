@@ -229,6 +229,8 @@ function getSelectableMeta(object) {
   const rawName = node?.name;
 
   if (!rawName) return null;
+  // 캠퍼스 건물 외관 노드(BLD_SCNU_*_Model)는 그리기만 한다. 선택은 같은 이름의 대리 프리즘(BLD_SCNU_*)이 받는다.
+  if (isBuildingModelNode(node)) return null;
 
   const buildingMeta = resolveBuildingMeta(rawName, {
     elementNames: ELEMENT_NAME_MAP,
@@ -263,6 +265,10 @@ function getSelectableMeta(object) {
     formEstimated: isFormEstimated(node.userData?.formEstimated),
     facadeEstimated: node.userData?.facadeEstimated === true,
   };
+}
+
+function isBuildingModelNode(node) {
+  return /_Model$/.test(node?.name ?? "") && node.userData?.editable?.category === "building";
 }
 
 // extras.formEstimated는 추정한 항목 목록(문자열 배열)이거나 true다.
@@ -650,7 +656,7 @@ export function CityModel({
       if (isNonCaster) nonCasterNames.push(child.name);
       child.receiveShadow = !(NON_RECEIVER_PARENT_PATTERN.test(child.parent?.name ?? "") || NON_RECEIVER_PARENT_PATTERN.test(child.name));
       child.material = child.material.clone();
-      if (isFurniture || isKerb) skipPointer(child);
+      if (isFurniture || isKerb || isBuildingModelNode(child) || isBuildingModelNode(child.parent)) skipPointer(child);
       // 연못 물(Furniture_Water): 하늘 환경맵을 비추고, 내려다보면 비치고 비스듬히 보면 거의 불투명(프레넬)
       if (child.material.name === WATER_MATERIAL_NAME) {
         child.material.onBeforeCompile = (shader) => patchWaterFresnel(shader);

@@ -26,10 +26,12 @@
 //   context.mjs / contextGround.mjs  off-campus building masses and the streets around the campus beyond EXTENT
 //   trees.mjs     tree inventory and hedges (placeTrees, after the ground), species geometry and instanced Trees_* nodes (buildTrees)
 //   furniture.mjs the surveyed outdoor objects (loadFurniture, before the trees: footprints trees keep out of) and the
-//                 merged Furniture / Furniture_Glass nodes
-//                 (buildFurniture, after the ground, on the drawn terrain)
+//                 merged per-material meshes (buildFurniture, after the ground, on the drawn terrain), written to a
+//                 scratch GlbBuilder; furnitureObjects.mjs recovers each object's geometry from it and
+//                 lib/objectNodes.mjs emits one editable node per object (Furniture/<kind>/<id>) once the lamp heads
+//                 are drawn
 //   lights.mjs    lamp positions (placeLamps: surveyed lamps at their photo pole bases, pole placement contract), the
-//                 merged Lamps_heads and the instanced Lamps_pools
+//                 lamp heads (on the lamp nodes) and the instanced Lamps_pools
 // Plan-view ring helpers live in lib/geometry.mjs.
 //
 // Outputs: the uncompressed scripts/campus-model/.build/campus-v2.raw.glb, which pack.mjs turns into
@@ -46,6 +48,7 @@ import { EXTENT, SCENE_UNITS_PER_METRE, frameAssetExtras } from "./lib/frame.mjs
 import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
 import { loadRoadMarkings } from "./stages/roadMarkings.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
+import { emitObjectNodes } from "./lib/objectNodes.mjs";
 import { assertPaintOnParcels, pieceKey, retainPaint, loadParcels, PARCELS_PATH } from "./lib/parcels.mjs";
 import { candidatePaths } from "./qa/candidate.mjs";
 import { GroundPartition, TinPartition, splitByLine } from "./lib/partition.mjs";
@@ -54,6 +57,7 @@ import { buildEntrances } from "./stages/entrances.mjs";
 import { loadTmFootprints } from "./lib/footprints.mjs";
 import { buildGround } from "./stages/ground.mjs";
 import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
+import { furnitureObjects } from "./stages/furnitureObjects.mjs";
 import { buildLights, placeLamps } from "./stages/lights.mjs";
 import { buildContext, meshHeightAt } from "./stages/context.mjs";
 import { buildContextGround } from "./stages/contextGround.mjs";
@@ -214,9 +218,13 @@ stageTime("natural Topography");
 console.log(`ground partition: ${partition.cells.size} terrain triangles hold ground; Topography ${topography.triangles} natural triangles in ${topography.chunks} chunks`);
 // Furniture and lamps stand on the raised walkway slab where there is one (stages/kerbs.mjs).
 const { lamps, stats: lampStats, sites } = placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo });
-const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt, wheelStops: parking.wheelStops });
+const furnitureScratch = new GlbBuilder();
+const { glow } = buildFurniture({ glb: furnitureScratch, furniture, lamps, lampStats, sites, inputs, groundAt, wheelStops: parking.wheelStops });
+const { objects, objectNumbers } = furnitureObjects({ glb, scratch: furnitureScratch, furniture, lamps, wheelStops: parking.wheelStops, glow });
 const treeInstances = await buildTrees({ glb, placement: treePlacement });
-buildLights({ glb, lamps, stats: lampStats, groundAt, glow });
+buildLights({ glb, lamps, stats: lampStats, groundAt, glow, objects });
+const objectNodes = emitObjectNodes(glb, objects, { objectNumbers });
+console.log(`object nodes: ${objectNodes.length} (${Object.entries(Object.groupBy(objectNodes, (node) => node.category)).map(([category, list]) => `${category} ${list.length}`).join(", ")})`);
 // Off-campus context masses on the drawn terrain (stages/context.mjs): merged per tile, not selectable, heights 추정.
 const inExtent = (x, z) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
 const contextGround = (x, z) => (inExtent(x, z) ? groundAt(x, z) : outerHeightAt(x, z) ?? groundAt(Math.min(Math.max(x, EXTENT.minX), EXTENT.maxX), Math.min(Math.max(z, EXTENT.minZ), EXTENT.maxZ)));

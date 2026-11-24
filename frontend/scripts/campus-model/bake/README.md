@@ -17,7 +17,7 @@ fragment and nothing per frame. The values come from a geometric simulation of t
    `asset.extras.aoLayout`.
 2. `bake-ao.mjs` reads the raw GLB, rasterises the target primitives in UV1 space and, for each
    covered texel, casts 64 stratified cosine-weighted hemisphere rays of 3 m. The occluders are the
-   buildings and the terrain (`BLD_*`, `CampusBuildings`, `Topography_*`, `OuterTerrain`); the trees are
+   buildings and the terrain (`BLD_*`, `CampusBuilding*`, `Topography_*`, `OuterTerrain`); the trees are
    left out, and so are pick proxies (nodes with `extras.pickProxy`, the invisible `BLD_SCNU_*` prisms):
    they enclose the campus roofs up to the parapet top, and as occluders they baked those roofs black. The rays are cast with three-mesh-bvh on all cores but one. The texel value is the
    unoccluded fraction. After one 3 x 3 smoothing pass inside the charts and a 4 px dilation into the
@@ -47,7 +47,7 @@ Options, all optional:
 ```text
 bun scripts/campus-model/bake/bake-ao.mjs [raw.glb] [out.png] [size=2048] [rays=64]
     [--materials Facade_*,Roof_*]                            target materials (glob list)
-    [--occluders BLD_*,CampusBuildings,Topography_*,OuterTerrain]  occluder nodes (a match covers children)
+    [--occluders BLD_*,CampusBuilding*,Topography_*,OuterTerrain]  occluder nodes (a match covers children)
     [--distance 3]                                           AO ray length in metres
     [--workers N]                                            default: CPU cores - 1
 ```
@@ -62,7 +62,7 @@ layout, for example ground AO.
 `bun scripts/campus-model/bake/bake-ao.mjs --planar` bakes `../data/ao-ground.png` (1024 x 1024 grey,
 about 0.8 x 0.6 m per texel) for the `Ground` material on `Topography_*` nodes. OuterTerrain's material
 is also named `Ground`, so `--targets` filters by node name. The occluders are the buildings and the
-tree crowns (`BLD_*,CampusBuildings,Trees_*_crown`, instanced meshes expanded per instance). Trunks are
+tree crowns (`BLD_*,CampusBuilding*,Trees_*_crown`, instanced meshes expanded per instance). Trunks are
 left out because at 0.6-0.8 m per texel they only add speckle under the crown. The ray length is 6 m
 because the crowns start several metres above the ground, so 4 m rays barely reach them (mean 0.87,
 mostly trunk dots). At 6 m the mean is about 0.79. On the next build, `stages/ground.mjs` attaches the

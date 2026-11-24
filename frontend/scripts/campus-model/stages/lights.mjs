@@ -1,10 +1,11 @@
 // Lights stage: street lamps, with no real-time lights.
-//   Lamps_heads  every luminaire (cobra heads, path lanterns) plus the traffic-signal lenses of stages/furniture.mjs,
-//                merged into one primitive (Lamp_Head). An emissive mask texture picks the parts that glow (lamp lenses
-//                warm white, the lit signal aspect red or green); CityModel drives the glow with the night weight.
+//   Lamp_Head    every luminaire (cobra heads, path lanterns) plus the traffic-signal lenses of stages/furniture.mjs,
+//                one Lamp_Head primitive on each lamp's or signal's own node. An emissive mask texture picks the parts
+//                that glow (lamp lenses warm white, the lit signal aspect red or green); CityModel drives the glow with
+//                the night weight. The mesh-less Lamps_heads node keeps the lamp extras.
 //   Lamps_pools  a ground-aligned disc under each lit head (Lamp_Pool, unlit, vertex-colour falloff) that CityModel
 //                draws additively at night and hides by day.
-// Poles, arms and footings are solid furniture: appendLampSolids() draws them into the Furniture primitive.
+// Poles, arms and footings are solid furniture: appendLampSolids() draws them into the lamp node's Furniture primitive.
 // Positions: every street_lamp of data/photo/objects-campus.geojson (the by-eye photo survey and the data.go.kr
 // 순천시_가로등 points it kept), moved to its pole base on the NGII 2025 photo (data/photo/pole-roots.json, written by
 // fetch/poleRoots.mjs from the by-eye review and the shadow detector). Lamps the review rejects are left out, and so are
@@ -298,9 +299,14 @@ function poolArchetype(segments = 24) {
   return mesh;
 }
 
-// Emits Lamps_heads (the glow kit from stages/furniture.mjs plus every luminaire) and Lamps_pools.
-export function buildLights({ glb, lamps, stats, groundAt, glow }) {
-  appendLampHeads(glow, lamps, groundAt);
+// Adds every luminaire to the glow kit of stages/furniture.mjs, owned by its lamp's object node (`objects`, emitted by
+// lib/objectNodes.mjs with the Lamp_Head material), and emits the mesh-less Lamps_heads node (lamp extras) and
+// Lamps_pools (extras.lampIds: the lamp id of each instance, in instance order).
+export function buildLights({ glb, lamps, stats, groundAt, glow, objects }) {
+  for (const lamp of lamps) {
+    appendLampHeads(glow, [lamp], groundAt);
+    objects.tag(lamp.id);
+  }
 
   const n = lamps.length;
   const pools = { translations: new Float32Array(n * 3), rotations: new Float32Array(n * 4), scales: new Float32Array(n * 3) };
@@ -330,6 +336,7 @@ export function buildLights({ glb, lamps, stats, groundAt, glow }) {
     // CityModel multiplies its night weight (0..1) by this strength.
     extensions: { KHR_materials_emissive_strength: { emissiveStrength: 4 } },
   });
+  objects.setMaterial("glow", headMaterial);
   const poolMaterial = glb.addMaterial({
     name: "Lamp_Pool",
     pbrMetallicRoughness: { baseColorFactor: [1, 0.6, 0.28, 1], metallicFactor: 0, roughnessFactor: 1 },
@@ -350,15 +357,15 @@ export function buildLights({ glb, lamps, stats, groundAt, glow }) {
     // [id, type, height m (estimated), pole verdict, x, z (scene units)]
     lamps: lamps.map((lamp) => [lamp.id, lamp.type, lamp.heightM, lamp.pole.verdict, Number(lamp.at[0].toFixed(2)), Number(lamp.at[1].toFixed(2))]),
   };
-  const headMesh = glb.addMesh("Lamps_heads", [glow.toPrimitive(headMaterial)]);
-  glb.addNode({ name: "Lamps_heads", mesh: headMesh, extras }, { root: true });
   const poolMesh = glb.addMesh("Lamps_pools", [poolArchetype().toPrimitive(poolMaterial)]);
-  glb.addNode({ name: "Lamps_pools", mesh: poolMesh, extensions: glb.instancingExtension(pools), extras: { lamps: n } }, { root: true });
+  const poolNode = glb.addNode({ name: "Lamps_pools", mesh: poolMesh, extensions: glb.instancingExtension(pools), extras: { lamps: n, lampIds: lamps.map((lamp) => lamp.id) } });
+  // Lamps_heads holds the lamp extras and Lamps_pools as its child (a mesh-less leaf would be pruned when packing).
+  glb.addNode({ name: "Lamps_heads", children: [poolNode], extras: { ...extras, objectNodesNote: "each lamp's head and each traffic signal's lenses are drawn by that lamp's or signal's own node (Furniture/<kind>/<id>); this node holds no geometry" } }, { root: true });
 
   console.log(
     `lights: ${n} lamps at photo pole bases (${Object.entries(stats.byType).map(([type, c]) => `${type} ${c}`).join(", ")}; ` +
     `${Object.entries(stats.verdicts).map(([k, v]) => `${k} ${v}`).join(", ")}; rejected ${stats.rejected.length}); ` +
-    `Lamps_heads ${glow.triangleCount} triangles, 1 merged + 1 instanced node, 0 lights` +
+    `lamp heads and signal lenses ${glow.triangleCount} triangles on the lamp and signal nodes, 1 instanced pool node, 0 lights` +
     (stats.movedOffSites.length ? `; poles moved off a carriageway or building: ${stats.movedOffSites.map((m) => `${m.id} ${m.from} ${m.m} m`).join(", ")}` : ""),
   );
   if (stats.offenders.length) throw new Error(`lights: pole placement contract broken: ${stats.offenders.join(", ")}`);

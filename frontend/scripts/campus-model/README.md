@@ -141,8 +141,9 @@ Evidence tiers and `estimated` flags describe confidence, not measured accuracy.
 | `stages/ground.mjs` | the class polygons of the modelled ground (`network/surfaces.mjs`), the surface-class label raster the lamp rule reads, the natural Ground material, Topography chunks and the surface the decals and markings lie on (`topographySurface`) (see Modelled ground) |
 | `stages/surfaces.mjs` | the `Ground_*` decal meshes (asphalt, pavers, lots, aprons, painted sports/water surfaces) on the Topography triangles with CC0 tiles and world-planar UVs (see Modelled ground) |
 | `stages/trees.mjs` | `placeTrees` (the tree inventory and the hedges on the shrub planters; runs before the ground) and `buildTrees` (species geometry, instanced tree nodes) |
-| `stages/furniture.mjs` | `loadFurniture` (the surveyed outdoor objects and the footprints trees keep out of; runs before the trees) and `buildFurniture` (the merged `Furniture` / `Furniture_Glass` nodes and the estimated benches; runs after the ground) (see Street furniture) |
-| `stages/lights.mjs` | `placeLamps` (surveyed lamps plus estimated ones along the walkway outlines), `buildLights` (`Lamps_heads`, `Lamps_pools`) and the lamp poles drawn into `Furniture` |
+| `stages/furniture.mjs` | `loadFurniture` (the surveyed outdoor objects and the footprints trees keep out of; runs before the trees) and `buildFurniture` (merged per-material meshes in a scratch GlbBuilder and the estimated benches; runs after the ground) (see Street furniture) |
+| `stages/furnitureObjects.mjs`, `lib/objectNodes.mjs` | split the furniture build into one editable node per object, lamp, signal and wheel stop (see Editable object nodes) |
+| `stages/lights.mjs` | `placeLamps` (surveyed lamps plus estimated ones along the walkway outlines), `buildLights` (lamp heads on each lamp's node, the mesh-less `Lamps_heads` extras node, `Lamps_pools`) and the lamp poles drawn into `Furniture` |
 | `lib/solids.mjs` | the solid-modelling kit the furniture and lamps share (boxes, beams, poles, prisms, cones, outline extrusions; flat-shaded except rounded shoulders and extruded curves, oriented by geometry) |
 | `lib/signLetters.mjs` | letter outlines for sign lettering (`gate_sign`), read from `public/fonts/WantedSansVariable.woff2` with `fontkit` and cut into chords within a tolerance in metres |
 | `lib/geometry.mjs` | plan-view ring helpers (area, centroid, point-in-ring, cleaning) |
@@ -533,7 +534,7 @@ with `estimated:`, and their labels end in `(추정)`.
 | `demolished` | absent from the VWorld z19 imagery and the VR tour (car park west of B7, the B7 site, the old 학군단 lot, lawns) | not modelled |
 | `removed` | not seen in the official SCNU VR tour; removed on the user's decision of 2026-10-29 (14 annexes and greenhouses: GIS records 687709, 687746, 687750, 687777, 687828, 688041, 688059, 688401, 688403, 688981, 690033, 690034, 690076, 768570; and the two small unnamed buildings between E1 학생회관 and the C1 plaza fountain, records 687571 and 687692) | dropped from `gis-buildings.json` by `fetch/scnuNames.mjs` (a refetch keeps them out), not modelled |
 
-Named campus buildings stay merged in `CampusBuildings` for drawing. Each one also gets a pick
+Each named campus building is drawn by its own node `<proxy>_Model` (see Editable object nodes). Each one also gets a pick
 proxy: a root node `BLD_SCNU_<registry code>`, or `BLD_SCNU_R<GIS record>` / `BLD_SCNU_W<OSM way>`
 when there is no code or the name is an estimate. The proxy holds a plain prism of the footprint in
 the `Pick_Proxy` material, with extras `pickProxy`, `label` and `nameSource`. The dashboard keeps
@@ -726,8 +727,10 @@ Build order after a ground or network change: `bun run network:build` (network a
   Facades), tower masses where VWorld LOD4 shows one, flat roofs with parapets in the eave colour, rooftop equipment,
   roof colours from the orthophoto and the solar panels it shows (estimates), and window glow used at night.
   `BLD_D4` keeps its bounding-box centre (anchor triangles, see Building forms) because it anchors the traffic frame.
-- `CampusBuildings`: other university buildings from the footprint file (named `순천대학교`, or
-  unnamed ones inside the campus next to a campus road). Off-campus buildings are left out; their lots are
+- `BLD_SCNU_*_Model`, `CampusBuilding_<GIS index>`, `CampusBuilding_Site_<BLD_*>`: other university buildings from
+  the footprint file (named `순천대학교`, or unnamed ones inside the campus next to a campus road), one node
+  each, and the detached site masses of a `BLD_*` building, in the `Buildings/CampusBuildings` collection, whose node
+  keeps their extras. Off-campus buildings are left out; their lots are
   painted as plain ground.
 - `Topography`: chunked terrain using `uni.glb`'s ground heights (structures in the old terrain
   mesh are filtered out), natural ground (land-cover colours under the CC0 grass relief; see Modelled ground).
@@ -737,8 +740,37 @@ Build order after a ground or network change: `bun run network:build` (network a
 - `Road_Markings`: the painted road markings the orthophoto shows, one decal mesh on the terrain (see Road markings).
 - `Trees_*`: instanced ginkgo, broadleaf, pine, metasequoia and columnar conifer trees at the crowns of the tree
   inventory, and the hedges (see Trees above), on open ground, planters and tree pits (never on car parks, courts or roads).
-- `Furniture`, `Furniture_Glass`, `Lamps_heads`, `Lamps_pools`: every surveyed outdoor object, the lamps and the
-  estimated path lamps and benches (see Street furniture).
+- `Furniture/<kind>/<id>`, `Lamps_pools`: every surveyed outdoor object, the lamps, signals, wheel stops and the
+  estimated benches, one node each (see Street furniture and Editable object nodes). The `Furniture` collection node
+  keeps the survey extras and the mesh-less `Lamps_heads` node (parent of `Lamps_pools`) the lamp extras: gltf-transform's
+  prune drops a mesh-less node without children.
+
+## Editable object nodes (`lib/objectNodes.mjs`, `stages/furnitureObjects.mjs`)
+
+Every outdoor object, street lamp (pole, arm and head), traffic signal (body and lenses) and wheel stop is one node
+named by its id (`OC0098`, `SD-A6-02`, wheel stops `WS_<parking row>_W<n>`) with one mesh of the same name and one
+primitive per material it uses (`Furniture`, `Furniture_Glass`, `Furniture_Water`, `Furniture_Screen`, `Lamp_Head`).
+The node's `translation` is its base pivot in scene units (bbox centre x and z, bbox minimum y) and its vertices are
+relative to it, with no rotation or scale, so an editor rotates and scales an object about its foot. Each node has
+`extras.editable = { id, kind, category }` (category `furniture`, `lamp`, `signal` or `wheel_stop`; kind as in the
+`Furniture` counts, `street_lamp/<type>` for lamps) and `extras.estimated = true` with a note: positions are surveyed
+or placed as stated, shapes, sizes and heights are estimates (추정). The nodes sit in `Furniture/<kind with / as _>`
+(lamps in `Furniture/street_lamp_<type>`). Each primitive keeps a constant `_OBJECT_ID` (`Furniture` extras
+`renderObjectIds`), which also keeps gltf-transform's dedup from merging two identical objects. `Lamps_pools`
+stays one instanced node; `extras.lampIds` gives the lamp of each instance.
+
+`stages/furniture.mjs` itself is unchanged: its source text is hashed into every free-standing anchor's
+`sourceInput`, so `build-campus-model.mjs` runs `buildFurniture` into a scratch GlbBuilder and
+`furnitureObjects.mjs` recovers each vertex's owner from it (`_OBJECT_ID`; wheel stops as equal boxes in parking
+order; LED screens 4 vertices each; signal lenses 4 vertices per lens, 2 per pedestrian post and 8 per arm signal,
+checked against the signal's own pole).
+
+Campus buildings without a uni.glb node are one node each the same way: `<BLD_SCNU_* proxy>_Model` with
+`extras.editable.id` = the proxy name, `CampusBuilding_<GIS index>` for unnamed ones, `CampusBuilding_Site_<BLD_*>`
+for a `BLD_*` building's detached site masses (all in `Buildings/CampusBuildings`, category `building`). Only positions are rebased,
+so the AO atlas UVs and the baked AO stay valid; a building's front kit is a child with the opposite translation.
+`BLD_*` nodes keep their names and transforms and gain `extras.editable` (category `building`); entrance canopies and
+door sets gain it with category `entrance`.
 
 ## Road markings (`stages/markings.mjs`)
 
@@ -986,10 +1018,10 @@ cobra head 2.1 m out) for data.go.kr points and lamps by the arterial; `campusRo
 beside a carriageway; `path` (4 m dark post-top lantern) elsewhere. Arms point at the nearest carriageway (OSM
 centrelines or road-zone edges).
 
-`Lamps_heads` merges every luminaire and the signal lenses into one primitive (`Lamp_Head`, emissive mask: dark
-housing, warm lens, red/green/amber signal lenses). `Lamps_pools` is the instanced ground disc under each lit head
-(radius 7.5 / 5.5 / 4.5 m by type), drawn by CityModel at night only. The node extras list every lamp as
-`[id, type, height m, pole verdict, x, z]`.
+Every luminaire and the signal lenses use the `Lamp_Head` material (emissive mask: dark housing, warm lens,
+red/green/amber signal lenses), one primitive on each lamp's or signal's own node. `Lamps_pools` is the instanced ground disc under each lit head
+(radius 7.5 / 5.5 / 4.5 m by type), drawn by CityModel at night only. The mesh-less `Lamps_heads` node's extras list
+every lamp as `[id, type, height m, pole verdict, x, z]`.
 
 ### Rest spaces (`data/rest-space-catalogue.json`, `data/photo/rest-spaces.geojson`)
 

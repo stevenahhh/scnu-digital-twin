@@ -142,6 +142,9 @@ const PIN_CLOCK = `(() => {
   window.Date = PinnedDate;
   // Compare on the Low tier, which renders straight to sRGB (see compare-satellite.mjs).
   try { localStorage.setItem("scnu.renderQuality", "low"); } catch {}
+  // The default entry opens on the login screen (src/auth/session.mjs): start signed in as the guest admin, as
+  // scripts/qa/visual-qa.mjs does, so the campus scene mounts.
+  try { localStorage.getItem("scnu.session") ?? localStorage.setItem("scnu.session", JSON.stringify({ token: null, expiresAt: null, account: { id: "guest-admin", name: "게스트", role: "admin", guest: true } })); } catch {}
 })();`;
 
 // Runs before the app: keep the first R3F root store that shows up on an instance record.
@@ -254,7 +257,9 @@ const PAGE_HELPERS = `(() => {
             temporary.push(geometry, material);
             return;
           }
-          if (object || !ring || !/^Furniture(?:_|$)/.test(o.name)) return;
+          // furniture by its original material (saved above): every object is its own node (lib/objectNodes.mjs),
+          // drawn with the Furniture* materials
+          if (object || !ring || !/^Furniture(?:_|$)/.test(saved.at(-1).material?.name ?? "")) return;
           const geometry = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
           const p = geometry.attributes.position;
           const candidates = [];

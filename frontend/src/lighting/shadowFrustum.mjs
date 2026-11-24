@@ -2,8 +2,10 @@
 // The light looks at the recentred origin from LIGHT_DISTANCE, so one fixed orthographic box has to
 // hold the whole campus for every sun azimuth: its half-size is the half-diagonal of the box.
 
-// Measured campus-v2.glb extent: about 510 x 383 units, half-diagonal 319 units.
-export const CAMPUS_BOX_SIZE = { width: 510, depth: 383 };
+// Measured campus-v2.glb extent: about 546 x 383 units, half-diagonal 334 units. The east edge is the RS0015 bus-stop
+// shelter at the F1 entrance (centre x = +271.6 from the recentred origin); it was hidden inside the merged Furniture
+// mesh until every object became its own node, and with the earlier 510-unit width its low-sun shadow was clipped.
+export const CAMPUS_BOX_SIZE = { width: 546, depth: 383 };
 
 // The light must sit farther than the half-diagonal, or buildings behind it fall outside the
 // camera; far covers the light distance plus the half-diagonal plus a margin.
