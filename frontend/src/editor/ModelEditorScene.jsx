@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { TransformControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
-import { Box3, Box3Helper, Color, Raycaster, Vector2, Vector3 } from "three";
+import { Box3, Box3Helper, BufferAttribute, BufferGeometry, Color, Matrix3, Object3D, Points, PointsMaterial, Raycaster, Vector2, Vector3 } from "three";
 import { SELECTION_HEX } from "../ui/sceneTokens.mjs";
 import { SCENE_UNITS_PER_METRE } from "../geo/epsg5186.mjs";
 import { useFlyTo } from "../camera/useFlyTo.mjs";
@@ -9,6 +9,8 @@ import { createSceneEditor, recenterView } from "./sceneEditor.mjs";
 import { editorRuntime, ensureModelEditsLoaded, modelEditStore } from "./modelEditsApi.mjs";
 
 const CLICK_SLOP_PX = 5;
+// 정점 모드에서 클릭이 정점을 고르는 화면 거리(px).
+const VERTEX_PICK_PX = 16;
 // 지면을 누른 클릭이 가느다란 시설물(난간·볼라드)을 고르는 반경: 1.5 m.
 const NEAR_PICK_RADIUS = 1.5 * SCENE_UNITS_PER_METRE;
 const DUPLICATE_OFFSET = 3 * SCENE_UNITS_PER_METRE;
@@ -43,6 +45,29 @@ export function ModelEditorScene({ scene, controlsRef }) {
     return box;
   });
   const selected = state.editing && state.selection ? editor.entries.get(state.selection) ?? null : null;
+  // 정점 모드: 고른 객체의 손잡이(같은 자리 정점 묶음)를 점으로 그리고, 고른 손잡이에 기즈모를 단다.
+  const vertexState = state.vertexMode && selected && !selected.members ? editor.vertexState(selected.id) : null;
+  const [vertexPick, setVertexPick] = useState(null);
+  const [vertexHandle] = useState(() => new Object3D());
+  const [vertexPoints] = useState(() => {
+    const points = new Points(new BufferGeometry(), new PointsMaterial({ color: new Color(SELECTION_HEX), size: 6, sizeAttenuation: false, depthTest: false }));
+    points.renderOrder = 10;
+    points.raycast = () => {};
+    return points;
+  });
+  const vertexDragRef = useRef(null);
+  const worldOfGroup = (group) => new Vector3(...group.current).applyMatrix4(vertexState.node.matrixWorld);
+  const drawVertices = () => {
+    vertexPoints.visible = vertexState !== null;
+    if (!vertexState) return;
+    vertexState.node.updateWorldMatrix(true, false);
+    const array = new Float32Array(vertexState.groups.length * 3);
+    vertexState.groups.forEach((group, i) => worldOfGroup(group).toArray(array, i * 3));
+    vertexPoints.geometry.setAttribute("position", new BufferAttribute(array, 3));
+    vertexPoints.geometry.computeBoundingSphere();
+    if (vertexPick !== null && vertexState.groups[vertexPick]) vertexHandle.position.copy(worldOfGroup(vertexState.groups[vertexPick]));
+    invalidate();
+  };
 
   useEffect(() => {
     ensureModelEditsLoaded();
@@ -53,6 +78,9 @@ export function ModelEditorScene({ scene, controlsRef }) {
     editorRuntime.applied();
     invalidate();
   }, [editor, state.draft, gl, root, invalidate]);
+
+  useEffect(() => setVertexPick(null), [selected?.id, state.vertexMode]);
+  useEffect(drawVertices, [vertexState, vertexPick, state.draft]);
 
   useEffect(() => {
     helper.visible = selected !== null;
@@ -124,6 +152,21 @@ export function ModelEditorScene({ scene, controlsRef }) {
       const rect = canvas.getBoundingClientRect();
       ndc.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
       raycaster.setFromCamera(ndc, camera);
+      if (vertexState) {
+        let best = null;
+        let bestPx = VERTEX_PICK_PX;
+        const p = new Vector3();
+        vertexState.groups.forEach((group, i) => {
+          p.copy(worldOfGroup(group)).project(camera);
+          if (p.z > 1) return;
+          const px = Math.hypot(((p.x + 1) / 2) * rect.width + rect.left - event.clientX, ((1 - p.y) / 2) * rect.height + rect.top - event.clientY);
+          if (px < bestPx) { best = i; bestPx = px; }
+        });
+        if (best !== null) {
+          setVertexPick(best);
+          return;
+        }
+      }
       const hits = raycaster.intersectObject(scene, true);
       const ground = hits.find((hit) => hit.object.layers.mask !== 0 && hit.object.visible);
       const picked = editor.pick(hits);
@@ -137,7 +180,7 @@ export function ModelEditorScene({ scene, controlsRef }) {
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointerup", onUp);
     };
-  }, [state.editing, gl, camera, editor, scene]);
+  }, [state.editing, gl, camera, editor, scene, vertexState]);
 
   // 기즈모를 끄는 동안 궤도 조작을 멈춘다(drei는 makeDefault 조작기만 멈춘다).
   useEffect(() => {
@@ -151,12 +194,43 @@ export function ModelEditorScene({ scene, controlsRef }) {
       gizmo.removeEventListener("dragging-changed", onDragging);
       if (controlsRef.current) controlsRef.current.enabled = true;
     };
-  }, [selected, controlsRef]);
+  }, [selected, vertexPick, controlsRef]);
 
   return (
     <>
       <primitive object={helper} />
-      {selected && (
+      <primitive object={vertexPoints} />
+      <primitive object={vertexHandle} />
+      {vertexState && vertexPick !== null && (
+        <TransformControls
+          ref={gizmoRef}
+          object={vertexHandle}
+          mode="translate"
+          size={0.6}
+          onMouseDown={() => {
+            vertexDragRef.current = { start: vertexHandle.position.clone(), group: vertexState.groups[vertexPick] };
+          }}
+          onObjectChange={() => {
+            const drag = vertexDragRef.current;
+            if (!drag) return;
+            // 월드 이동량을 객체 노드 좌표로 돌려 미리 보기에 입힌다.
+            const toNode = new Matrix3().setFromMatrix4(vertexState.node.matrixWorld).invert();
+            drag.offset = vertexHandle.position.clone().sub(drag.start).applyMatrix3(toNode).toArray();
+            editor.previewVertices(selected.id, [...(state.draft.vertices[selected.id] ?? []), { ...vertexState.keyOf(drag.group), offset: drag.offset }]);
+            editor.boundsOf(selected.id, helper.box);
+            drawVertices();
+          }}
+          onMouseUp={() => {
+            const drag = vertexDragRef.current;
+            vertexDragRef.current = null;
+            if (drag?.offset && drag.offset.some((v) => Math.abs(v) > 1e-9)) {
+              modelEditStore.moveVertex(selected.id, vertexState.keyOf(drag.group), drag.offset);
+              refreshShadows(gl, root);
+            }
+          }}
+        />
+      )}
+      {selected && !vertexState && (
         <TransformControls
           ref={gizmoRef}
           object={selected.target}

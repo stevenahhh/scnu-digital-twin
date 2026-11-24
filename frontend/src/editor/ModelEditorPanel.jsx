@@ -1,5 +1,5 @@
 import { useEffect, useId, useState, useSyncExternalStore } from "react";
-import { Copy, Pencil, Plus, Redo2, RotateCcw, Save, Trash2, Undo2, X } from "lucide-react";
+import { Copy, Pencil, Plus, Redo2, RotateCcw, Save, Spline, Trash2, Undo2, X } from "lucide-react";
 import { Euler, MathUtils, Quaternion } from "three";
 import { Button } from "../ui/Button.jsx";
 import { Segmented } from "../ui/Segmented.jsx";
@@ -147,7 +147,8 @@ export function ModelEditorPanel() {
   const [save, setSave] = useState({ busy: false, message: null, error: false });
   const entry = state.selection && runtime ? runtime.describe(state.selection) : null;
   const { draft } = state;
-  const changeCount = Object.keys(draft.transforms).length + draft.removed.length + draft.added.length;
+  const changeCount = Object.keys(draft.transforms).length + draft.removed.length + draft.added.length
+    + Object.values(draft.vertices).reduce((sum, moves) => sum + moves.length, 0);
 
   const doSave = async () => {
     setSave({ busy: true, message: null, error: false });
@@ -178,6 +179,7 @@ export function ModelEditorPanel() {
       else if (mod && key === "s") doSave();
       else if (mod && key === "d" && selection) editorRuntime.get()?.duplicate(selection);
       else if (!mod && MODE_KEYS[key]) modelEditStore.setMode(MODE_KEYS[key]);
+      else if (!mod && key === "v") modelEditStore.setVertexMode(!modelEditStore.getState().vertexMode);
       else if (!mod && (key === "delete" || key === "backspace") && selection) modelEditStore.remove(selection);
       else if (key === "escape") modelEditStore.select(null);
       else handled = false;
@@ -231,6 +233,17 @@ export function ModelEditorPanel() {
               )}
               <Button size="sm" icon={<Trash2 aria-hidden="true" className="h-4 w-4" />} onClick={() => modelEditStore.remove(entry.id)}>삭제</Button>
             </div>
+            <div className="flex flex-wrap items-center gap-2" data-qa="model-editor-vertex">
+              <Button size="sm" variant={state.vertexMode ? "primary" : "secondary"} aria-pressed={state.vertexMode}
+                icon={<Spline aria-hidden="true" className="h-4 w-4" />} disabled={entry.category === "tree"}
+                disabledReason="나무는 같은 모양을 여러 그루가 함께 써서 정점을 따로 고칠 수 없습니다"
+                onClick={() => modelEditStore.setVertexMode(!state.vertexMode)}>정점 편집 V</Button>
+              <Button size="sm" variant="ghost" disabled={!draft.vertices[entry.id]} disabledReason="옮긴 정점이 없습니다"
+                onClick={() => modelEditStore.resetVertices(entry.id)}>정점 원래대로</Button>
+              {state.vertexMode && entry.category !== "tree" && (
+                <p className="w-full text-caption text-ink-muted">점을 클릭해 고른 뒤 화살표로 옮기세요. 같은 자리의 정점은 함께 움직입니다.</p>
+              )}
+            </div>
           </div>
         ) : (
           <p className="text-ink-muted">장면에서 객체를 클릭해 고르세요. 건물, 시설물(펜스·벤치·안내판 등), 가로등, 신호등, 나무를 한 개씩 고를 수 있습니다.</p>
@@ -254,7 +267,7 @@ export function ModelEditorPanel() {
         {runtime && runtime.missingPrototypes().length > 0 && (
           <p className="text-caption text-danger">{`원형을 찾지 못해 추가하지 못한 객체: ${runtime.missingPrototypes().join(", ")}`}</p>
         )}
-        <p className="text-caption text-ink-muted">단축키: W·E·R 모드, Delete 삭제, ⌘D 복제, ⌘Z 되돌리기, ⌘S 저장, Esc 선택 해제</p>
+        <p className="text-caption text-ink-muted">단축키: W·E·R 모드, V 정점 편집, Delete 삭제, ⌘D 복제, ⌘Z 되돌리기, ⌘S 저장, Esc 선택 해제</p>
       </div>
 
       <footer className="flex flex-col gap-2 border-t border-hairline px-4 py-3">

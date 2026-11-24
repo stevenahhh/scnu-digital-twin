@@ -83,11 +83,25 @@ class AddedObject(Transform):
     prototype: ObjectId
 
 
+class VertexMove(BaseModel):
+    # path: child indices from the object node to the mesh ("" = the node itself); index: a vertex of that mesh.
+    # offset moves that vertex and every vertex of the object at the same place, in the object node's frame.
+    path: str = Field(pattern=r"^(\d{1,4}(/\d{1,4}){0,7})?$")
+    index: int = Field(ge=0, le=50_000_000)
+    offset: list[float] = Field(min_length=3, max_length=3)
+
+    @field_validator("offset")
+    @classmethod
+    def _offset(cls, value: list[float]) -> list[float]:
+        return _finite(value, _POSITION_LIMIT)
+
+
 class EditDocument(BaseModel):
     revision: int = Field(ge=0)
     transforms: dict[ObjectId, Transform] = Field(default_factory=dict, max_length=50_000)
     removed: list[ObjectId] = Field(default_factory=list, max_length=50_000)
     added: list[AddedObject] = Field(default_factory=list, max_length=10_000)
+    vertices: dict[ObjectId, list[VertexMove]] = Field(default_factory=dict, max_length=50_000)
 
     @model_validator(mode="after")
     def _distinct(self) -> "EditDocument":
@@ -103,7 +117,7 @@ class EditDocument(BaseModel):
 
 def _empty() -> dict:
     return {"version": 1, "revision": 0, "updated_at": None, "updated_by": None,
-            "transforms": {}, "removed": [], "added": []}
+            "transforms": {}, "removed": [], "added": [], "vertices": {}}
 
 
 def _read() -> dict:
@@ -133,7 +147,7 @@ def put_edits(document: EditDocument, account: Account = Depends(current_account
             "revision": current["revision"] + 1,
             "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "updated_by": account.id,
-            **document.model_dump(include={"transforms", "removed", "added"}),
+            **document.model_dump(include={"transforms", "removed", "added", "vertices"}),
         }
         path = edits_path()
         path.parent.mkdir(parents=True, exist_ok=True)

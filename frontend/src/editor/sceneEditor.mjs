@@ -8,6 +8,7 @@
 import { Box3, Color, Group, InstancedMesh, Matrix4, Object3D, Quaternion, Raycaster, Vector3 } from "three";
 import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
 import { selectSupportPoints, settleOnGround } from "./groundContact.mjs";
+import { applyVertexMoves, createVertexState } from "./vertexEditor.mjs";
 
 const KIND_LABELS = Object.freeze({
   building: "건물", entrance: "출입구", fence: "펜스", bench: "벤치", planter: "화단", hedge: "생울타리",
@@ -42,6 +43,8 @@ export const kindLabel = (kind) => KIND_LABELS[kind] ?? kind;
 
 const TREE_GROUP = /^Trees_(.+)$/;
 const ZERO = new Matrix4().makeScale(0, 0, 0);
+// 미리 보기를 입힌 상태 표시: 다음 apply는 이동 목록이 같아도 반드시 다시 입힌다.
+const PREVIEWED = Symbol("previewed");
 // 바닥 규칙(groundContact)을 적용하지 않는 범주: 바닥 자신(포장·노면 표시)과, 경사지에 기초가 묻힌 채로 서 있는 건물·출입구.
 // 땅을 누른 클릭이 고를 수 있는 작은 객체의 범주. 건물·나무·바닥 조각은 레이로만 고른다.
 // 겹친 바닥 층을 한 표면으로 보는 깊이(장면 단위, 약 0.3 m)와, 그 안에서 먼저 고르는 순서(작을수록 먼저).
@@ -117,6 +120,12 @@ function restoreOriginalModel(scene) {
       if (object.userData.editOriginalMatrices) object.instanceMatrix.array.set(object.userData.editOriginalMatrices);
       else object.userData.editOriginalMatrices = object.instanceMatrix.array.slice();
       touchInstances(object);
+    }
+    if (object.userData.editOriginalGeometry) {
+      object.geometry = object.userData.editOriginalGeometry;
+      object.raycast = object.userData.editOriginalRaycast;
+      delete object.userData.editOriginalGeometry;
+      delete object.userData.editOriginalRaycast;
     }
     if (object.userData.editable?.id || object.userData.pickProxy) {
       object.userData.editOriginal ??= toTransform(object);
@@ -345,6 +354,15 @@ export function createSceneEditor(scene) {
         entries.delete(id);
         changed = true;
       }
+      for (const entry of entries.values()) {
+        const moves = draft.vertices?.[entry.id];
+        if (entry.members || (!moves && !entry.vertexState?.applied)) continue;
+        if (entry.vertexState?.applied === moves) continue;
+        const state = vertexStateOf(entry);
+        changed = applyVertexMoves(state, moves ?? []) || changed;
+        state.applied = moves;
+        entry.supportPoints = null;
+      }
       missing = [];
       for (const item of draft.added) {
         const existing = entries.get(item.id);
@@ -404,6 +422,19 @@ export function createSceneEditor(scene) {
       return best;
     },
     readTransform: (id) => toTransform(entries.get(id).target),
+    // 정점 편집: 손잡이(같은 자리 정점 묶음) 목록과 노드. 나무 인스턴스는 지오메트리를 공유하므로 정점 편집이 없다.
+    vertexState: (id) => {
+      const entry = entries.get(id);
+      return entry && !entry.members ? vertexStateOf(entry) : null;
+    },
+    // 끄는 동안 미리 보기: 확정된 이동에 지금 끄는 이동 하나를 더해 입힌다(확정은 store.moveVertex).
+    previewVertices(id, moves) {
+      const entry = entries.get(id);
+      const state = vertexStateOf(entry);
+      applyVertexMoves(state, moves);
+      state.applied = PREVIEWED;
+      entry.supportPoints = null;
+    },
     // 끌기 중 미리 보기: 주어진 편집값을 장면에만 입힌다(확정은 store.commitTransform).
     preview(id, transform) {
       const entry = entries.get(id);
@@ -457,6 +488,11 @@ export function createSceneEditor(scene) {
       box.union(member.mesh.geometry.boundingBox.clone().applyMatrix4(member.mesh.matrixWorld.clone().multiply(instance)));
     }
     return box;
+  }
+
+  function vertexStateOf(entry) {
+    entry.vertexState ??= createVertexState(entry.node);
+    return entry.vertexState;
   }
 
   // 객체의 발(가장 낮은 띠의 윤곽 점, 편집값 좌표). 모양은 바뀌지 않으므로 한 번 구해 둔다.

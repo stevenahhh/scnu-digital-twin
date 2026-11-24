@@ -10,14 +10,23 @@ const isTransform = (value) =>
   isVector(value?.position, 3) && isVector(value?.quaternion, 4) && isVector(value?.scale, 3);
 const pickTransform = ({ position, quaternion, scale }) => ({ position: [...position], quaternion: [...quaternion], scale: [...scale] });
 
+const isVertexMove = (m) => typeof m?.path === "string" && /^(\d{1,4}(\/\d{1,4}){0,7})?$/.test(m.path)
+  && Number.isInteger(m.index) && m.index >= 0 && isVector(m.offset, 3);
+
 // 서버 응답을 편집 초안으로 읽는다. 모양이 틀린 항목은 버리고, 문서가 아니면 빈 초안이다.
 export function parseEditDocument(value) {
   const transforms = {};
   for (const [id, transform] of Object.entries(value?.transforms ?? {})) {
     if (isTransform(transform)) transforms[id] = pickTransform(transform);
   }
+  const vertices = {};
+  for (const [id, moves] of Object.entries(value?.vertices ?? {})) {
+    const kept = Array.isArray(moves) ? moves.filter(isVertexMove).map((m) => ({ path: m.path, index: m.index, offset: [...m.offset] })) : [];
+    if (kept.length) vertices[id] = kept;
+  }
   return {
     revision: Number.isInteger(value?.revision) && value.revision >= 0 ? value.revision : 0,
+    vertices,
     transforms,
     removed: Array.isArray(value?.removed) ? value.removed.filter((id) => typeof id === "string") : [],
     added: Array.isArray(value?.added)
@@ -37,7 +46,7 @@ export function createModelEditStore({ newId = defaultNewId } = {}) {
   let past = [];
   let future = [];
   let state = {
-    draft: saved, selection: null, mode: "translate", dirty: false, canUndo: false, canRedo: false, editing: false,
+    draft: saved, selection: null, mode: "translate", dirty: false, canUndo: false, canRedo: false, editing: false, vertexMode: false,
   };
 
   const emit = (next) => {
@@ -76,6 +85,11 @@ export function createModelEditStore({ newId = defaultNewId } = {}) {
       if (state.editing === editing) return;
       emit({ editing, selection: editing ? state.selection : null });
     },
+    // 정점 편집 모드: 고른 객체의 정점(같은 자리 묶음)을 점으로 보여 주고 하나씩 옮긴다.
+    setVertexMode(vertexMode) {
+      if (state.vertexMode === vertexMode) return;
+      emit({ vertexMode });
+    },
     select(id) {
       if (state.selection === id) return;
       emit({ selection: id });
@@ -110,6 +124,23 @@ export function createModelEditStore({ newId = defaultNewId } = {}) {
       const { draft } = state;
       if (draft.removed.includes(id)) change({ ...draft, removed: draft.removed.filter((item) => item !== id) });
     },
+    // 정점 하나(같은 자리의 정점 묶음을 대표하는 path·index)를 offset만큼 더 옮긴다. 같은 정점의 이동은 합친다.
+    moveVertex(id, { path, index }, offset) {
+      const { draft } = state;
+      const moves = draft.vertices[id] ?? [];
+      const found = moves.findIndex((m) => m.path === path && m.index === index);
+      const next = found < 0
+        ? [...moves, { path, index, offset: [...offset] }]
+        : moves.map((m, i) => (i === found ? { ...m, offset: m.offset.map((v, k) => v + offset[k]) } : m));
+      change({ ...draft, vertices: { ...draft.vertices, [id]: next } });
+    },
+    resetVertices(id) {
+      const { draft } = state;
+      if (!draft.vertices[id]) return;
+      const vertices = { ...draft.vertices };
+      delete vertices[id];
+      change({ ...draft, vertices });
+    },
     add(prototype, transform) {
       const id = newId();
       const { draft } = state;
@@ -131,8 +162,8 @@ export function createModelEditStore({ newId = defaultNewId } = {}) {
       emit({ draft, dirty: draft !== saved });
     },
     toDocument() {
-      const { revision, transforms, removed, added } = state.draft;
-      return { revision, transforms, removed, added };
+      const { revision, transforms, removed, added, vertices } = state.draft;
+      return { revision, transforms, removed, added, vertices };
     },
   };
 }

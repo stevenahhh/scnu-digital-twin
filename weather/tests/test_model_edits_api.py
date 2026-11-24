@@ -31,6 +31,7 @@ def document(**overrides) -> dict:
         "removed": ["SD-B1-S2"],
         "added": [{"id": "ADD_1", "prototype": "Trees_ginkgo#3", "position": [10, 0, 10], "quaternion": [0, 0, 0, 1], "scale": [1, 1, 1]}],
     }
+    body.setdefault("vertices", {"OC0101": [{"path": "0", "index": 12, "offset": [0, 0.5, 0]}]})
     body.update(overrides)
     return body
 
@@ -40,7 +41,7 @@ def test_empty_document_before_any_save(api) -> None:
 
     assert response.status_code == 200
     assert response.json() == {"version": 1, "revision": 0, "updated_at": None, "updated_by": None,
-                               "transforms": {}, "removed": [], "added": []}
+                               "transforms": {}, "removed": [], "added": [], "vertices": {}}
 
 
 def test_admin_saves_and_everyone_reads_back(api, tmp_path) -> None:
@@ -54,6 +55,7 @@ def test_admin_saves_and_everyone_reads_back(api, tmp_path) -> None:
     assert body["transforms"]["OC0101"]["scale"] == [1, 2, 1]
     assert body["removed"] == ["SD-B1-S2"]
     assert body["added"][0]["prototype"] == "Trees_ginkgo#3"
+    assert body["vertices"] == {"OC0101": [{"path": "0", "index": 12, "offset": [0, 0.5, 0]}]}
     assert api.get("/model/edits").json() == body
     assert json.loads((tmp_path / "model-edits.json").read_text("utf-8")) == body
 
@@ -81,6 +83,9 @@ def test_stale_revision_is_a_conflict(api) -> None:
     {"transforms": {"OC0101": {"position": [1e9, 2, 3], "quaternion": [0, 0, 0, 1], "scale": [1, 1, 1]}}},
     {"transforms": {"bad\nid": {"position": [1, 2, 3], "quaternion": [0, 0, 0, 1], "scale": [1, 1, 1]}}},
     {"removed": ["OC0101", "OC0101"]},
+    {"vertices": {"OC0101": [{"path": "../0", "index": 1, "offset": [0, 0, 0]}]}},
+    {"vertices": {"OC0101": [{"path": "0", "index": -1, "offset": [0, 0, 0]}]}},
+    {"vertices": {"OC0101": [{"path": "0", "index": 1, "offset": [0, 1e9, 0]}]}},
     {"added": [{"id": "OC0101", "prototype": "OC0102", "position": [0, 0, 0], "quaternion": [0, 0, 0, 1], "scale": [1, 1, 1]}]},
 ])
 def test_malformed_documents_are_rejected(api, bad) -> None:

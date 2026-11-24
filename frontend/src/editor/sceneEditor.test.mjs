@@ -279,6 +279,27 @@ test("an edit that would sink an object rests it on the surface under it; buildi
   close(stacked.position, [-4, 1, 2]);
 });
 
+test("vertex moves reshape the object, a reload of the draft restores it, and a new editor starts from the original geometry", () => {
+  const c = campus();
+  const editor = createSceneEditor(c.scene);
+  const mesh = c.fence.children[0];
+  const original = mesh.geometry;
+  const state = editor.vertexState("OC0101");
+  const top = state.groups.find((g) => g.position[1] === 1);
+  const key = state.keyOf(top);
+  editor.apply(draft({ vertices: { OC0101: [{ ...key, offset: [0, 2, 0] }] } }));
+  for (const member of top.members) assert.equal(mesh.geometry.attributes.position.getY(member.index), 3);
+  editor.previewVertices("OC0101", []);
+  editor.apply(draft({ vertices: { OC0101: [{ ...key, offset: [0, 2, 0] }] } }));
+  assert.equal(mesh.geometry.attributes.position.getY(top.members[0].index), 3, "a preview never blocks the next apply");
+  editor.apply(draft());
+  assert.equal(mesh.geometry.attributes.position.getY(top.members[0].index), 1);
+  editor.apply(draft({ vertices: { OC0101: [{ ...key, offset: [0, 2, 0] }] } }));
+  createSceneEditor(c.scene);
+  assert.equal(mesh.geometry, original);
+  assert.equal(editor.vertexState("Trees_pine#0"), null);
+});
+
 test("re-centring keeps the camera's direction and distance", () => {
   const view = recenterView({ position: [10, 20, 30], target: [0, 0, 0] }, [5, 1, -2]);
   assert.deepEqual(view, { position: [15, 21, 28], target: [5, 1, -2] });
