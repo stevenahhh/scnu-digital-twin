@@ -1,7 +1,7 @@
 import { useGLTF } from "@react-three/drei";
 import { extendCampusLoader } from "./render/campusGltfLoader";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
@@ -54,6 +54,8 @@ import { WATER_ENV_INTENSITY, WATER_MATERIAL_NAME, patchWaterFresnel } from "./l
 import { clipPolygonAhead } from "./render/clipPolygon.mjs";
 import { POINTER_EXCLUDED_LAYER } from "./render/canvasLifecycle.mjs";
 import { CampusGrass } from "./render/CampusGrass";
+import { ModelEditorScene } from "./editor/ModelEditorScene";
+import { modelEditStore } from "./editor/modelEditsApi.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(D4_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -375,6 +377,8 @@ export function CityModel({
   ...props
 }) {
   const { scene, asset } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
+  // 관리자 모델 편집 중(editor/ModelEditorScene)에는 클릭을 편집기가 받는다. 건물 선택과 마우스오버 강조는 멈춘다.
+  const editing = useSyncExternalStore(modelEditStore.subscribe, () => modelEditStore.getState().editing);
   // Frame v2 GLB는 asset.extras.frameVersion을 기록한다. 없으면 v1(uni.glb) 규칙으로 재중심화한다.
   const frameVersion = asset?.extras?.frameVersion;
   const { camera, gl, scene: rootScene, invalidate, setEvents } = useThree();
@@ -1251,6 +1255,7 @@ export function CityModel({
   // R3F는 pointerup에 delta를 계산하지 않는다(항상 0). 클릭 여부는 pointerGuard가 누른 위치·시간으로 판단한다.
   // 캔버스에서 시작한 누르기만 받는다. 라벨을 누른 pointerup도 R3F 래퍼로 올라와 뒤 건물을 한 번 더 선택하기 때문이다.
   const handleClick = (e) => {
+    if (editing) return;
     const root = getSelectableRoot(e.object);
     const meta = getSelectableMeta(root);
     if (!meta) return;
@@ -1287,7 +1292,7 @@ export function CityModel({
 
   const handlePointerOver = (e) => {
     const meta = getSelectableMeta(e.object);
-    if (!meta) return;
+    if (!meta || editing) return;
 
     e.stopPropagation();
     if (pointerGuard.isDragDriven()) return;
@@ -1402,16 +1407,19 @@ export function CityModel({
   });
 
   return (
-    <group position={[-center.x, 0, -center.z]}>
-      <primitive
-        object={scene}
-        {...props}
-        onPointerUp={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
-      />
-      {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <CampusGrass scene={scene} quality={quality} />}
-    </group>
+    <>
+      <group position={[-center.x, 0, -center.z]}>
+        <primitive
+          object={scene}
+          {...props}
+          onPointerUp={handleClick}
+          onPointerOver={handlePointerOver}
+          onPointerOut={handlePointerOut}
+        />
+        {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <CampusGrass scene={scene} quality={quality} />}
+      </group>
+      <ModelEditorScene scene={scene} controlsRef={controlsRef} />
+    </>
   );
 }
 
