@@ -49,6 +49,7 @@ Thumbs.db
 weather/data/*.sqlite3
 weather/data/*.sqlite3-*
 weather/data/weather-cache.json
+weather/data/model-edits.json
 dist-vworld/
 dist-solar/
 dist-paper/
