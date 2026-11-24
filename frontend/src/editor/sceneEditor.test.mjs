@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Box3, BoxGeometry, Group, InstancedMesh, Matrix4, Mesh, MeshStandardMaterial, Quaternion, Vector3 } from "three";
-import { createSceneEditor, kindLabel } from "./sceneEditor.mjs";
+import { createSceneEditor, kindLabel, recenterView } from "./sceneEditor.mjs";
 
 // generator contract: an object node's origin is its base centre
 const box = () => new BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
@@ -203,6 +203,28 @@ test("a click on the ground beside a thin object picks the nearest small object 
   assert.equal(editor.pickNear([15, 0.9, 6.2], 1), null);
 });
 
+test("a click on coplanar ground layers picks the editable layer, a road marking before the pavement under it", () => {
+  const c = campus();
+  const layer = (name, editable) => {
+    const mesh = new Mesh(box(), material());
+    mesh.name = name;
+    if (editable) mesh.userData.editable = editable;
+    c.scene.add(mesh);
+    return mesh;
+  };
+  const terrain = layer("Topography_joined");
+  const asphalt = layer("Ground_Asphalt_W1", { id: "W1", kind: "asphalt", category: "ground" });
+  const zebra = layer("Road_Markings_X1", { id: "X1", kind: "crosswalk", category: "marking" });
+  c.scene.updateMatrixWorld(true);
+  const editor = createSceneEditor(c.scene);
+  assert.equal(editor.pick([{ object: terrain, distance: 50 }, { object: asphalt, distance: 50.01 }]), "W1");
+  assert.equal(editor.pick([{ object: asphalt, distance: 50 }, { object: terrain, distance: 50.005 }, { object: zebra, distance: 50.01 }]), "X1");
+  // a layer well below the first surface is a different thing, not the same ground
+  assert.equal(editor.pick([{ object: terrain, distance: 50 }, { object: asphalt, distance: 53 }]), null);
+  // an object standing on the ground still wins over the ground behind it
+  assert.equal(editor.pick([{ object: c.fence.children[0], distance: 40 }, { object: asphalt, distance: 50 }]), "OC0101");
+});
+
 test("hidden objects are not picked, but the invisible pick prisms are", () => {
   const c = campus();
   const editor = createSceneEditor(c.scene);
@@ -233,6 +255,33 @@ test("a node whose geometry sits away from its origin turns and scales about its
   const copy = editor.apply(draft({ added: [{ id: "ADD_h", prototype: "BLD_A1", position: [0, 0, 0], quaternion: [0, 0, 0, 1], scale: [1, 1, 1] }] }));
   assert.equal(copy, true);
   close(editor.boundsOf("ADD_h", new Box3()).getCenter(new Vector3()).toArray(), [0, 2, 0]);
+});
+
+test("an edit that would sink an object rests it on the surface under it; buildings and floating poses are left alone", () => {
+  const c = campus();
+  const ground = new Mesh(new BoxGeometry(400, 0.2, 400).translate(0, -0.1, 0), material());
+  ground.name = "Ground_Test";
+  c.scene.add(ground);
+  c.scene.updateMatrixWorld(true);
+  const editor = createSceneEditor(c.scene);
+  const sunk = editor.constrain("OC0101", { position: [5, -0.5, 5], quaternion: [0, 0, 0, 1], scale: [1, 1, 1] });
+  close(sunk.position, [5, 0, 5]);
+  // one drag step can push it far below the surface: it still comes back on top
+  close(editor.constrain("OC0101", { position: [5, -40, 5], quaternion: [0, 0, 0, 1], scale: [1, 1, 1] }).position, [5, 0, 5]);
+  const floating = { position: [5, 3, 5], quaternion: [0, 0, 0, 1], scale: [1, 1, 1] };
+  assert.deepEqual(editor.constrain("OC0101", floating), floating);
+  const building = { position: [50, -4, 50], quaternion: [0, 0, 0, 1], scale: [1, 1, 1] };
+  assert.deepEqual(editor.constrain("BLD_SCNU_E8", building), building);
+  // a tree instance is lifted too, and its own crown never counts as the surface under it
+  close(editor.constrain("Trees_pine#1", { position: [10, -2, 0], quaternion: [0, 0, 0, 1], scale: [1, 1, 1] }).position, [10, 0, 0]);
+  // another object under it is a surface as well: the lamp (top at y = 1) holds up a fence dropped onto it
+  const stacked = editor.constrain("OC0101", { position: [-4, 0.5, 2], quaternion: [0, 0, 0, 1], scale: [0.4, 1, 0.4] });
+  close(stacked.position, [-4, 1, 2]);
+});
+
+test("re-centring keeps the camera's direction and distance", () => {
+  const view = recenterView({ position: [10, 20, 30], target: [0, 0, 0] }, [5, 1, -2]);
+  assert.deepEqual(view, { position: [15, 21, 28], target: [5, 1, -2] });
 });
 
 test("a live gizmo move updates followers before the move is committed", () => {

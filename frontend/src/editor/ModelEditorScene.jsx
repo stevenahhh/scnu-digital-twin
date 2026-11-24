@@ -4,7 +4,8 @@ import { useThree } from "@react-three/fiber";
 import { Box3, Box3Helper, Color, Raycaster, Vector2, Vector3 } from "three";
 import { SELECTION_HEX } from "../ui/sceneTokens.mjs";
 import { SCENE_UNITS_PER_METRE } from "../geo/epsg5186.mjs";
-import { createSceneEditor } from "./sceneEditor.mjs";
+import { useFlyTo } from "../camera/useFlyTo.mjs";
+import { createSceneEditor, recenterView } from "./sceneEditor.mjs";
 import { editorRuntime, ensureModelEditsLoaded, modelEditStore } from "./modelEditsApi.mjs";
 
 const CLICK_SLOP_PX = 5;
@@ -12,6 +13,8 @@ const CLICK_SLOP_PX = 5;
 const NEAR_PICK_RADIUS = 1.5 * SCENE_UNITS_PER_METRE;
 const DUPLICATE_OFFSET = 3 * SCENE_UNITS_PER_METRE;
 const DOWN = new Vector3(0, -1, 0);
+// 땅을 눌렀는데 근처에 작은 객체가 있으면 그쪽을 고른다(바닥 조각은 넓어서 다시 고르기 쉽다).
+const SURFACE_CATEGORIES = new Set(["ground", "marking"]);
 
 // 고정 그림자 지도(ShadowBaker)는 모델이 움직여도 다시 그리지 않는다. 편집이 장면에 반영되면 한 번 다시 굽는다.
 function refreshShadows(gl, root) {
@@ -31,6 +34,9 @@ export function ModelEditorScene({ scene, controlsRef }) {
   const editor = useMemo(() => createSceneEditor(scene), [scene]);
   const gizmoRef = useRef(null);
   const beforeRef = useRef(null);
+  // 끌기 시작 때의 편집값과 모드. 끌리지 않는 채널(이동 중의 회전 등)은 이 값에서 다시 시작해 바닥 규칙이 누적되지 않게 한다.
+  const dragStartRef = useRef(null);
+  const { flyTo } = useFlyTo({ controlsRef });
   const [helper] = useState(() => {
     const box = new Box3Helper(new Box3(), new Color(SELECTION_HEX));
     box.raycast = () => {};
@@ -54,6 +60,15 @@ export function ModelEditorScene({ scene, controlsRef }) {
     invalidate();
   }, [editor, helper, selected, state.draft, invalidate]);
 
+  // 고른 객체로 카메라 중심을 옮긴다. 보는 방향과 거리(줌)는 그대로다.
+  const selectedId = selected?.id ?? null;
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!selectedId || !controls?.object) return;
+    const center = editor.boundsOf(selectedId, new Box3()).getCenter(new Vector3()).toArray();
+    flyTo({ id: "edit-focus", ...recenterView({ position: controls.object.position.toArray(), target: controls.target.toArray() }, center) });
+  }, [selectedId, editor, controlsRef, flyTo]);
+
   // 화면 중앙(궤도 중심) 바로 밑의 지면. 편집 객체가 아닌 첫 표면이다.
   const groundUnder = (point) => {
     const ray = new Raycaster(new Vector3(point.x, point.y + 500, point.z), DOWN);
@@ -69,7 +84,11 @@ export function ModelEditorScene({ scene, controlsRef }) {
       addAtView(prototype) {
         const target = controlsRef.current?.target ?? new Vector3();
         const point = groundUnder(target);
-        return modelEditStore.add(prototype, editor.placement(prototype, point.toArray()));
+        return modelEditStore.add(prototype, editor.constrain(prototype, editor.placement(prototype, point.toArray()), { tilt: false }));
+      },
+      // 입력 칸에서 고친 값도 바닥 아래로는 내려가지 않는다(입력한 회전은 그대로 둔다).
+      commit(id, transform) {
+        modelEditStore.commitTransform(id, editor.constrain(id, transform, { tilt: false }));
       },
       duplicate(id) {
         const entry = editor.entries.get(id);
@@ -78,7 +97,7 @@ export function ModelEditorScene({ scene, controlsRef }) {
         world.x += DUPLICATE_OFFSET;
         const current = editor.readTransform(id);
         const placed = editor.placement(prototype, world.toArray());
-        return modelEditStore.add(prototype, { ...placed, quaternion: current.quaternion, scale: current.scale });
+        return modelEditStore.add(prototype, editor.constrain(prototype, { ...placed, quaternion: current.quaternion, scale: current.scale }, { tilt: false }));
       },
       describe: (id) => {
         const entry = editor.entries.get(id);
@@ -107,7 +126,10 @@ export function ModelEditorScene({ scene, controlsRef }) {
       raycaster.setFromCamera(ndc, camera);
       const hits = raycaster.intersectObject(scene, true);
       const ground = hits.find((hit) => hit.object.layers.mask !== 0 && hit.object.visible);
-      modelEditStore.select(editor.pick(hits) ?? (ground ? editor.pickNear(ground.point.toArray(), NEAR_PICK_RADIUS) : null));
+      const picked = editor.pick(hits);
+      const near = ground ? editor.pickNear(ground.point.toArray(), NEAR_PICK_RADIUS) : null;
+      const onSurface = picked === null || SURFACE_CATEGORIES.has(editor.entries.get(picked)?.category);
+      modelEditStore.select(onSurface && near ? near : picked);
     };
     canvas.addEventListener("pointerdown", onDown);
     canvas.addEventListener("pointerup", onUp);
@@ -141,13 +163,27 @@ export function ModelEditorScene({ scene, controlsRef }) {
           mode={state.mode}
           size={0.8}
           onMouseDown={() => {
-            beforeRef.current = JSON.stringify(editor.readTransform(selected.id));
+            const start = editor.readTransform(selected.id);
+            beforeRef.current = JSON.stringify(start);
+            dragStartRef.current = { start, mode: state.mode };
           }}
           onObjectChange={() => {
-            editor.sync(selected.id);
+            const drag = dragStartRef.current;
+            if (!drag) {
+              editor.sync(selected.id);
+            } else {
+              const live = editor.readTransform(selected.id);
+              const raw = {
+                position: drag.mode === "translate" ? live.position : drag.start.position,
+                quaternion: drag.mode === "rotate" ? live.quaternion : drag.start.quaternion,
+                scale: drag.mode === "scale" ? live.scale : drag.start.scale,
+              };
+              editor.preview(selected.id, editor.constrain(selected.id, raw, { tilt: drag.mode === "translate" }));
+            }
             editor.boundsOf(selected.id, helper.box);
           }}
           onMouseUp={() => {
+            dragStartRef.current = null;
             const after = editor.readTransform(selected.id);
             if (JSON.stringify(after) !== beforeRef.current) {
               modelEditStore.commitTransform(selected.id, after);

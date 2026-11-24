@@ -5,7 +5,9 @@
 //   첫 인스턴스 메시 안에서의 그 인스턴스 행렬이다. 다른 멤버(수관)는 원래 상대 위치를 지킨다.
 // 따라다니는 것(follower): 가로등의 빛 웅덩이 인스턴스(Lamps_pools.userData.lampIds), 건물의 선택 대리 프리즘(BLD_SCNU_*).
 // 원래 월드 변환에서 객체가 움직인 만큼(월드 기준 차이) 같이 움직인다.
-import { Box3, Color, Group, InstancedMesh, Matrix4, Object3D, Quaternion, Vector3 } from "three";
+import { Box3, Color, Group, InstancedMesh, Matrix4, Object3D, Quaternion, Raycaster, Vector3 } from "three";
+import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
+import { selectSupportPoints, settleOnGround } from "./groundContact.mjs";
 
 const KIND_LABELS = Object.freeze({
   building: "건물", entrance: "출입구", fence: "펜스", bench: "벤치", planter: "화단", hedge: "생울타리",
@@ -24,16 +26,37 @@ const KIND_LABELS = Object.freeze({
   "street_lamp/arterial": "가로등(간선도로)", "street_lamp/campusRoad": "가로등(교내도로)", "street_lamp/path": "가로등(보행로)",
   ginkgo: "은행나무", broadleaf: "활엽수", pine: "소나무", metasequoia: "메타세쿼이아", conifer: "침엽수",
   shrub: "관목", canopy: "캐노피 나무",
+  asphalt: "아스팔트", pavers: "보도블록", plaza: "광장 포장", walkway: "보행로", apron: "건물 앞 포장", lot: "주차장",
+  red_road: "붉은 포장", bicycle: "자전거도로", sports: "운동장 바닥", hump: "과속방지턱", gutter: "측구", tactile: "점자블록",
+  parking: "주차 구획선", lane_line_solid: "차선(실선)", lane_line_dashed: "차선(점선)", kerb_no_parking: "주정차 금지선",
+  centre_line_yellow: "중앙선", edge_line: "길가장자리선", speed_bump: "과속방지턱 표시", guide_line: "유도선", crosswalk: "횡단보도",
+  stop_line: "정지선", arrow: "화살표", diamond: "횡단보도 예고", text: "노면 글자", area: "빗금 구역", chevron: "갈매기 표시",
 });
 
 export const CATEGORY_LABELS = Object.freeze({
   building: "건물", entrance: "출입구", furniture: "시설물", lamp: "가로등", signal: "신호등", wheel_stop: "휠스톱", tree: "나무",
+  ground: "바닥 포장", marking: "노면 표시",
 });
 
 export const kindLabel = (kind) => KIND_LABELS[kind] ?? kind;
 
 const TREE_GROUP = /^Trees_(.+)$/;
 const ZERO = new Matrix4().makeScale(0, 0, 0);
+// 바닥 규칙(groundContact)을 적용하지 않는 범주: 바닥 자신(포장·노면 표시)과, 경사지에 기초가 묻힌 채로 서 있는 건물·출입구.
+// 땅을 누른 클릭이 고를 수 있는 작은 객체의 범주. 건물·나무·바닥 조각은 레이로만 고른다.
+// 겹친 바닥 층을 한 표면으로 보는 깊이(장면 단위, 약 0.3 m)와, 그 안에서 먼저 고르는 순서(작을수록 먼저).
+const COPLANAR_DEPTH = 0.2;
+const PICK_RANK = Object.freeze({ marking: 1, ground: 2 });
+const NEAR_PICK_CATEGORIES = new Set(["furniture", "lamp", "signal", "wheel_stop"]);
+const FREE_CATEGORIES = new Set(["ground", "marking", "building", "entrance"]);
+// 발이 이 폭(장면 단위, 약 0.8 m)보다 좁은 객체(기둥, 볼라드, 나무)는 기울이지 않고 올리기만 한다. 기둥은 비탈에서도 곧게 선다.
+const TILT_SPAN_MIN = 0.5;
+// 지지점을 고를 때 볼 정점 수의 상한(큰 건물도 한 번에 계산할 수 있도록 간격을 두고 본다).
+const SUPPORT_VERTEX_SAMPLE = 60000;
+// 바닥을 찾는 레이의 시작 높이: 캠퍼스에서 가장 높은 건물보다 충분히 위(장면 단위).
+const RAY_HEADROOM = 1000;
+// 이보다 인덱스가 많은 메시는 바닥 레이에 쓰기 전에 경계 상자 트리(three-mesh-bvh)를 만든다.
+const BVH_MIN_INDICES = 3000;
 // 생성기 피벗의 반올림 오차보다 크고, 아무리 작은 시설물보다는 작은 거리(장면 단위).
 const PIVOT_EPSILON = 0.01;
 
@@ -133,6 +156,16 @@ export function createSceneEditor(scene) {
     const local = new Matrix4();
     mesh.getMatrixAt(index, local);
     return { mesh, index, world: worldOf(mesh, local) };
+  };
+
+  const idOfHit = ({ object, instanceId }) => {
+    if (object.isInstancedMesh && object.userData.editInstanceGroup) {
+      const id = `${object.userData.editInstanceGroup}#${instanceId}`;
+      return entries.has(id) ? id : null;
+    }
+    let node = object;
+    while (node && node.userData.editId === undefined) node = node.parent;
+    return node && entries.has(node.userData.editId) ? node.userData.editId : null;
   };
 
   const register = (entry) => {
@@ -329,23 +362,23 @@ export function createSceneEditor(scene) {
       }
       return changed;
     },
-    // 레이캐스트 결과(가까운 순)에서 처음 맞은 보이는 물체가 편집 객체면 그 id, 아니면 null.
+    // 레이캐스트 결과(가까운 순)에서 고를 객체 id, 없으면 null. 지운 것과 숨은 것은 건너뛴다.
+    // 바닥 층(지형, 포장, 노면 표시)은 같은 높이에 겹쳐 있으므로, 처음 맞은 표면에서 COPLANAR_DEPTH 안에 있는 맞음을
+    // 한 묶음으로 보고 편집 객체를 고른다: 바닥 위에 선 객체, 노면 표시, 포장 순서다.
     pick(intersections) {
+      const visible = [];
       for (const hit of intersections) {
-        const { object } = hit;
-        if (object.layers.mask === 0 || !isPickable(object)) continue;
-        if (object.isInstancedMesh && object.userData.editInstanceGroup) {
-          const entry = entries.get(`${object.userData.editInstanceGroup}#${hit.instanceId}`);
-          if (entry?.removed) continue;
-          return entry ? entry.id : null;
-        }
-        let node = object;
-        while (node && node.userData.editId === undefined) node = node.parent;
-        const entry = node ? entries.get(node.userData.editId) : null;
-        if (entry?.removed) continue;
-        return entry ? entry.id : null;
+        if (hit.object.layers.mask === 0 || !isPickable(hit.object)) continue;
+        const id = idOfHit(hit);
+        if (id && entries.get(id).removed) continue;
+        visible.push({ hit, id });
       }
-      return null;
+      if (visible.length === 0) return null;
+      const first = visible[0].hit.distance;
+      const cluster = first === undefined ? [visible[0]] : visible.filter(({ hit }) => hit.distance - first <= COPLANAR_DEPTH);
+      const rank = (id) => PICK_RANK[entries.get(id).category] ?? 0;
+      const editable = cluster.filter(({ id }) => id).sort((p, q) => rank(p.id) - rank(q.id));
+      return editable[0]?.id ?? null;
     },
     // 기즈모로 끄는 동안: 손잡이(노드)의 지금 변환을 멤버와 따라다니는 것에 옮긴다. 확정은 store.commitTransform이 한다.
     sync(id) {
@@ -361,7 +394,7 @@ export function createSceneEditor(scene) {
       let best = null;
       let bestDistance = radius;
       for (const entry of entries.values()) {
-        if (entry.removed || entry.members || entry.category === "building" || entry.category === "tree") continue;
+        if (entry.removed || entry.members || !NEAR_PICK_CATEGORIES.has(entry.category)) continue;
         const distance = box.setFromObject(entry.node).distanceToPoint(at);
         if (distance <= bestDistance) {
           best = entry.id;
@@ -371,20 +404,12 @@ export function createSceneEditor(scene) {
       return best;
     },
     readTransform: (id) => toTransform(entries.get(id).target),
-    // 선택 상자(월드 좌표). 나무 인스턴스는 손잡이에 모양이 없으므로 멤버 메시의 경계 상자를 인스턴스 행렬로 옮겨 합친다.
-    boundsOf(id, box) {
+    // 끌기 중 미리 보기: 주어진 편집값을 장면에만 입힌다(확정은 store.commitTransform).
+    preview(id, transform) {
       const entry = entries.get(id);
-      if (!entry.members) return box.setFromObject(entry.node);
-      box.makeEmpty();
-      const instance = new Matrix4();
-      for (const member of entry.members) {
-        member.mesh.updateWorldMatrix(true, false);
-        member.mesh.getMatrixAt(member.index, instance);
-        if (!member.mesh.geometry.boundingBox) member.mesh.geometry.computeBoundingBox();
-        box.union(member.mesh.geometry.boundingBox.clone().applyMatrix4(member.mesh.matrixWorld.clone().multiply(instance)));
-      }
-      return box;
+      if (entry) setEntry(entry, transform, entry.removed);
     },
+    boundsOf: (id, box) => boundsOfEntry(entries.get(id), box),
     // 원형 하나를 월드 좌표 point(바닥)에 놓을 때의 편집값: 원형의 회전·크기를 그대로 쓰고 위치만 그 부모 기준으로 바꾼다.
     placement(prototypeId, point) {
       const entry = entries.get(prototypeId);
@@ -405,5 +430,107 @@ export function createSceneEditor(scene) {
       return [...groups.values()].sort((a, b) => a.key.localeCompare(b.key));
     },
     missingPrototypes: () => [...missing],
+    // 편집값을 바닥 규칙에 맞춘다: 바닥(지형·포장·노면 표시·밑에 있는 다른 객체)보다 내려가지 않고, 이동 드래그에서는
+    // 닿은 뒤 더 끌어내린 만큼 기울여 발을 모두 바닥에 얹는다(groundContact.mjs).
+    constrain(id, transform, { tilt = true } = {}) {
+      const entry = entries.get(id);
+      if (!entry || FREE_CATEGORIES.has(entry.category)) return transform;
+      const points = supportPointsOf(entry);
+      if (points.length === 0) return transform;
+      const span = Math.max(...[0, 2].map((axis) => {
+        const values = points.map((p) => p[axis] * transform.scale[axis]);
+        return Math.max(...values) - Math.min(...values);
+      }));
+      return settleOnGround({ transform, points, groundAt: groundAtFor(entry, transform), tilt: tilt && span >= TILT_SPAN_MIN });
+    },
   };
+
+  // 선택 상자(월드 좌표). 나무 인스턴스는 손잡이에 모양이 없으므로 멤버 메시의 경계 상자를 인스턴스 행렬로 옮겨 합친다.
+  function boundsOfEntry(entry, box) {
+    if (!entry.members) return box.setFromObject(entry.node);
+    box.makeEmpty();
+    const instance = new Matrix4();
+    for (const member of entry.members) {
+      member.mesh.updateWorldMatrix(true, false);
+      member.mesh.getMatrixAt(member.index, instance);
+      if (!member.mesh.geometry.boundingBox) member.mesh.geometry.computeBoundingBox();
+      box.union(member.mesh.geometry.boundingBox.clone().applyMatrix4(member.mesh.matrixWorld.clone().multiply(instance)));
+    }
+    return box;
+  }
+
+  // 객체의 발(가장 낮은 띠의 윤곽 점, 편집값 좌표). 모양은 바뀌지 않으므로 한 번 구해 둔다.
+  function supportPointsOf(entry) {
+    if (entry.supportPoints) return entry.supportPoints;
+    const vertices = [];
+    const v = new Vector3();
+    const collect = (geometry, toTarget) => {
+      const position = geometry.getAttribute("position");
+      const step = Math.max(1, Math.floor(position.count / SUPPORT_VERTEX_SAMPLE));
+      for (let i = 0; i < position.count; i += step) vertices.push(v.fromBufferAttribute(position, i).applyMatrix4(toTarget).toArray());
+    };
+    if (entry.members) {
+      for (const member of entry.members) collect(member.mesh.geometry, member.relative);
+    } else {
+      entry.target.updateWorldMatrix(true, false);
+      entry.node.updateWorldMatrix(true, true);
+      const targetInverse = entry.target.matrixWorld.clone().invert();
+      entry.node.traverse((child) => {
+        if (child.isMesh && !child.isInstancedMesh && child.geometry) collect(child.geometry, targetInverse.clone().multiply(child.matrixWorld));
+      });
+    }
+    entry.supportPoints = selectSupportPoints(vertices);
+    return entry.supportPoints;
+  }
+
+  // 부모 좌표 (x, z)에서 점 높이 y 아래의 바닥 높이(부모 좌표). 객체 자신과 숨은 것, 선택 대리 프리즘은 바닥이 아니다.
+  // 레이는 높이서 내려오고, 객체 꼭대기(y + reach)보다 낮은 첫 표면을 바닥으로 본다. 객체 위를 덮는 지붕·캐노피는
+  // 바닥이 아니다. 한 번의 끌기로 꼭대기까지 모두 땅속에 들어갔으면 가장 낮은 표면(지형)을 바닥으로 본다.
+  function groundAtFor(entry, transform) {
+    const parent = entry.target.parent;
+    parent.updateWorldMatrix(true, false);
+    const toWorld = parent.matrixWorld;
+    const toParent = parent.matrixWorld.clone().invert();
+    const own = new Set();
+    (entry.node ?? entry.target).traverse((child) => own.add(child));
+    const size = boundsOfEntry(entry, new Box3()).getSize(new Vector3());
+    const reach = Math.max(size.y, 1) + 1;
+    // 검사할 자세(transform)의 위치 둘레. 입력 칸으로 멀리 옮기면 지금 자리가 아니라 새 자리의 표면을 봐야 한다.
+    const centre = new Vector3(...transform.position).applyMatrix4(toWorld);
+    const area = new Box3(centre.clone(), centre.clone()).expandByScalar(Math.max(size.x, size.y, size.z) * Math.max(...transform.scale.map(Math.abs)));
+    // 후보 표면: 객체 주변(크기만큼 넓힌 범위)과 경계 상자가 겹치는 메시만 본다. 장면 전체를 검사하면 끌기 한 번에
+    // 0.2~1초가 들었다(측정). 인스턴스 메시(나무, 빛 웅덩이, 입면 부속)는 바닥이 아니다. 큰 메시는 처음 쓸 때 경계 상자 트리를 만든다.
+    area.expandByScalar(Math.max(size.x, size.z) + reach);
+    const candidates = [];
+    const box = new Box3();
+    scene.traverse((object) => {
+      if (!object.isMesh || object.isInstancedMesh || own.has(object) || object.userData.pickProxy || object.layers.mask === 0) return;
+      if (!object.geometry.boundingBox) object.geometry.computeBoundingBox();
+      box.copy(object.geometry.boundingBox).applyMatrix4(object.matrixWorld);
+      if (box.max.x < area.min.x || box.min.x > area.max.x || box.max.z < area.min.z || box.min.z > area.max.z) return;
+      if (!isPickable(object)) return;
+      if (!object.geometry.boundsTree && (object.geometry.index?.count ?? object.geometry.getAttribute("position").count) > BVH_MIN_INDICES) {
+        object.geometry.boundsTree = new MeshBVH(object.geometry, { indirect: true });
+        object.raycast = acceleratedRaycast;
+      }
+      candidates.push(object);
+    });
+    const ray = new Raycaster();
+    ray.layers.enableAll();
+    const down = new Vector3(0, -1, 0);
+    return (x, z, y) => {
+      const point = new Vector3(x, y, z).applyMatrix4(toWorld);
+      const top = point.y + reach;
+      ray.set(new Vector3(point.x, top + RAY_HEADROOM, point.z), down);
+      const surfaces = ray.intersectObjects(candidates, false);
+      const hit = surfaces.find((h) => h.point.y <= top) ?? surfaces.at(-1);
+      return hit ? hit.point.applyMatrix4(toParent).y : null;
+    };
+  }
+}
+
+// 카메라가 보는 방향과 거리(줌)를 그대로 두고 중심만 center로 옮긴 시점.
+export function recenterView({ position, target }, center) {
+  const shift = [0, 1, 2].map((i) => center[i] - target[i]);
+  return { position: position.map((v, i) => v + shift[i]), target: [...center] };
 }

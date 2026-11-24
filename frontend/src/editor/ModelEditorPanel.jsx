@@ -85,7 +85,7 @@ function TransformFields({ entry, transform }) {
     } else {
       next[group][index] = value;
     }
-    modelEditStore.commitTransform(entry.id, fromFields(next));
+    editorRuntime.get()?.commit(entry.id, fromFields(next));
   };
   const row = (title, group, labels, step, min) => (
     <fieldset className="grid grid-cols-[3.5rem_1fr_1fr_1fr] items-end gap-2">
