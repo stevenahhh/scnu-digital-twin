@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { MARKING_LIFT_M } from "../lib/groundNodes.mjs";
 import test from "node:test";
 import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { humpBands, loadRoadMarkings, roadMarkingPlan } from "./roadMarkings.mjs";
@@ -246,6 +247,19 @@ test("junction road text uses the recorded words and rejects unsupported charact
   assert.throws(() => plan(section(), approach({ text: [{ text: "☃", lane: 0, atM: 10 }] })), /ND_TEST.*glyph/);
 });
 
+test("hump height holds on the hump's side edges, where a paint vertex rounds a hair outside the footprint", () => {
+  const markings = plan(section({ humps: [{ atM: 15, lengthM: 4, heightM: 0.12, bands: true }] }));
+  const { tm, widthM } = markings.humps[0];
+  const side = [-tm.forward[1], tm.forward[0]];
+  for (const sign of [1, -1]) {
+    // float rounding of a vertex placed on the edge: well under a micrometre outward
+    const edge = tm.centre.map((v, k) => v + sign * side[k] * (widthM / 2 + 1e-8));
+    assert.ok(Math.abs(markings.heightAt(...tmToScene(...edge)) - 0.12) < 1e-6, `side ${sign}`);
+  }
+  const beyond = tm.centre.map((v, k) => v + side[k] * (widthM / 2 + 0.01));
+  assert.equal(markings.heightAt(...tmToScene(...beyond)), 0, "a centimetre beyond the edge is road");
+});
+
 test("record geometry reaches the Road_Markings GLB mesh with hump elevation", async () => {
   const markings = plan(section({ humps: [{ atM: 15, lengthM: 4, heightM: 0.12, bands: true }] }));
   const glb = new GlbBuilder();
@@ -271,8 +285,9 @@ test("record geometry reaches the Road_Markings GLB mesh with hump elevation", a
     // specified arc, not a second discontinuous containment test at that edge.
     const [e] = sceneToTm(x, z);
     const expected = 0.12 * Math.max(0, 1 - ((e - origin[0] - 15) / 2) ** 2);
-    assert.ok(Math.abs(y - 10 - expected * SCENE_UNITS_PER_METRE) < 1e-5);
-    peak = Math.max(peak, (y - 10) / SCENE_UNITS_PER_METRE);
+    // the paint lies MARKING_LIFT_M above the hump's arc (lib/groundNodes.mjs), not flush with it
+    assert.ok(Math.abs(y - 10 - (expected + MARKING_LIFT_M) * SCENE_UNITS_PER_METRE) < 1e-5);
+    peak = Math.max(peak, (y - 10) / SCENE_UNITS_PER_METRE - MARKING_LIFT_M);
   }
   }
   assert.ok(peak > 0.119 && peak <= 0.12001);

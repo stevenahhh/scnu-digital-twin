@@ -12,6 +12,7 @@
 // constant palette U, so an edge collapse never shifts a texture.
 // Works on one indexed primitive at a time (positions xyz, Float32Array or array; indices Uint32/array).
 import { MeshoptSimplifier } from "meshoptimizer";
+import { ShapeUtils, Vector2 } from "three";
 import { D4_MATERIAL_SCOPE, splitD4GroundPolygon } from "./landcover.mjs";
 import { convexOverlapArea, splitByLine, subtractConvex } from "./partition.mjs";
 import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
@@ -53,7 +54,48 @@ export function dropSliverFaces(indices, pos32, unitsPerMetre) {
   return kept;
 }
 
-export async function decimateDecal({ positions, indices, attributes = [], toleranceM, unitsPerMetre }) {
+// footprintCover(polygons: [[outer, ...holes]] in plan [x, z]) -> (triangle) => true when the triangle shares area with
+// a footprint (touching an edge is not sharing). Used to lock the ground faces under a lifted layer (lib/groundNodes.mjs).
+const COVER_BIN = 4;
+export function footprintCover(polygons) {
+  const bins = new Map();
+  for (const [outer, ...holes] of polygons) {
+    const all = [...outer, ...holes.flat()];
+    for (const face of ShapeUtils.triangulateShape(outer.map((p) => new Vector2(...p)), holes.map((r) => r.map((p) => new Vector2(...p))))) {
+      const tri = face.map((i) => all[i]);
+      const xs = tri.map((p) => p[0]), zs = tri.map((p) => p[1]);
+      tri.box = [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)];
+      for (let i = Math.floor(tri.box[0] / COVER_BIN); i <= Math.floor(tri.box[2] / COVER_BIN); i += 1) {
+        for (let j = Math.floor(tri.box[1] / COVER_BIN); j <= Math.floor(tri.box[3] / COVER_BIN); j += 1) {
+          const key = `${i},${j}`;
+          if (!bins.has(key)) bins.set(key, []);
+          bins.get(key).push(tri);
+        }
+      }
+    }
+  }
+  return (triangle) => {
+    const xs = triangle.map((p) => p[0]), zs = triangle.map((p) => p[1]);
+    const box = [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)];
+    const seen = new Set();
+    for (let i = Math.floor(box[0] / COVER_BIN); i <= Math.floor(box[2] / COVER_BIN); i += 1) {
+      for (let j = Math.floor(box[1] / COVER_BIN); j <= Math.floor(box[3] / COVER_BIN); j += 1) {
+        for (const tri of bins.get(`${i},${j}`) ?? []) {
+          if (seen.has(tri)) continue;
+          seen.add(tri);
+          if (tri.box[0] >= box[2] || box[0] >= tri.box[2] || tri.box[1] >= box[3] || box[1] >= tri.box[3]) continue;
+          if (convexOverlapArea(triangle, tri) > 1e-10) return true;
+        }
+      }
+    }
+    return false;
+  };
+}
+
+// lockFace(triangle in plan [x, z]) -> true keeps that face as it is: its three vertices are locked, so no collapse
+// touches it and the ground under a lifted layer (paint, a tactile band, a hump top) stays on the terrain exactly;
+// a collapse elsewhere may move the surface by up to toleranceM, more than the few millimetres the layer is lifted.
+export async function decimateDecal({ positions, indices, attributes = [], toleranceM, unitsPerMetre, lockFace = null }) {
   await MeshoptSimplifier.ready;
   const vertexCount = positions.length / 3;
   const index32 = indices instanceof Uint32Array ? indices : Uint32Array.from(indices);
@@ -64,6 +106,12 @@ export async function decimateDecal({ positions, indices, attributes = [], toler
     return { positions: pos32, indices: kept, attributes, before: index32.length / 3, after: kept.length / 3 };
   }
   const lock = boundaryVertices(index32, vertexCount);
+  if (lockFace) {
+    for (let t = 0; t < index32.length; t += 3) {
+      const ids = [index32[t], index32[t + 1], index32[t + 2]];
+      if (lockFace(ids.map((v) => [pos32[v * 3], pos32[v * 3 + 2]]))) for (const v of ids) lock[v] = 1;
+    }
+  }
   // meshopt's error is relative to the mesh extent (getScale); one scene unit of error -> tolerance / extent.
   const extent = MeshoptSimplifier.getScale(pos32, 3);
   const targetError = (toleranceM * unitsPerMetre) / extent;

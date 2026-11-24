@@ -18,6 +18,23 @@
 // edge (the planar partition checks of check-ground-overlap.mjs and qa/d4Integration.mjs see no crack or overlap).
 import { pivotOf } from "./objectNodes.mjs";
 
+// The road markings are a layer on top of the ground (user 2026-11-24: "실제 pavement와 drawing처럼 layer로 존재해야"):
+// they are not cut out of the surface under them, which stays whole, so moving or deleting a marking node leaves intact
+// pavement. The paint lies MARKING_LIFT_M above it, a real vertical offset rather than coplanar layers; CityModel's
+// polygon offset for the Road_Marking material keeps it in front at long view distances. The ground faces under the paint
+// keep their built heights (lib/decimate.mjs lockFace) and the paint decimates within PAINT_DECIMATE_TOLERANCE_M, so the
+// gap stays positive everywhere. Tactile bands and hump tops stay in the ground partition: they replace the paving or
+// raise the asphalt (their own surfaces), and on the walkway slab they follow different heights than the pavers.
+export const MARKING_LIFT_M = 0.006;
+export const PAINT_DECIMATE_TOLERANCE_M = 0.001;
+const PAINT_NODE = /^Road_Markings_/;
+// the collection node Road_Markings and the hump walls Ground_Hump_<id> hold no ground cover
+const NOT_GROUND = /^(Road_Markings|Ground_Hump_.*)$/;
+
+// "paint" for a road marking node lying on the ground, "base" for a node of the ground itself (one planar partition),
+// null for a node that holds no ground cover.
+export const groundRole = (name) => (NOT_GROUND.test(name) ? null : PAINT_NODE.test(name) ? "paint" : "base");
+
 export const PIVOT_STEP = 1 / 1024;
 export const CELL_M = 80;
 export const OFF_CAMPUS_CELL_M = 150;

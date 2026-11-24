@@ -658,7 +658,9 @@ export async function naturalGroundMaterial(glb, landcoverAt, ao) {
 // where the surface stays within DECIMATE_TOLERANCE_M of the terrain. 2 cm: well under the 6 mm layer lifts only in
 // plan, the lift itself rides on the kept vertices; on flat ground the partition slivers collapse to a few triangles.
 export const DECIMATE_TOLERANCE_M = 0.02;
-export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heightOffset, refine = null, claim, decimate = true }) {
+// lockFace(triangle) -> true keeps that face out of the decimation (lib/decimate.mjs): the ground under the road markings
+// keeps the height the paint was lifted from (lib/groundNodes.mjs MARKING_LIFT_M).
+export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heightOffset, refine = null, claim, decimate = true, lockFace = null }) {
   const tileSize = (mesh) => (GROUND_MESHES[mesh].pattern ? pavingPattern(GROUND_MESHES[mesh].pattern).repeatM : groundTile(GROUND_MESHES[mesh].tile).entry.physicalSizeM);
   const primitives = surfaceGeometry({ layers, surface, tileSize, heightOffset, refine, claim, groupOf: surfaceGroup });
   let decimated = { before: 0, after: 0 };
@@ -666,7 +668,7 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
     for (const primitive of primitives) {
       if (!primitive.indices.length) continue;
       const out = await decimateDecal({
-        positions: primitive.positions, indices: primitive.indices, toleranceM: DECIMATE_TOLERANCE_M, unitsPerMetre: UNIT,
+        positions: primitive.positions, indices: primitive.indices, toleranceM: DECIMATE_TOLERANCE_M, unitsPerMetre: UNIT, lockFace,
         attributes: [{ array: Float32Array.from(primitive.normals), size: 3 }, { array: Float32Array.from(primitive.uvs), size: 2 }, { array: Float32Array.from(primitive.uv1), size: 2 }],
       });
       decimated.before += out.before;

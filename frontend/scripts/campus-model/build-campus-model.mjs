@@ -70,6 +70,7 @@ import { KERB_EXPOSED_M, SLAB_DECAL_DROP_M, buildKerbs, prepareKerbs } from "./s
 import { loadInputs } from "./stages/sources.mjs";
 import { planTactile } from "./stages/tactile.mjs";
 import { buildHumpMeshes, buildSurfaceMeshes, describeSurfaces, humpLayers } from "./stages/surfaces.mjs";
+import { footprintCover } from "./lib/decimate.mjs";
 import { buildTrees, placeTrees } from "./stages/trees.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -150,9 +151,11 @@ const humps = markings;
 const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture });
 
 // ---------------------------------------------------------------- ground partition (lib/partition.mjs)
-// The ground has no stacked layers: road markings claim their area first, then the ground classes by precedence (hump
-// tops, aprons, tiles, walkways, roads, lots, sports), then the natural Topography takes what is left. Every piece lies
-// on the terrain (plus the walkway slab or a hump's arc), so no two ground triangles share area.
+// The ground is one planar partition: the ground classes claim by precedence (aprons, tiles, walkways, gutters, roads,
+// lots, sports), then the natural Topography takes what is left, so no two ground triangles share area and every piece
+// lies on the terrain (plus the walkway slab or a hump's arc). The road markings are not cut out of it
+// (lib/groundNodes.mjs): they claim in a partition of their own (paint against paint) and lie MARKING_LIFT_M above the
+// intact ground under them, so moving or deleting a marking leaves whole pavement.
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const outerHeightAt = meshHeightAt(outerTerrain.positions, outerTerrain.indices);
 // The hill ring is partitioned too: ground pieces beyond EXTENT (off-campus lots and courts) and the context streets
@@ -174,6 +177,7 @@ const claim = (piece) => {
   if (rest) out.push(...partition.claim(rest));
   return out;
 };
+const paintPartition = new GroundPartition(surface.grid);
 // the ground under a piece: the Topography inside EXTENT, the hill ring beyond it
 const groundSurface = {
   grid: surface.grid,
@@ -192,7 +196,9 @@ const stageTime = (label) => { console.log(`ground partition: ${label} in ${((pe
 const excludedParcelIds = new Set(surfaces.paintExcludedDetail.map(p => p.parcel));
 const paintExclusions = surfaces.parcels.filter(p => excludedParcelIds.has(p.id) && !p.paintAllowed)
   .map(p => [p.ring, ...p.holes].map(r => r.map(([e,n]) => tmToScene(e,n))));
-const markingMesh = await buildMarkings({ glb, markings, surface: groundSurface, extraHeight: humps.heightAt, claim, baseOffset: slabDecal, exclusions: paintExclusions });
+// the paint is cut along the hump tops' outlines, so no paint face spans a hump's raised edge
+const humpOutlines = humpLayers(humps.humps).map((layer) => layer.rings[0].map(([e, n]) => tmToScene(e, n)));
+const markingMesh = await buildMarkings({ glb, markings, surface: groundSurface, extraHeight: humps.heightAt, claim: (piece) => paintPartition.claim(piece), baseOffset: slabDecal, exclusions: paintExclusions, splits: humpOutlines });
 const markingReport = {
   symbols: { ...markings.pieceReport, ...markingMesh.roadEmission.summary },
   emission: markingMesh.roadEmission,
@@ -208,8 +214,10 @@ const groundLayers = [...layers, ...kerbs.gutters, ...tactile.layers, ...humpLay
   .map((layer, order) => ({ layer, order }))
   .sort((a, b) => b.layer.precedence - a.layer.precedence || b.order - a.order)
   .map(({ layer }) => layer);
+// The ground under the paint is not decimated, so it keeps the height the paint was lifted from.
 console.log(describeSurfaces(await buildSurfaceMeshes({
   glb, layers: groundLayers, surface: groundSurface, ao: aoTexture, claim,
+  lockFace: footprintCover(markings.pieces.map((piece) => piece.rings)),
   heightOffset: (layer, x, z) => (layer.hump ? humps.heightAt(x, z) : layer.walkway || layer.tactile ? slabDecal(x, z) : 0),
   refine: { maxEdgeM: 0.25, needsFine: (layer, p, reach) => layer.hump || ((layer.walkway || layer.tactile) && kerbs.plan.nearSlabChange(p, reach / SCENE_UNITS_PER_METRE)) },
 })));

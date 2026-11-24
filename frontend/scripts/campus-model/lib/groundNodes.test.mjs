@@ -2,10 +2,25 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { GlbBuilder } from './glb.mjs';
-import { emitGroundNode, markingGroup, markingKind, nodeName, rebaseExact, snapPivot, surfaceGroup } from './groundNodes.mjs';
+import { MARKING_LIFT_M, PAINT_DECIMATE_TOLERANCE_M, emitGroundNode, groundRole, markingGroup, markingKind, nodeName, rebaseExact, snapPivot, surfaceGroup } from './groundNodes.mjs';
 
 const square = (E, N, size = 2) => [[E, N], [E + size, N], [E + size, N + size], [E, N + size]];
 const layer = (mesh, parcel, E = 243500, N = 263900, extra = {}) => ({ mesh, parcel, rings: [square(E, N)], ...extra });
+
+test('groundRole: markings are paint on the ground; tactile bands, hump tops and every other ground node are base', () => {
+  for (const name of ['Road_Markings_JA_b6b5553a334e7821_crossing', 'Road_Markings_LOT_E243476_N263851']) assert.equal(groundRole(name), 'paint', name);
+  for (const name of ['Ground_Asphalt_PARCEL_ROAD_1', 'Ground_Walkway_WALKWAY_E243440_N263760', 'Ground_Tactile_TACTILE_E243440_N263760', 'Ground_HumpTop_RS_1_humps_0', 'Ground_RedRoad_ZONE17', 'Topography_3', 'OuterTerrain']) {
+    assert.equal(groundRole(name), 'base', name);
+  }
+  // the collection node and the hump walls are not ground cover
+  assert.equal(groundRole('Road_Markings'), null);
+  assert.equal(groundRole('Ground_Hump_RS_1_humps_0'), null);
+});
+
+test('paint lies a few millimetres above the ground and decimates well within that gap', () => {
+  assert.ok(MARKING_LIFT_M > 0 && MARKING_LIFT_M <= 0.01);
+  assert.ok(PAINT_DECIMATE_TOLERANCE_M < MARKING_LIFT_M / 2);
+});
 
 test('nodeName keeps only the characters three.js leaves in a node name', () => {
   assert.equal(nodeName('Road_Markings', 'JA_b6b5553a334e7821/crossing'), 'Road_Markings_JA_b6b5553a334e7821_crossing');

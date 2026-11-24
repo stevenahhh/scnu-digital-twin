@@ -3,13 +3,13 @@ import { ShapeUtils, Vector2 } from "three";
 import { EXTENT, SCENE_UNITS_PER_METRE, metres } from "../lib/frame.mjs";
 import { conform } from "../lib/conform.mjs";
 import { decimateDecal } from "../lib/decimate.mjs";
-import { DECIMATE_TOLERANCE_M } from "./surfaces.mjs";
 import { encodePng } from "../lib/png.mjs";
-import { subtractConvex } from "../lib/partition.mjs";
+import { splitByLine, subtractConvex } from "../lib/partition.mjs";
+import { ringArea } from "../lib/geometry.mjs";
 import { pieceKey } from "../lib/parcels.mjs";
 import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
 import { finalPaintReceipt } from "../qa/paintReceipt.mjs";
-import { emitGroundNode, markingGroup, markingKind, nodeName } from "../lib/groundNodes.mjs";
+import { PAINT_DECIMATE_TOLERANCE_M, MARKING_LIFT_M, emitGroundNode, markingGroup, markingKind, nodeName } from "../lib/groundNodes.mjs";
 export const PAINT_BEYOND_EXTENT = Object.freeze({ minX: 502, maxX: 540, minZ: -45, maxZ: 20 });
 export const inMarkingExtent = ([x,z]) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
 const ZEBRA_PERIOD_M = 0.903, ZEBRA_BAR_M = 0.5;
@@ -67,13 +67,16 @@ function splitFine(tri, maxEdge, near) {
   return [[a, ab, ca], [ab, b, bc], [ca, bc, c], [ab, bc, ca]].flatMap((t) => splitFine(t, maxEdge, near));
 }
 
-// claim(piece) -> the convex parts of a conformed piece that no higher ground class holds (lib/partition.mjs);
+// claim(piece) -> the convex parts of a conformed piece that no earlier paint holds (a partition of the paint alone,
+// lib/partition.mjs), so two marking pieces never share area; the ground surfaces never claim against it.
 // baseOffset(x, z) -> metres of the ground under the paint above the terrain (the raised walkway slab). The paint lies
-// flush on that ground: it is cut out of the surfaces under it, not stacked on them.
+// MARKING_LIFT_M above that ground (lib/groundNodes.mjs): a layer on top of intact pavement, never cut out of it.
 const fan = (poly) => poly.slice(1, -1).map((p, k) => [poly[0], p, poly[k + 2]]);
 // One editable node per marking element (lib/groundNodes.mjs markingGroup: a road marking object, or a parking lot's
 // paint): Road_Markings_<id> under the Road_Markings collection node, which carries the inventory extras.
-export async function buildMarkings({ glb, markings, surface, extraHeight = () => 0, claim = (piece) => [piece], baseOffset = () => 0, decimate = true, exclusions = [] }) {
+// splits: convex outlines in plan (the hump tops) the paint is cut along, inside parts and outside parts both kept: a
+// face spanning a hump's raised edge would slope through the hump top it lies on.
+export async function buildMarkings({ glb, markings, surface, extraHeight = () => 0, claim = (piece) => [piece], baseOffset = () => 0, decimate = true, exclusions = [], splits = [] }) {
   // element id -> { id, parking, kinds, positions, normals, uvs, indices, index, paintSources }, in drawing order
   const elements = new Map();
   const roadParts = [], droppedRoadParts = [];
@@ -89,13 +92,28 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
           Math.max(...triangle.map(p => p[0])), Math.max(...triangle.map(p => p[1]))] };
       });
   });
+  const outlines = splits.map((ring) => {
+    const sign = ringArea(ring) > 0 ? 1 : -1;
+    const edges = ring.map((a, i) => {
+      const b = ring[(i + 1) % ring.length];
+      return (p) => sign * ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]));
+    });
+    const xs = ring.map((p) => p[0]), zs = ring.map((p) => p[1]);
+    return { ring, edges, box: [Math.min(...xs), Math.min(...zs), Math.max(...xs), Math.max(...zs)] };
+  });
+  const splitAlong = (poly) => outlines.reduce((parts, { ring, edges, box }) => parts.flatMap((part) => {
+    if (part.every((p) => p[0] <= box[0]) || part.every((p) => p[1] <= box[1]) || part.every((p) => p[0] >= box[2]) || part.every((p) => p[1] >= box[3])) return [part];
+    let inside = part;
+    for (const f of edges) if (inside) inside = splitByLine(inside, f).inside;
+    return inside ? [inside, ...subtractConvex(part, ring)] : [part];
+  }), [poly]);
   const vertex = (element, [x, z], colour) => {
     const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${colour}`;
     let i = element.index.get(key);
     if (i === undefined) {
       i = element.positions.length / 3;
       element.index.set(key, i);
-      element.positions.push(x, surface.height(x, z) + metres(baseOffset(x, z) + extraHeight(x, z)), z);
+      element.positions.push(x, surface.height(x, z) + metres(baseOffset(x, z) + extraHeight(x, z) + MARKING_LIFT_M), z);
       element.normals.push(...surface.normal(x, z));
       element.uvs.push(PALETTE_U[colour], 0.5);
     }
@@ -130,7 +148,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
       sourceAreaScene += Math.abs((flat[1][0]-flat[0][0])*(flat[2][1]-flat[0][1])-(flat[1][1]-flat[0][1])*(flat[2][0]-flat[0][0]))/2;
       const clipped = cuts.reduce((parts, {triangle, bounds: b}) => parts.flatMap(part =>
         part.every(p => p[0] <= b[0]) || part.every(p => p[1] <= b[1]) || part.every(p => p[0] >= b[2]) || part.every(p => p[1] >= b[3])
-          ? [part] : subtractConvex(part, triangle)), [flat]).flatMap(fan);
+          ? [part] : subtractConvex(part, triangle)), [flat]).flatMap(splitAlong).flatMap(fan);
       const near = extraHeight.near ?? (() => false);
       for (const tri of clipped.flatMap(t => splitFine(t, metres(RAISED_EDGE_M), near)).flatMap((t) => conform(t, surface)).flatMap(claim).flatMap(fan)) {
         // Upward face (+y): the (x, z) cross product of the edges must be negative.
@@ -155,7 +173,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
     }
   }
   const roadEmission = {
-    source: "Road_Markings after extent, exclusion and ground claims; before outline-preserving decimation",
+    source: "Road_Markings after extent, exclusion and paint claims; before outline-preserving decimation",
     parts: roadParts, dropped: droppedRoadParts,
     summary: {
       emittedRoadObjects: [...new Set(roadParts.map(p => p.objectId))],
@@ -180,7 +198,8 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
     extensions: { KHR_materials_emissive_strength: { emissiveStrength: NIGHT_GLOW } },
   });
   // Decimation (lib/decimate.mjs), per element: every outline vertex of the paint stays, so each dash, bar and line keeps
-  // its plan geometry; only the partition's interior slivers collapse where the terrain is flat within DECIMATE_TOLERANCE_M.
+  // its plan geometry; only the partition's interior slivers collapse where the terrain is flat within
+  // PAINT_DECIMATE_TOLERANCE_M (1 mm, lib/groundNodes.mjs), so the paint never sinks into the ground it lies above.
   // The receipt (qa/paintReceipt.mjs) reads each element's final world-space primitive before its node pivot is taken out.
   const receipts = new Map();
   const decimated = { before: 0, after: 0 };
@@ -193,7 +212,7 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
     sourceTriangles += element.indices.length / 3;
     if (decimate) {
       const out = await decimateDecal({
-        positions: primitive.positions, indices: element.indices, toleranceM: DECIMATE_TOLERANCE_M, unitsPerMetre: SCENE_UNITS_PER_METRE,
+        positions: primitive.positions, indices: element.indices, toleranceM: PAINT_DECIMATE_TOLERANCE_M, unitsPerMetre: SCENE_UNITS_PER_METRE,
         attributes: [{ array: primitive.normals, size: 3 }, { array: primitive.uvs, size: 2 }],
       });
       decimated.before += out.before;

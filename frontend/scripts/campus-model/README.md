@@ -80,8 +80,8 @@ For AO bootstrap only, `bun scripts/campus-model/build-campus-model.mjs` writes
 raw GLB and height files under `.build`, never public. Bake the building and planar
 AO from that raw output, then run the full build. The mesh sequence prepares
 terrain and kerb heights first, then emits buildings, entrances, parking/road
-paint, kerbs/tactile, surfaces, furniture, trees and lights. Paint claims precede
-surface claims; entrance heights use the same prepared kerb plan.
+paint, kerbs/tactile, surfaces, furniture, trees and lights. Paint claims a partition of
+its own above the intact surfaces; entrance heights use the same prepared kerb plan.
 
 For a rejected candidate, inspect its geometry without publishing it:
 `CAMPUS_MODEL_FILE=/absolute/candidate/campus-v2.glb node --test
@@ -229,12 +229,18 @@ gone). The ground is vector polygons in EPSG:5186, each with a precedence, a sou
 
 The ground is one planar partition (`lib/partition.mjs`, user decision 2026-10-29: ground textures must not overlap):
 every piece is conformed to the Topography triangles (`lib/conform.mjs`), cut along the terrain grid and claimed in
-order, road markings first (white symbols before the blue fills they sit on), then the classes above by precedence
-(hump tops 6.5 first), then the natural `Topography` takes what is left. A claim keeps only the part no earlier claim
-covers (convex difference per terrain triangle), so no two ground triangles share area and nothing is lifted to sit on
-anything: every surface lies on the terrain, plus the walkway slab (`stages/kerbs.mjs`) or a hump's arc.
-`check-ground-overlap.mjs` samples the plan on a jittered 0.25-unit grid and fails when any point is covered twice or
-not at all (`bun scripts/campus-model/check-ground-overlap.mjs`, `--at x,z` lists the triangles at a point). The
+order, the classes above by precedence (hump tops 6.5 first), then the natural `Topography` takes what is left. A
+claim keeps only the part no earlier claim covers (convex difference per terrain triangle), so no two ground triangles
+share area: every surface lies on the terrain, plus the walkway slab (`stages/kerbs.mjs`) or a hump's arc. The road
+markings are not cut out of that ground (user 2026-11-24: pavement and drawing are layers, so moving or deleting a
+marking node must leave intact pavement): they claim in a partition of their own (white symbols before the blue fills
+they sit on) and lie `MARKING_LIFT_M` (6 mm, `lib/groundNodes.mjs`) above it, a real vertical offset under
+CityModel's polygon offset. The ground faces under the paint skip the decimation (`lib/decimate.mjs` `lockFace`) and the
+paint decimates within 1 mm, so it never sinks into the ground. Tactile bands and hump tops stay in the partition: they
+replace the paving or raise the asphalt, and on the walkway slab they follow other heights than the pavers.
+`check-ground-overlap.mjs` samples the plan on a jittered 0.25-unit grid and fails when any point is covered by two
+base triangles or none, by two paint triangles, or by paint with no ground under it
+(`bun scripts/campus-model/check-ground-overlap.mjs`, `--at x,z` lists the triangles at a point). The
 Topography is therefore natural ground only; the camera and traffic lookups raycast `Ground_*` and `Road_Markings`
 too (`src/camera/terrainClearance.mjs`, `src/camera/useFlyTo.mjs`, the `Ground` collection in
 `src/simulation/CampusTrafficSimulation.jsx`). Beyond EXTENT the same rule holds on the hill ring
@@ -867,7 +873,8 @@ Under a cast shadow alone, or on open asphalt, no zebra was detected and it stay
 
 The mesh: every piece is triangulated and split along the Topography grid lines and diagonals wherever a flat
 triangle would leave the terrain by more than 5 mm, so each triangle lies on one terrain triangle
-(`topographySurface` in `stages/ground.mjs` reproduces the chunk triangulation), 4 cm above it, with the
+(`topographySurface` in `stages/ground.mjs` reproduces the chunk triangulation), `MARKING_LIFT_M` (6 mm) above the
+intact ground under it, with the
 terrain's interpolated normals. CityModel draws the material with a polygon offset (positions were 14-bit, about
 5 cm steps, before the modelled ground; they are float since then, see pack.mjs); it casts no shadow and takes no pointer raycasts. One `Road_Marking` material
 with a white/yellow/blue palette texture as base colour and emissive map (no vertex colours): the dashboard lights
