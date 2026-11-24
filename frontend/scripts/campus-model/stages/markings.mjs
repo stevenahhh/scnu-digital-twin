@@ -9,6 +9,7 @@ import { subtractConvex } from "../lib/partition.mjs";
 import { pieceKey } from "../lib/parcels.mjs";
 import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
 import { finalPaintReceipt } from "../qa/paintReceipt.mjs";
+import { emitGroundNode, markingGroup, markingKind, nodeName } from "../lib/groundNodes.mjs";
 export const PAINT_BEYOND_EXTENT = Object.freeze({ minX: 502, maxX: 540, minZ: -45, maxZ: 20 });
 export const inMarkingExtent = ([x,z]) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
 const ZEBRA_PERIOD_M = 0.903, ZEBRA_BAR_M = 0.5;
@@ -70,14 +71,12 @@ function splitFine(tri, maxEdge, near) {
 // baseOffset(x, z) -> metres of the ground under the paint above the terrain (the raised walkway slab). The paint lies
 // flush on that ground: it is cut out of the surfaces under it, not stacked on them.
 const fan = (poly) => poly.slice(1, -1).map((p, k) => [poly[0], p, poly[k + 2]]);
+// One editable node per marking element (lib/groundNodes.mjs markingGroup: a road marking object, or a parking lot's
+// paint): Road_Markings_<id> under the Road_Markings collection node, which carries the inventory extras.
 export async function buildMarkings({ glb, markings, surface, extraHeight = () => 0, claim = (piece) => [piece], baseOffset = () => 0, decimate = true, exclusions = [] }) {
-  const positions = [];
-  const normals = [];
-  const uvs = [];
-  const indices = [];
-  const index = new Map();
+  // element id -> { id, parking, kinds, positions, normals, uvs, indices, index, paintSources }, in drawing order
+  const elements = new Map();
   const roadParts = [], droppedRoadParts = [];
-  const paintSources = [];
   // A documented non-paint parcel excludes its whole surface, not only the
   // centre of the originally rejected marking. This also clips nearby stripes
   // that would otherwise protrude across the pedestrian island's boundary.
@@ -90,15 +89,15 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
           Math.max(...triangle.map(p => p[0])), Math.max(...triangle.map(p => p[1]))] };
       });
   });
-  const vertex = ([x, z], colour) => {
+  const vertex = (element, [x, z], colour) => {
     const key = `${Math.round(x * 1e5)},${Math.round(z * 1e5)},${colour}`;
-    let i = index.get(key);
+    let i = element.index.get(key);
     if (i === undefined) {
-      i = positions.length / 3;
-      index.set(key, i);
-      positions.push(x, surface.height(x, z) + metres(baseOffset(x, z) + extraHeight(x, z)), z);
-      normals.push(...surface.normal(x, z));
-      uvs.push(PALETTE_U[colour], 0.5);
+      i = element.positions.length / 3;
+      element.index.set(key, i);
+      element.positions.push(x, surface.height(x, z) + metres(baseOffset(x, z) + extraHeight(x, z)), z);
+      element.normals.push(...surface.normal(x, z));
+      element.uvs.push(PALETTE_U[colour], 0.5);
     }
     return i;
   };
@@ -114,6 +113,10 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
       if (identity) droppedRoadParts.push({ ...identity, reason: "outside-extent" });
       continue;
     }
+    const paintId = piece.id ?? piece.partId ?? piece.record ?? pieceKey(piece, p => sceneToTm(...p));
+    const group = markingGroup(piece) ?? { id: paintId, parking: false };
+    if (!elements.has(group.id)) elements.set(group.id, { ...group, kinds: [], estimated: [], positions: [], normals: [], uvs: [], indices: [], index: new Map(), paintSources: [] });
+    const element = elements.get(group.id);
     const triangles = [];
     const faces = [];
     let sourceAreaScene = 0, emittedAreaScene = 0;
@@ -134,14 +137,18 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
         const cross = (tri[1][0] - tri[0][0]) * (tri[2][1] - tri[0][1]) - (tri[1][1] - tri[0][1]) * (tri[2][0] - tri[0][0]);
         if (Math.abs(cross) < 1e-10) continue;
         const ordered = cross < 0 ? tri : [tri[0], tri[2], tri[1]];
-        const face = ordered.map((p) => vertex(p, piece.colour));
-        indices.push(...face);
+        const face = ordered.map((p) => vertex(element, p, piece.colour));
+        element.indices.push(...face);
         faces.push(face);
         triangles.push(ordered.map(p => [...p]));
         emittedAreaScene += Math.abs(cross) / 2;
       }
     }
-    if (faces.length) paintSources.push({ id: piece.id ?? piece.partId ?? piece.record ?? pieceKey(piece, p => sceneToTm(...p)), faces });
+    if (faces.length) {
+      element.paintSources.push({ id: paintId, faces });
+      element.kinds.push(piece.kind);
+      element.estimated.push(Boolean(piece.estimated));
+    }
     if (identity) {
       if (triangles.length) roadParts.push({ ...identity, sourceAreaScene, emittedAreaScene, triangles });
       else droppedRoadParts.push({ ...identity, reason: "no-emitted-triangles" });
@@ -172,26 +179,54 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
     // CityModel multiplies its night weight (0..1) by this strength; by day the emissive intensity is 0.
     extensions: { KHR_materials_emissive_strength: { emissiveStrength: NIGHT_GLOW } },
   });
-  // Decimation (lib/decimate.mjs): every outline vertex of the paint stays, so each dash, bar and line keeps its plan
-  // geometry; only the partition's interior slivers collapse where the terrain is flat within DECIMATE_TOLERANCE_M.
-  let primitive = { positions: Float32Array.from(positions), normals: Float32Array.from(normals), uvs: Float32Array.from(uvs), indices };
-  const sourcePositions = primitive.positions;
-  const sourceTriangles = indices.length / 3;
-  if (decimate) {
-    const out = await decimateDecal({
-      positions: primitive.positions, indices, toleranceM: DECIMATE_TOLERANCE_M, unitsPerMetre: SCENE_UNITS_PER_METRE,
-      attributes: [{ array: primitive.normals, size: 3 }, { array: primitive.uvs, size: 2 }],
+  // Decimation (lib/decimate.mjs), per element: every outline vertex of the paint stays, so each dash, bar and line keeps
+  // its plan geometry; only the partition's interior slivers collapse where the terrain is flat within DECIMATE_TOLERANCE_M.
+  // The receipt (qa/paintReceipt.mjs) reads each element's final world-space primitive before its node pivot is taken out.
+  const receipts = new Map();
+  const decimated = { before: 0, after: 0 };
+  let sourceTriangles = 0, vertices = 0, triangles = 0, nodes = 0;
+  const names = new Map();
+  for (const element of elements.values()) {
+    if (!element.indices.length) continue;
+    let primitive = { positions: Float32Array.from(element.positions), normals: Float32Array.from(element.normals), uvs: Float32Array.from(element.uvs), indices: element.indices };
+    const sourcePositions = primitive.positions;
+    sourceTriangles += element.indices.length / 3;
+    if (decimate) {
+      const out = await decimateDecal({
+        positions: primitive.positions, indices: element.indices, toleranceM: DECIMATE_TOLERANCE_M, unitsPerMetre: SCENE_UNITS_PER_METRE,
+        attributes: [{ array: primitive.normals, size: 3 }, { array: primitive.uvs, size: 2 }],
+      });
+      decimated.before += out.before;
+      decimated.after += out.after;
+      primitive = { positions: out.positions, normals: out.attributes[0].array, uvs: out.attributes[1].array, indices: Array.from(out.indices) };
+    }
+    for (const row of finalPaintReceipt({ primitive, sourcePositions, sourcePieces: element.paintSources })) {
+      if (receipts.has(row.id)) receipts.get(row.id).triangles.push(...row.triangles);
+      else receipts.set(row.id, row);
+    }
+    const kind = markingKind(element.kinds, element.parking);
+    const name = nodeName("Road_Markings", element.id);
+    if (names.has(name)) throw new Error(`markings: elements ${names.get(name)} and ${element.id} share the node name ${name}`);
+    names.set(name, element.id);
+    const node = emitGroundNode(glb, {
+      name, id: element.id, kind, category: "marking", collection: `Ground/Markings/${kind}`,
+      primitives: [{ ...primitive, material }],
+      extras: { pieces: element.paintSources.length, pieceKinds: [...new Set(element.kinds)], estimatedPieces: element.estimated.filter(Boolean).length },
     });
-    primitive = { positions: out.positions, normals: out.attributes[0].array, uvs: out.attributes[1].array, indices: Array.from(out.indices) };
-    console.log(`markings: decimated ${out.before} -> ${out.after} triangles (paint outlines locked)`);
+    if (node === null) continue;
+    nodes += 1;
+    vertices += primitive.positions.length / 3;
+    triangles += primitive.indices.length / 3;
   }
-  const paintEmission = finalPaintReceipt({ primitive, sourcePositions, sourcePieces: paintSources });
-  const mesh = glb.addMesh("Road_Markings", [{ ...primitive, material }]);
+  if (decimate) console.log(`markings: decimated ${decimated.before} -> ${decimated.after} triangles in ${nodes} element nodes (paint outlines locked)`);
+  const paintEmission = [...receipts.values()];
   const detected = markings.pieces.filter((p) => !p.estimated).length;
+  // the Ground/Markings collection node itself (lib/glb.mjs groupRoots): it holds the inventory, the elements its children
   glb.addNode({
     name: "Road_Markings",
-    mesh,
     extras: {
+      elementNodes: nodes,
+      elementNodesNote: "every marking element (a road marking object, or the paint of one parking lot) is its own node Road_Markings_<id> with extras.editable (lib/groundNodes.mjs); this collection node holds no geometry",
       markingsDetected: detected,
       markingsEstimated: markings.pieces.length - detected,
       source: markings.source,
@@ -215,8 +250,8 @@ export async function buildMarkings({ glb, markings, surface, extraHeight = () =
       },
       warnings: markings.warnings,
     },
-  }, { root: true });
-  return { vertices: primitive.positions.length / 3, triangles: primitive.indices.length / 3, sourceTriangles: source, conformedTriangles: sourceTriangles, roadEmission, paintEmission };
+  }, { collectionNode: "Ground/Markings" });
+  return { vertices, triangles, nodes, sourceTriangles: source, conformedTriangles: sourceTriangles, roadEmission, paintEmission };
 }
 
 export const describeMarkings = ({pieces, humps=[]}) => `road records: ${pieces.length} paint pieces, ${humps.length} humps`;

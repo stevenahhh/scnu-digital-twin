@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 // Checks that the campus ground is one planar partition (lib/partition.mjs): inside EXTENT every point of the plan is
-// covered by exactly one ground triangle (Topography_*, Ground_* surfaces, Road_Markings), seen from above.
+// covered by exactly one ground triangle (Topography_*, Ground_* surfaces, Road_Markings_* elements), seen from above.
+// The editable surface and marking nodes (lib/groundNodes.mjs) hold their vertices relative to a translation-only pivot.
 // Reads the uncompressed .build/campus-v2.raw.glb. Samples a jittered 0.25-unit grid; a sample covered twice is an
 // overlap, a sample covered by none is a gap (buildings stand on the ground, so their footprints are ground too).
 // Exits 1 when the overlapping share or the gap share exceeds MAX_SHARE.
@@ -17,8 +18,8 @@ const FILE = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv
 // --all: the whole plan, the hill ring (OuterTerrain) and the context streets on it included, sampled every 1 unit
 const ALL = process.argv.includes("--all");
 const GROUND = ALL
-  ? /^(Topography_\d+|Ground_(?!Hump_)|Road_Markings$|OuterTerrain$|Context_Far_Ground_)/
-  : /^(Topography_\d+|Ground_(?!Context|Hump_)|Road_Markings$)/;
+  ? /^(Topography_\d+|Ground_(?!Hump_)|Road_Markings_|OuterTerrain$|Context_Far_Ground_)/
+  : /^(Topography_\d+|Ground_(?!Context|Hump_)|Road_Markings_)/;
 const STEP = ALL ? 1 : 0.25;
 const CELL = 1;
 // samples on a shared edge can land exactly on it; the jitter keeps that rare, this bounds what is left
@@ -46,9 +47,11 @@ const meshOf = [];
 const byMesh = {};
 for (const node of json.nodes) {
   if (node.mesh === undefined || !GROUND.test(node.name ?? "")) continue;
-  if (node.translation || node.rotation || node.scale || node.matrix) throw new Error(`${node.name} has a transform`);
+  if (node.rotation || node.scale || node.matrix) throw new Error(`${node.name} has a transform other than a translation`);
+  const [tx, , tz] = node.translation ?? [0, 0, 0];
   for (const primitive of json.meshes[node.mesh].primitives) {
-    const p = read(primitive.attributes.POSITION);
+    const local = read(primitive.attributes.POSITION);
+    const p = tx === 0 && tz === 0 ? local : Float64Array.from(local, (v, i) => v + (i % 3 === 0 ? tx : i % 3 === 2 ? tz : 0));
     const index = primitive.indices !== undefined ? read(primitive.indices) : Uint32Array.from({ length: p.length / 3 }, (_, i) => i);
     for (let t = 0; t < index.length; t += 3) {
       const [a, b, c] = [index[t], index[t + 1], index[t + 2]];
@@ -57,7 +60,8 @@ for (const node of json.nodes) {
       triangles.push([p[a * 3], p[a * 3 + 2], p[b * 3], p[b * 3 + 2], p[c * 3], p[c * 3 + 2]]);
       meshOf.push(node.name.startsWith("Topography_") ? "Topography" : node.name);
     }
-    const group = node.name.startsWith("Topography_") ? "Topography" : node.name;
+    // per class: the surfaces and markings are one node per parcel group or marking element
+    const group = node.name.startsWith("Topography_") ? "Topography" : node.name.match(/^(Road_Markings|Ground_[A-Za-z0-9]+|[^_]+)/)[0];
     byMesh[group] = (byMesh[group] ?? 0) + index.length / 3;
   }
 }

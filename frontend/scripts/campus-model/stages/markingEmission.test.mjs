@@ -5,8 +5,9 @@ import { buildMarkings } from "./markings.mjs";
 import { assertBuildInvariants, BuildInvariantError } from "../qa/invariants.mjs";
 import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
 
+// World-space triangles of every marking element node (Road_Markings_<id>: local float32 positions plus the node's
+// translation, lib/groundNodes.mjs), in node order.
 function emittedTriangles(glb) {
-  const primitive = glb.json.meshes.find(m => m.name === "Road_Markings").primitives[0];
   const bytes = Buffer.concat(glb.chunks);
   const accessor = index => {
     const a = glb.json.accessors[index], v = glb.json.bufferViews[a.bufferView];
@@ -16,9 +17,14 @@ function emittedTriangles(glb) {
       ? Array.from({ length: data.length / 4 }, (_, i) => data.readFloatLE(i * 4))
       : Array.from({ length: a.count }, (_, i) => a.componentType === 5123 ? data.readUInt16LE(i * 2) : data.readUInt32LE(i * 4));
   };
-  const positions = accessor(primitive.attributes.POSITION), indices = accessor(primitive.indices);
   const actual = [];
-  for (let i = 0; i < indices.length; i += 3) actual.push(indices.slice(i, i + 3).map(v => [positions[v * 3], positions[v * 3 + 2]]));
+  for (const node of glb.json.nodes.filter(n => n.name.startsWith("Road_Markings_"))) {
+    const [tx, , tz] = node.translation;
+    for (const primitive of glb.json.meshes[node.mesh].primitives) {
+      const positions = accessor(primitive.attributes.POSITION), indices = accessor(primitive.indices);
+      for (let i = 0; i < indices.length; i += 3) actual.push(indices.slice(i, i + 3).map(v => [positions[v * 3] + tx, positions[v * 3 + 2] + tz]));
+    }
+  }
   return actual;
 }
 

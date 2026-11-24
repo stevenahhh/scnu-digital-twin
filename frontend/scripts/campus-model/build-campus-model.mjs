@@ -21,7 +21,8 @@
 //   tactile.mjs   tactile paving bands and guidance strips at every dropped kerb
 //   parking.mjs   stall rows, accessible bays, their symbols and the wheel stops from data/ground/parking.json
 //   roadMarkings.mjs  the record-defined circular-arc speed humps and sidecar height function
-//   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
+//   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels;
+//                 like the road markings (markings.mjs), one editable node per parcel or parcel group (lib/groundNodes.mjs)
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   context.mjs / contextGround.mjs  off-campus building masses and the streets around the campus beyond EXTENT
 //   trees.mjs     tree inventory and hedges (placeTrees, after the ground), species geometry and instanced Trees_* nodes (buildTrees)
@@ -303,7 +304,6 @@ const collections = glb.groupRoots([
   { path: "Ground/Terrain", match: (name) => name === "Topography" },
   { path: "Ground/Surfaces", match: startsWith("Ground_") },
   { path: "Ground/Kerbs", match: (name) => name === "Kerbs" },
-  { path: "Ground/Markings", match: (name) => name === "Road_Markings" },
   { path: "Vegetation", match: startsWith("Trees_") },
   { path: "Furniture", match: startsWith("Furniture") },
   { path: "Lighting", match: startsWith("Lamps_") },
@@ -355,8 +355,13 @@ console.log(
   `campus-v2.glb: ${(bytes.length / 1048576).toFixed(2)} MiB, ${selectableBuildings.length} BLD nodes, ` +
   `${campusBuildings.length} other campus buildings, ${treeCount} trees ` +
   `(${Object.entries(treeInstances).map(([k, v]) => `${k} ${v.length}`).join(", ")}), ${markings.pieces.length} road-marking pieces ` +
-  `(${markingMesh.triangles} triangles, ${markingMesh.vertices} vertices from ${markingMesh.sourceTriangles} before conforming to the terrain)`,
+  `(${markingMesh.triangles} triangles, ${markingMesh.vertices} vertices in ${markingMesh.nodes} element nodes, from ${markingMesh.sourceTriangles} before conforming to the terrain)`,
 );
+{
+  const editable = glb.json.nodes.filter((node) => node.extras?.editable);
+  const primitives = glb.json.meshes.reduce((sum, mesh) => sum + mesh.primitives.length, 0);
+  console.log(`editable nodes: ${editable.length} (${Object.entries(Object.groupBy(editable, (node) => node.extras.editable.category)).map(([category, list]) => `${category} ${list.length}`).join(", ")}); ${primitives} primitives in the raw GLB`);
+}
 console.log(
   `OuterTerrain: ${outerTerrain.vertexCount} vertices, ${outerTerrain.triangleCount} triangles ` +
   `(${outerTerrain.vertexCountBefore} / ${outerTerrain.triangleCountBefore} before simplify), ` +

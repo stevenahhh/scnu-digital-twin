@@ -77,7 +77,7 @@ const outlines = Object.values(read("ground/junctions.json")).flatMap(j => j.app
 // to the authorised TM bbox. Ignore zero-area wall projections.
 const area = [243422.55, 263767.58, 243591.87, 263991.06];
 const bins = new Map(), cell = 1;
-for (const node of nodes.filter(n => /^(Topography_\d+|Topography_joined|Ground_(?!Hump_)|Road_Markings$|OuterTerrain$|Context_Far_Ground_)/.test(n.getName()))) {
+for (const node of nodes.filter(n => /^(Topography_\d+|Topography_joined|Ground_(?!Hump_)|Road_Markings_|OuterTerrain$|Context_Far_Ground_)/.test(n.getName()))) {
   if (!node.getMesh()) continue;
   const m = node.getWorldMatrix();
   for (const primitive of node.getMesh().listPrimitives()) {

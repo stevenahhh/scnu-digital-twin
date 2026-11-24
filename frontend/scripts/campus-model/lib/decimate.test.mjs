@@ -137,3 +137,13 @@ for (const east of [243422.6, 243591.86]) {
     assert.ok(out.positions.every(Number.isFinite), "clipped interpolation must stay finite");
   });
 }
+
+test("a lone sliver face is dropped even when the primitive is too small to simplify", async () => {
+  // one marking element per node (lib/groundNodes.mjs) can be a single near-degenerate triangle
+  const out = await decimateDecal({
+    positions: [309.96721355814174, 0, -166.0794910394401, 309.7524874183762, 0, -166.130444771255, 309.75248738439507, 0, -166.130444750307],
+    indices: [0, 1, 2], toleranceM: 0.02, unitsPerMetre: 1.6,
+  });
+  assert.equal(out.indices.length, 0);
+  assert.equal(out.after, 0);
+});

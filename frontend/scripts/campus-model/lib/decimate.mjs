@@ -58,7 +58,11 @@ export async function decimateDecal({ positions, indices, attributes = [], toler
   const vertexCount = positions.length / 3;
   const index32 = indices instanceof Uint32Array ? indices : Uint32Array.from(indices);
   const pos32 = positions instanceof Float32Array ? positions : Float32Array.from(positions);
-  if (index32.length < 6) return { positions: pos32, indices: index32, attributes, before: index32.length / 3, after: index32.length / 3 };
+  // a single face has nothing to collapse, but a sliver of it still goes (one marking element can be one face)
+  if (index32.length < 6) {
+    const kept = Uint32Array.from(dropSliverFaces(index32, pos32, unitsPerMetre));
+    return { positions: pos32, indices: kept, attributes, before: index32.length / 3, after: kept.length / 3 };
+  }
   const lock = boundaryVertices(index32, vertexCount);
   // meshopt's error is relative to the mesh extent (getScale); one scene unit of error -> tolerance / extent.
   const extent = MeshoptSimplifier.getScale(pos32, 3);

@@ -1,5 +1,6 @@
 // Ground surface stage (plan uhf-ground-roads-routing todo 9): the class polygons of network/surfaces.mjs as decal
-// meshes laid on the Topography triangles (lib/conform.mjs), one mesh per class, each lifted SURFACE_LIFT_M by its
+// meshes laid on the Topography triangles (lib/conform.mjs), one editable node per parcel or parcel group (lib/groundNodes.mjs
+// surfaceGroup) with one primitive per class material, each lifted SURFACE_LIFT_M by its
 // precedence (0.006 m per step, at most 0.036 m: below the road markings' 0.04 m) so the higher class covers the lower
 // one without polygon booleans; CityModel adds a polygon offset by the material's extras.polygonOffsetRank.
 //
@@ -28,6 +29,7 @@ import { hashNoise, smoothNoise } from "../lib/raster.mjs";
 import { orientedFrame } from "../network/surfaces.mjs";
 import { pavingPattern, pavingTile } from "../lib/pavingPatterns.mjs";
 import { humpProfile } from "./roadMarkings.mjs";
+import { emitGroundNode, surfaceGroup } from "../lib/groundNodes.mjs";
 
 // Statute basis of the tactile paving tile (stages/tactile.mjs, bake/tactile-tile.mjs).
 export const TACTILE_BASIS = "장애인등편의법 시행규칙 별표 1 제16호: 0.3 m 모듈, 36 돌출, 6±1 mm";
@@ -115,9 +117,14 @@ function refineTriangle(tri, maxEdge, needsFine) {
 // for layers whose height varies inside a terrain triangle (the raised walkway slab).
 // claim(piece): the convex parts of a conformed piece no higher class holds (lib/partition.mjs); layers are claimed in
 // the order given, so the caller passes them highest precedence first.
-export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (layer) => SURFACE_LIFT_M(layer.precedence), refine = null, claim = (piece) => [piece] }) {
+// groupOf(layer) -> { name } splits the primitives further, one set per group (lib/groundNodes.mjs surfaceGroup: the
+// editable node the layer goes to); without it every layer of a class shares its primitives.
+export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (layer) => SURFACE_LIFT_M(layer.precedence), refine = null, claim = (piece) => [piece], groupOf = null }) {
   const primitives = new Map();
-  const scopedLayers = layers.flatMap(layer => {
+  const groupOrder = new Map();
+  // the group comes from the whole layer, before the D4 material scope cuts it into pieces
+  const grouped = groupOf ? layers.map((layer) => ({ ...layer, nodeGroup: groupOf(layer) })) : layers;
+  const scopedLayers = grouped.flatMap(layer => {
     const tile = D4_MATERIAL_SCOPE.patternClasses?.[layer.pattern] ?? D4_MATERIAL_SCOPE.surfaceClasses[layer.mesh];
     if (!tile) return [layer];
     const [w,s,e,n] = D4_MATERIAL_SCOPE.bbox;
@@ -140,11 +147,13 @@ export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (lay
     if (spec.patterned && !pattern) throw new Error(`surfaces: ${layer.mesh} layer ${layer.source_ref} has no pattern`);
     // One primitive per class and precedence (its material carries that precedence as the polygon-offset rank, so the
     // offset never contradicts the lift), per catalogue pattern, and one per painted surface (its own texture).
-    const key = painted ? `${layer.mesh}#${index}` : `${layer.mesh}@${layer.precedence}${spec.patterned ? `#${pattern}` : ""}${layer.d4Tile ? `#${layer.d4Tile}:${d4Pattern}` : ""}`;
+    const group = layer.nodeGroup ?? null;
+    if (group && !groupOrder.has(group.name)) groupOrder.set(group.name, groupOrder.size);
+    const key = `${group ? `${group.name}|` : ""}${painted ? `${layer.mesh}#${index}` : `${layer.mesh}@${layer.precedence}${spec.patterned ? `#${pattern}` : ""}${layer.d4Tile ? `#${layer.d4Tile}:${d4Pattern}` : ""}`}`;
     let primitive = primitives.get(key);
     if (!primitive) {
       const frame = painted ? orientedFrame(layer.rings[0].map(([E, N]) => tmToScene(E, N))) : null;
-      primitive = { mesh: layer.mesh, tile: layer.d4Tile, d4Pattern, rank: layer.precedence, layer: painted ? layer : null, pattern, frame, positions: [], normals: [], uvs: [], uv1: [], indices: [], vertexOf: new Map(), sourceTriangles: 0, precedence: [] };
+      primitive = { mesh: layer.mesh, group, tile: layer.d4Tile, d4Pattern, rank: layer.precedence, layer: painted ? layer : null, pattern, frame, positions: [], normals: [], uvs: [], uv1: [], indices: [], vertexOf: new Map(), sourceTriangles: 0, precedence: [] };
       primitives.set(key, primitive);
     }
     if (!primitive.precedence.includes(layer.precedence)) primitive.precedence.push(layer.precedence);
@@ -183,7 +192,8 @@ export function surfaceGeometry({ layers, surface, tileSize, heightOffset = (lay
       }
     }
   });
-  return [...primitives.values()].sort((a, b) => MESH_ORDER.indexOf(a.mesh) - MESH_ORDER.indexOf(b.mesh) || a.rank - b.rank);
+  const order = (p) => (p.group ? groupOrder.get(p.group.name) : 0);
+  return [...primitives.values()].sort((a, b) => MESH_ORDER.indexOf(a.mesh) - MESH_ORDER.indexOf(b.mesh) || order(a) - order(b) || a.rank - b.rank);
 }
 
 // ---------------------------------------------------------------- painted surfaces (sports, water, roundabout, courtyard tiles)
@@ -650,7 +660,7 @@ export async function naturalGroundMaterial(glb, landcoverAt, ao) {
 export const DECIMATE_TOLERANCE_M = 0.02;
 export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heightOffset, refine = null, claim, decimate = true }) {
   const tileSize = (mesh) => (GROUND_MESHES[mesh].pattern ? pavingPattern(GROUND_MESHES[mesh].pattern).repeatM : groundTile(GROUND_MESHES[mesh].tile).entry.physicalSizeM);
-  const primitives = surfaceGeometry({ layers, surface, tileSize, heightOffset, refine, claim });
+  const primitives = surfaceGeometry({ layers, surface, tileSize, heightOffset, refine, claim, groupOf: surfaceGroup });
   let decimated = { before: 0, after: 0 };
   if (decimate) {
     for (const primitive of primitives) {
@@ -671,7 +681,7 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
   }
   const paintedNormal = glb.addTexture(paintedNormalMap(), "image/png");
   const materials = new Map();
-  const byMesh = new Map();
+  const byGroup = new Map();
   for (const primitive of primitives) {
     if (!primitive.indices.length) continue;
     const { mesh } = primitive;
@@ -715,38 +725,42 @@ export async function buildSurfaceMeshes({ glb, layers, surface, ao = null, heig
         },
       });
     }
-    if (!byMesh.has(mesh)) byMesh.set(mesh, { primitives: [], triangles: 0, layers: 0, precedence: new Set() });
-    const entry = byMesh.get(mesh);
+    const { group } = primitive;
+    if (!byGroup.has(group.name)) byGroup.set(group.name, { group, mesh, primitives: [], triangles: 0, precedence: new Set() });
+    const entry = byGroup.get(group.name);
     entry.triangles += primitive.indices.length / 3;
     primitive.precedence.forEach((p) => entry.precedence.add(p));
-    entry.primitives.push({
-      positions: Float32Array.from(primitive.positions),
-      normals: Float32Array.from(primitive.normals),
-      uvs: Float32Array.from(primitive.uvs),
-      uv1: Float32Array.from(primitive.uv1),
-      indices: primitive.indices,
-      material,
-    });
+    entry.primitives.push({ positions: primitive.positions, normals: primitive.normals, uvs: primitive.uvs, uv1: primitive.uv1, indices: primitive.indices, material });
+  }
+  // the parcels (or kerb runs, tactile bands, humps) each node holds, as extras
+  const members = new Map();
+  for (const layer of layers) {
+    const { name } = surfaceGroup(layer);
+    if (!members.has(name)) members.set(name, []);
+    members.get(name).push(layer.parcel ?? layer.source_ref ?? `${layer.mesh} ${members.get(name).length}`);
   }
   const counts = {};
   for (const layer of layers) counts[layer.mesh] = (counts[layer.mesh] ?? 0) + 1;
-  const stats = [];
-  for (const mesh of MESH_ORDER) {
-    const entry = byMesh.get(mesh);
-    if (!entry) continue;
-    const index = glb.addMesh(mesh, entry.primitives);
-    glb.json.meshes[index].primitives.forEach((p, k) => {
-      p.attributes.TEXCOORD_1 = glb.addAccessor(entry.primitives[k].uv1, "VEC2");
-    });
+  const stats = new Map();
+  // one editable node per group (lib/groundNodes.mjs), in class then group order; its mesh keeps one primitive per material
+  for (const { group, mesh, primitives: groupPrimitives, triangles, precedence } of byGroup.values()) {
     const note = mesh === "Ground_Walkway" ? { note: "추정 보행로: estimated 1.5 m walkway strips where no NGII A003 sidewalk exists (network/walkways.mjs), not surveyed" } : {};
-    glb.addNode({ name: mesh, mesh: index, extras: { groundLayers: counts[mesh], precedence: [...entry.precedence].sort((a, b) => a - b), estimated: true, ...note } }, { root: true });
-    stats.push({ mesh, triangles: entry.triangles, layers: counts[mesh], primitives: entry.primitives.length });
+    emitGroundNode(glb, {
+      name: group.name, id: group.id, kind: group.kind, category: "ground", collection: `Ground/Surfaces/${group.kind}`,
+      primitives: groupPrimitives,
+      extras: { surfaceClass: mesh, parcels: members.get(group.name), precedence: [...precedence].sort((a, b) => a - b), estimated: true, ...note },
+    });
+    if (!stats.has(mesh)) stats.set(mesh, { mesh, triangles: 0, layers: counts[mesh], primitives: 0, nodes: 0 });
+    const entry = stats.get(mesh);
+    entry.triangles += triangles;
+    entry.primitives += groupPrimitives.length;
+    entry.nodes += 1;
   }
-  return stats;
+  return MESH_ORDER.filter((mesh) => stats.has(mesh)).map((mesh) => stats.get(mesh));
 }
 
 export const describeSurfaces = (stats) => `surfaces: ${stats.map((s) => `${s.mesh} ${s.triangles} tri`).join(", ")} ` +
-  `(${stats.map((s) => `${s.mesh} ${s.layers} polygons${s.primitives > 1 ? ` / ${s.primitives} primitives` : ""}`).join(", ")}); CC0 tiles, no photo pixels`;
+  `(${stats.map((s) => `${s.mesh} ${s.layers} polygons in ${s.nodes} nodes / ${s.primitives} primitives`).join(", ")}); CC0 tiles, no photo pixels`;
 
 // ---------------------------------------------------------------- speed humps
 // The hump tops are partition layers (humpLayers: class Ground_Hump, the arc h(s) over HUMP_LENGTH_M as their height
@@ -761,7 +775,7 @@ export function humpLayers(humps, lengthM) {
       : sceneToTm(hump.centre[0] + hump.u[0] * sM * UNIT + hump.v[0] * tM * UNIT, hump.centre[1] + hump.u[1] * sM * UNIT + hump.v[1] * tM * UNIT);
     const [hl, hw] = [(hump.lengthM ?? lengthM) / 2, hump.widthM / 2];
     return {
-      cls: "ASPHALT", mesh: "Ground_Hump", hump: true, precedence: HUMP_PRECEDENCE, estimated: true,
+      cls: "ASPHALT", mesh: "Ground_Hump", hump: true, humpId: hump.id, precedence: HUMP_PRECEDENCE, estimated: true,
       source: "project-estimated", source_ref: `hump ${hump.id}`,
       rings: [[corner(-hl, -hw), corner(hl, -hw), corner(hl, hw), corner(-hl, hw)]],
     };
