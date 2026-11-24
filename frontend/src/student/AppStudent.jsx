@@ -125,6 +125,7 @@ export default function AppStudent() {
 
   const handleSearchPick = (entry) => {
     flow.selectFromSearch(entry);
+    if (viewportMode === "phone" && entry.displayName?.endsWith(" · 공사 중")) panelState.setDetent("peek");
     camera.flyToBuilding(entry.elementId);
   };
   const panelTitle = selection.selectedId ? flow.selectionTitle || selection.selectedTitle || selection.selectedId : "";

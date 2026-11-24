@@ -54,6 +54,7 @@ import { WATER_ENV_INTENSITY, WATER_MATERIAL_NAME, patchWaterFresnel } from "./l
 import { clipPolygonAhead } from "./render/clipPolygon.mjs";
 import { POINTER_EXCLUDED_LAYER } from "./render/canvasLifecycle.mjs";
 import { CampusGrass } from "./render/CampusGrass";
+import { E2Worksite } from "./render/E2Worksite";
 import { ModelEditorScene } from "./editor/ModelEditorScene";
 import { modelEditStore } from "./editor/modelEditsApi.mjs";
 
@@ -91,8 +92,8 @@ const KERB_MATERIAL_NAME = "Kerb";
 // 검사하면 포인터가 한 번 움직일 때 두 메시에만 약 9 ms가 들었다(측정). 경계 상자 트리(three-mesh-bvh)로 검사한다.
 // indirect라 인덱스 버퍼 순서는 그대로다.
 const BVH_MESH_PATTERN = /^(Topography_joined|OuterTerrain)/;
-// 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 지형 삼각형 위 4 cm에 얹은 얇은 메시다.
-// 지면 층(Ground_*, 최대 3.6 cm)보다 높고, 먼 거리의 깊이 정밀도에서도 겹치지 않도록 폴리곤 오프셋으로 늘 지면 앞에 그린다.
+// 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 그 아래의 온전한 포장면 위 6 mm에 얹은 얇은 메시다.
+// 포장면은 도색 모양으로 뚫지 않으므로, 먼 거리의 깊이 정밀도에서도 겹치지 않도록 폴리곤 오프셋으로 늘 지면 앞에 그린다.
 // 평평한 도색이라 그림자를 드리우지 않고, 캠퍼스 전체에 걸친 삼각형을 포인터가 움직일 때마다 검사하지 않도록 클릭 판정에서도 뺀다.
 // 밤에는 다른 발광 재질처럼 emissiveMap으로 은은하게 빛난다(밝기는 GLB의 emissive strength).
 const ROAD_MARKING_MATERIAL_NAME = "Road_Marking";
@@ -259,7 +260,9 @@ function getSelectableMeta(object) {
     // 팝업·미기후 요청에 쓰는 요소 id. 대장 코드가 기존 요소와 같은 대리 노드는 그 요소(BLD_A6 등)를 쓴다.
     dataElementId:
       (proxy ? resolveProxyDataElementId(rawName, node.userData, ELEMENT_NAME_MAP) : null) ?? buildingMeta.elementId,
-    label: buildingMeta.label ?? (proxy ? node.userData.label ?? null : null),
+    label: (rawName === "BLD_SCNU_E2" && CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed)
+      ? `${node.userData.label} · 공사 중`
+      : buildingMeta.label ?? (proxy ? node.userData.label ?? null : null),
     proxy,
     // 생성기가 GLB extras에 남긴 추정 계보(새 필드). 패널의 추정 표기만 읽는다.
     heightLineage: node.userData?.heightLineage ?? null,
@@ -1417,6 +1420,7 @@ export function CityModel({
           onPointerOut={handlePointerOut}
         />
         {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <CampusGrass scene={scene} quality={quality} />}
+      {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <E2Worksite obscured={labelsHidden} controlsRef={controlsRef} />}
       </group>
       <ModelEditorScene scene={scene} controlsRef={controlsRef} />
     </>
