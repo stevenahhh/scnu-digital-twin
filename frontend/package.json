@@ -17,6 +17,7 @@
     "model:build": "bun scripts/campus-model/build.mjs",
     "model:blend": "bun scripts/campus-model/qa/topology/blend.mjs",
     "model:pack": "bun scripts/campus-model/pack.mjs",
+    "model:worksite": "bun scripts/campus-model/e2-worksite.mjs",
     "model:precompress": "bun scripts/campus-model/publish.mjs",
     "network:build": "bun scripts/campus-model/network/buildNetwork.mjs"
   },

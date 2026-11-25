@@ -141,6 +141,11 @@ export function useFlyTo({ controlsRef, getScene }) {
     const apply = (view) => {
       camera.position.set(view.position[0], view.position[1], view.position[2]);
       controls.target.set(view.target[0], view.target[1], view.target[2]);
+      // A reduced-motion jump moves the target and eye together, before the
+      // next frame can update the local orbit limit for the destination.
+      if (preset.id === "building:BLD_SCNU_E2" || preset.id === "building:BLD_E2") {
+        controls.minDistance = Math.min(controls.minDistance, camera.position.distanceTo(controls.target));
+      }
       controls.update();
     };
     setIsFlying(true);

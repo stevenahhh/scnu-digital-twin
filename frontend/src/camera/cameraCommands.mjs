@@ -1,6 +1,9 @@
 // 카메라 단추·키보드 조작의 순수 계산과, 그것을 OrbitControls에 적용하는 얇은 층.
 // 위치·목표는 [x, y, z] 배열이다. 회전은 목표점을 지나는 세로축 둘레, 확대는 목표점까지 거리의 배율이다.
-export const ORBIT_LIMITS = Object.freeze({ minDistance: 30, maxDistance: 520 });
+// 최소 거리 3 단위(약 5 m)는 건물 앞·거리 높이까지 다가가게 한다. 벽을 뚫는 것은 건물 충돌(buildingClearance.mjs)이 막는다.
+export const ORBIT_LIMITS = Object.freeze({ minDistance: 3, maxDistance: 520 });
+// 단추·키 이동 한 단계가 PAN_STEP 전체를 쓰는 목표점 거리. 더 가까우면 거리에 비례해 줄인다.
+const PAN_FULL_STEP_DISTANCE = 30;
 export const ZOOM_STEP = 0.8;
 export const ROTATE_STEP = Math.PI / 12;
 export const PAN_STEP = 12;
@@ -93,7 +96,11 @@ export function applyMove(controls, { position, target }) {
 
 export function zoomBy(controls, factor) {
   if (!controls) return false;
-  return applyMove(controls, { position: zoomPosition(toArray(controls.object.position), toArray(controls.target), factor) });
+  const limits = {
+    minDistance: controls.minDistance ?? ORBIT_LIMITS.minDistance,
+    maxDistance: controls.maxDistance ?? ORBIT_LIMITS.maxDistance,
+  };
+  return applyMove(controls, { position: zoomPosition(toArray(controls.object.position), toArray(controls.target), factor, limits) });
 }
 
 export function rotateBy(controls, radians) {
@@ -121,7 +128,10 @@ export function rotateDuringDrag(controls, radians) {
 
 export function panBy(controls, right, forward) {
   if (!controls) return false;
-  return applyMove(controls, panPositions(toArray(controls.object.position), toArray(controls.target), right, forward));
+  const position = toArray(controls.object.position);
+  const target = toArray(controls.target);
+  const step = Math.min(1, length(sub(position, target)) / PAN_FULL_STEP_DISTANCE);
+  return applyMove(controls, panPositions(position, target, right * step, forward * step));
 }
 
 // 처음 시점: 전체 시점으로 날아간다(움직임 줄이기에서는 useFlyTo가 바로 옮긴다).
