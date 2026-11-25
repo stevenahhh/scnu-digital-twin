@@ -6,9 +6,11 @@ with tool_call_required. The API returns no token usage.
 """
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import os
+import time
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -22,6 +24,15 @@ COMPLETION_PATH = "/api/v2/chat/llm-completion"
 
 class TimelyError(RuntimeError):
     pass
+
+
+def _expires_soon(token: str, margin_s: float = 60.0) -> bool:
+    try:
+        payload = token.split(".")[1]
+        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+        return float(claims["exp"]) - time.time() < margin_s
+    except (IndexError, KeyError, ValueError, TypeError):
+        return False
 
 
 def prefix_hash(instructions: str, tools: list[dict[str, Any]]) -> str:
@@ -46,6 +57,9 @@ class TimelyClient:
         return cls(key, base_url=os.environ.get("TIMELY_BASE_URL", DEFAULT_BASE_URL),
                    model=os.environ.get("HARNESS_MODEL", DEFAULT_MODEL))
 
+    def __repr__(self) -> str:
+        return f"TimelyClient(base_url={self._base_url!r}, model={self.model!r})"
+
     async def aclose(self) -> None:
         await self._http.aclose()
 
@@ -68,7 +82,7 @@ class TimelyClient:
         if reasoning_effort:
             body["reasoning_effort"] = reasoning_effort
         for attempt in range(2):
-            token = self._token or await self._authenticate()
+            token = self._token if self._token and not _expires_soon(self._token) else await self._authenticate()
             request = self._http.build_request(
                 "POST", self._base_url + COMPLETION_PATH, json=body,
                 headers={"authorization": f"Bearer {token}", "accept": "text/event-stream"})

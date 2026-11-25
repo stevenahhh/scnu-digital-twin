@@ -98,6 +98,27 @@ async def test_error_status_and_error_events_raise() -> None:
         await collect(client, session_id="s", instructions="sys", tools=[], messages=[])
 
 
+def jwt_with_exp(exp: float) -> str:
+    import base64
+
+    payload = base64.urlsafe_b64encode(json.dumps({"exp": exp}).encode()).decode().rstrip("=")
+    return f"h.{payload}.s"
+
+
+@pytest.mark.anyio
+async def test_token_close_to_expiry_is_refreshed_before_the_request() -> None:
+    import time
+
+    fake = FakeTimely([httpx.Response(201, content=sse({"type": "final_response", "message": "ok"}))])
+    client = client_for(fake)
+    client._token = jwt_with_exp(time.time() + 30)
+
+    await collect(client, session_id="s", instructions="sys", tools=[], messages=[])
+
+    assert fake.auth_calls == 1
+    assert fake.requests[-1].headers["authorization"] == "Bearer jwt-1"
+
+
 def test_prefix_hash_depends_only_on_instructions_and_tools() -> None:
     tools = [{"type": "function", "name": "a", "description": "d", "schema": {"type": "object"}}]
     assert prefix_hash("sys", tools) == prefix_hash("sys", [dict(tools[0])])
