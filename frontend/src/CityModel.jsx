@@ -22,7 +22,7 @@ import {
 import { createCameraArm, resolveArmLength } from "./camera/buildingClearance.mjs";
 import { isAnchorOccludedByTerrain } from "./utils/campusLabelVisibility.mjs";
 import { CAMERA_PRESETS, D4_CAMERA_OFFSET, focusViewFrom } from "./camera/cameraPresets.mjs";
-import { useFlyTo } from "./camera/useFlyTo.mjs";
+import { isFlyToEvent, useFlyTo } from "./camera/useFlyTo.mjs";
 import { frameDampingFactor, isCameraStepEvent } from "./camera/cameraCommands.mjs";
 import { CampusLabelLayer } from "./labels/CampusLabelLayer.jsx";
 import { resolveLabelBand } from "./labels/labelBands.mjs";
@@ -469,6 +469,8 @@ export function CityModel({
   const buildingCollidersRef = useRef([]);
   const [cameraArm] = useState(() => createCameraArm());
   const armPoseRef = useRef({ position: new THREE.Vector3(NaN, NaN, NaN), target: new THREE.Vector3(NaN, NaN, NaN), offset: new THREE.Vector3() });
+  // 시점 버튼·검색·도우미의 비행은 설계한 시점이라 벽 충돌로 당기지 않는다. 사람이 다시 조작하면(궤도, 확대, 단추) 충돌을 다시 적용한다.
+  const armHeldRef = useRef(false);
 
   // 누르기·놓기는 window 캡처 단계에서 먼저 기록한다. R3F의 pointerup과 라벨 click보다 앞서고, OrbitControls가
   // 포인터를 캡처해도 빠지지 않는다. 누른 곳이 캔버스인지, 라벨인지, 그 밖(패널 등)인지도 함께 남긴다.
@@ -601,6 +603,7 @@ export function CityModel({
       labelPassFramesRef.current = 2;
     };
     const handleStart = (event) => {
+      armHeldRef.current = isFlyToEvent(event);
       if (isCameraStepEvent(event)) return;
       motionSettle.start();
       if (motion.timer) clearTimeout(motion.timer);
@@ -1158,7 +1161,10 @@ export function CityModel({
     }
     const colliders = buildingCollidersRef.current;
     const pose = armPoseRef.current;
-    if (target && colliders.length > 0 && !(pose.position.equals(camera.position) && pose.target.equals(target))) {
+    if (target && armHeldRef.current) {
+      pose.position.copy(camera.position);
+      pose.target.copy(target);
+    } else if (target && colliders.length > 0 && !(pose.position.equals(camera.position) && pose.target.equals(target))) {
       const offset = pose.offset.copy(camera.position).sub(target);
       const actual = offset.length();
       if (actual > 1e-6) {
