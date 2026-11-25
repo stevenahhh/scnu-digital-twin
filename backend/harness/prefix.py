@@ -41,7 +41,7 @@ class MCPTool(Protocol):
 
     name: str
     meta: dict[str, JSONValue] | None
-    inputSchema: ToolSchema
+    input_schema: ToolSchema
 
 
 @dataclass(frozen=True, slots=True)
@@ -104,14 +104,14 @@ def check_compatible(role: str, mcp_tools: Iterable[MCPTool]) -> list[str]:
             mismatches.append(f"{name}: meta['scnu/roles'] does not contain {role!r}")
         expected_schema = tool["schema"]
         expected_properties = set(expected_schema.get("properties", {}))
-        actual_properties = set(actual.inputSchema.get("properties", {}))
+        actual_properties = set(actual.input_schema.get("properties", {}))
         if expected_properties != actual_properties:
             mismatches.append(
                 f"{name}: properties differ; expected {sorted(expected_properties)}, "
                 f"got {sorted(actual_properties)}"
             )
         expected_required = set(expected_schema.get("required", []))
-        actual_required = set(actual.inputSchema.get("required", []))
+        actual_required = set(actual.input_schema.get("required", []))
         if expected_required != actual_required:
             mismatches.append(
                 f"{name}: required differ; expected {sorted(expected_required)}, "
