@@ -111,3 +111,8 @@ tmp/
 
 # campus model generator: downloaded satellite tiles
 frontend/scripts/campus-model/.cache/
+
+# =========================
+# Assistant harness runtime data (journals, session jails, usage)
+# =========================
+backend/harness/data/
