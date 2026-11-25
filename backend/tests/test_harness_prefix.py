@@ -36,8 +36,7 @@ def test_prefix_size_ceilings():
     student = prefix.load("student")
     admin = prefix.load("admin")
     assert len(student.instructions) <= 3000
-    # The verbatim section 4.1 arrays exceed the requested 3200/5000 limits.
-    # Section 7.1 explicitly budgets 3600/5600 for these frozen arrays.
+    # The verbatim section 4.1 arrays measure 3,413/5,261 chars; section 7.1 now budgets 3,600/5,600.
     assert len(json.dumps(student.tools, sort_keys=True, separators=(",", ":"))) <= 3600
     assert len(json.dumps(admin.tools, sort_keys=True, separators=(",", ":"))) <= 5600
 
