@@ -578,7 +578,7 @@ Names starting with `admin_` are admin-only, because the SDK's `prompt()` decora
 | Item | Budget | Enforced in |
 |---|---|---|
 | System prompt | at most 2,000 chars; the student text below is 1,654 chars and 602 tokens | golden test |
-| Tool schemas | at most 3,600 chars for students (3,413 chars and 1.14k tokens today), 5,600 for admins (5,261 chars and 1.75k tokens) | golden test |
+| Tool schemas | at most 3,600 chars for students (about 1.1k tokens), 5,600 for admins (about 1.8k); the verbatim arrays measure 3,413 and 5,261 | golden test |
 | Context line per turn | at most 120 chars | `loop.py` |
 | User message | at most 2,000 chars | 413 |
 | Tool result | per-tool cap, 4,000 chars in general, 6,000 for `eval` and `read` | `truncate.py` |
