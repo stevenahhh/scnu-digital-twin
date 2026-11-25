@@ -67,6 +67,11 @@ export default function AppStudent() {
   const viewportMode = useViewportMode();
   const panelState = usePanelState(viewportMode);
   const navigation = useDashboardNavigation({ panelState, activeTab, setActiveTab });
+  // 폰 시트의 중간 높이에서는 도우미 입력창이 화면 밖에 있어, 도우미 탭이 열리면 전체 높이로 올린다.
+  const { open: panelOpen, setDetent: setPanelDetent } = panelState;
+  useEffect(() => {
+    if (activeTab === "assistant" && viewportMode === "phone" && panelOpen) setPanelDetent("full");
+  }, [activeTab, viewportMode, panelOpen, setPanelDetent]);
   const [isTimePlaying, setIsTimePlaying] = useState(false);
   const [isSceneLoading, setIsSceneLoading] = useState(false);
   const [sceneAttempt, setSceneAttempt] = useState(0);
