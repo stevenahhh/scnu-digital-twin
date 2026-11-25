@@ -64,6 +64,26 @@ describe("D4SectionExperience pane", () => {
     expect(container.querySelector("[data-qa^=camera-preset-]")).toBeNull();
   });
 
+  it("opens the plan manager from the building step when installation is allowed", async () => {
+    const user = userEvent.setup();
+    render(<D4SectionExperience onClose={vi.fn()} allowInstallation />);
+    await user.click(screen.getByRole("button", { name: "옥상 태양광 배치" }));
+    expect(crumbs()).toEqual(["캠퍼스", "공과대학 3호관D4", "배치 편집"]);
+    expect(screen.getByText("설치 계획 관리자")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "대안 편집" }));
+    expect(screen.getByText(/옥상 설치 편집기 plan-2/)).toBeTruthy();
+  });
+
+  it("hides the rooftop solar entry below the building step and without allowInstallation", async () => {
+    const user = userEvent.setup();
+    render(<D4SectionExperience onClose={vi.fn()} allowInstallation />);
+    await user.click(screen.getByRole("button", { name: "2층 선택" }));
+    expect(screen.queryByRole("button", { name: "옥상 태양광 배치" })).toBeNull();
+    cleanup();
+    render(<D4SectionExperience onClose={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: "옥상 태양광 배치" })).toBeNull();
+  });
+
   it("opens an editor request as the 배치 편집 step, and 상위로 returns to the building", async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
