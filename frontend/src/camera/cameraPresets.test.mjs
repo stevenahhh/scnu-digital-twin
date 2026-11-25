@@ -15,6 +15,16 @@ import {
 
 const D4_BOUNDS = { min: [-232, 10, -126], max: [-197, 28, -61] };
 
+test("E2 search aims at the mounted work bay and falls back to the hall when the layer is absent", () => {
+  const hall = { min: [0, 0, 0], max: [40, 16, 20] };
+  const worker = { min: [42, 3, 22], max: [44, 5, 24] };
+  for (const name of ["BLD_E2", "BLD_SCNU_E2"]) {
+    const preset = { id: `building:${name}`, focus: [name], offset: D4_CAMERA_OFFSET };
+    assert.deepEqual(resolveCameraPreset(preset, { boundsOf: key => key === "E2_Builder" ? worker : hall }).target, [43, 4, 23]);
+    assert.deepEqual(resolveCameraPreset(preset, { boundsOf: key => key === name ? hall : null }).target, [20, 8, 10]);
+  }
+});
+
 test("preset list starts with the overview and every entry has a unique id, title and fixed view", () => {
   assert.equal(CAMERA_PRESETS[0].id, OVERVIEW_PRESET_ID);
   assert.deepEqual(CAMERA_PRESETS[0].position, [0, 260, 260]);

@@ -2,7 +2,7 @@ import { Suspense, lazy, memo, useEffect } from "react";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import { CityModel } from "../CityModel";
 import { OrbitGestures } from "../camera/OrbitGestures";
-import { ORBIT_DAMPING_FACTOR } from "../camera/cameraCommands.mjs";
+import { ORBIT_DAMPING_FACTOR, ORBIT_LIMITS } from "../camera/cameraCommands.mjs";
 import { CAMPUS_MODEL_URL } from "../campusModelAsset.mjs";
 import { CampusLighting } from "../lighting/CampusLighting";
 import { HorizonSkirt } from "../lighting/HorizonSkirt";
@@ -114,8 +114,8 @@ export const CampusScene = memo(function CampusScene({
         dampingFactor={ORBIT_DAMPING_FACTOR}
         enableZoom
         zoomSpeed={1}
-        minDistance={30}
-        maxDistance={520}
+        minDistance={ORBIT_LIMITS.minDistance}
+        maxDistance={ORBIT_LIMITS.maxDistance}
         minPolarAngle={Math.PI / 6}
         maxPolarAngle={Math.PI / 2.2}
         target={[0, 0, 0]}

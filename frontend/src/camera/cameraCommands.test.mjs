@@ -7,7 +7,7 @@ const close = (actual, expected) => actual.forEach((value, index) => assert.ok(M
 test("zoom scales the distance to the target and stays inside the orbit limits", () => {
   close(zoomPosition([0, 0, 100], [0, 0, 0], 0.8), [0, 0, 80]);
   close(zoomPosition([0, 0, 100], [0, 0, 0], 10), [0, 0, ORBIT_LIMITS.maxDistance]);
-  close(zoomPosition([0, 0, 40], [0, 0, 0], 0.1), [0, 0, ORBIT_LIMITS.minDistance]);
+  close(zoomPosition([0, 0, 40], [0, 0, 0], 0.01), [0, 0, ORBIT_LIMITS.minDistance]);
   close(zoomPosition([10, 10, 10], [10, 10, 10], 0.5), [10, 10, 10]);
 });
 

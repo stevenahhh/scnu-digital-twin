@@ -118,6 +118,13 @@ function unionBounds(names, boundsOf) {
 // 시점을 실제 카메라 좌표 { position, target }로 푼다.
 // boundsOf(name) -> { min: [x,y,z], max: [x,y,z] } | null, groundAt(x, z) -> y | null. 둘 다 선택이다.
 export function resolveCameraPreset(preset, { boundsOf = () => null, groundAt = () => null } = {}) {
+  if (["building:BLD_SCNU_E2", "building:BLD_E2"].includes(preset.id)) {
+    const worker = boundsOf("E2_Builder");
+    if (worker) {
+      const target = worker.min.map((v, i) => (v + worker.max[i]) / 2);
+      return { target, position: add(target, [5, 3, 9]) };
+    }
+  }
   if (preset.focus) {
     const bounds = unionBounds(preset.focus, boundsOf);
     if (bounds) {

@@ -19,6 +19,7 @@ import {
   clampOrbitAboveGround,
   sampleGroundGrid,
 } from "./camera/terrainClearance.mjs";
+import { createCameraArm, resolveArmLength } from "./camera/buildingClearance.mjs";
 import { isAnchorOccludedByTerrain } from "./utils/campusLabelVisibility.mjs";
 import { CAMERA_PRESETS, D4_CAMERA_OFFSET, focusViewFrom } from "./camera/cameraPresets.mjs";
 import { useFlyTo } from "./camera/useFlyTo.mjs";
@@ -92,6 +93,33 @@ const KERB_MATERIAL_NAME = "Kerb";
 // 검사하면 포인터가 한 번 움직일 때 두 메시에만 약 9 ms가 들었다(측정). 경계 상자 트리(three-mesh-bvh)로 검사한다.
 // indirect라 인덱스 버퍼 순서는 그대로다.
 const BVH_MESH_PATTERN = /^(Topography_joined|OuterTerrain)/;
+// 카메라가 뚫고 들어가면 안 되는 건물 메시(여러 프리미티브는 이 이름의 그룹 아래 메시다). 선택 대리 프리즘(pickProxy)은 실제 외관보다
+// 크고 거친 상자라 빼고, 먼 맥락 타일(Context_Far_*)은 카메라가 가지 않는 곳이라 뺀다. 모두 합쳐 약 8만 삼각형이다.
+const BUILDING_COLLIDER_PATTERN = /^(BLD_|CampusBuildings|Context_Buildings|FrontKit_)/;
+// 카메라 뒤로 이 거리까지 보고 카메라가 건물 안에 들어가 있는지 판단한다(캐럼퍼스에서 가장 큰 건물보다 길다).
+const ARM_EXIT_SEARCH = 300;
+
+// 목표점(origin)에서 direction으로 최대 far까지 건물 면과의 교차를 거리순 [{ distance, entering }]로 돌려준다.
+// 재질이 앞면만 그리더라도 건물 안팎을 가르려면 뒷면도 봐야 하므로 양면으로 검사하고, 면 법선으로 들어감·나감을 가른다.
+const armRay = new THREE.Ray();
+const armLocalRay = new THREE.Ray();
+const armInverse = new THREE.Matrix4();
+const armNormal = new THREE.Vector3();
+function castBuildingHits(colliders, origin, direction, far) {
+  armRay.set(origin, direction);
+  const hits = [];
+  for (const mesh of colliders) {
+    armInverse.copy(mesh.matrixWorld).invert();
+    armLocalRay.copy(armRay).applyMatrix4(armInverse);
+    for (const hit of mesh.geometry.boundsTree.raycast(armLocalRay, THREE.DoubleSide)) {
+      const distance = hit.point.applyMatrix4(mesh.matrixWorld).distanceTo(origin);
+      if (distance > far || !hit.face) continue;
+      armNormal.copy(hit.face.normal).transformDirection(mesh.matrixWorld);
+      hits.push({ distance, entering: armNormal.dot(direction) < 0 });
+    }
+  }
+  return hits.sort((a, b) => a.distance - b.distance);
+}
 // 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 그 아래의 온전한 포장면 위 6 mm에 얹은 얇은 메시다.
 // 포장면은 도색 모양으로 뚫지 않으므로, 먼 거리의 깊이 정밀도에서도 겹치지 않도록 폴리곤 오프셋으로 늘 지면 앞에 그린다.
 // 평평한 도색이라 그림자를 드리우지 않고, 캠퍼스 전체에 걸친 삼각형을 포인터가 움직일 때마다 검사하지 않도록 클릭 판정에서도 뺀다.
@@ -437,6 +465,10 @@ export function CityModel({
   // 카메라 지면 충돌용 지면 격자(월드 좌표). 캠퍼스 지형과 바깥 산을 모두 덮는다.
   const groundGridRef = useRef(null);
   const groundEdgeRef = useRef(null);
+  // 카메라 건물 충돌: BVH를 만든 건물 메시, 벽에 밀려도 사용자가 정한 거리를 기억하는 팔, 직전에 검사한 카메라·목표점.
+  const buildingCollidersRef = useRef([]);
+  const [cameraArm] = useState(() => createCameraArm());
+  const armPoseRef = useRef({ position: new THREE.Vector3(NaN, NaN, NaN), target: new THREE.Vector3(NaN, NaN, NaN), offset: new THREE.Vector3() });
 
   // 누르기·놓기는 window 캡처 단계에서 먼저 기록한다. R3F의 pointerup과 라벨 click보다 앞서고, OrbitControls가
   // 포인터를 캡처해도 빠지지 않는다. 누른 곳이 캔버스인지, 라벨인지, 그 밖(패널 등)인지도 함께 남긴다.
@@ -843,6 +875,15 @@ export function CityModel({
       sources.push({ positions, index: object.geometry.index?.array ?? null });
     });
     groundGridRef.current = sources.length > 0 ? buildGroundGrid(sources) : null;
+    const colliders = [];
+    scene.traverse((object) => {
+      if (!object.isMesh || object.isInstancedMesh || object.userData.pickProxy) return;
+      if (!BUILDING_COLLIDER_PATTERN.test(object.name) && !BUILDING_COLLIDER_PATTERN.test(object.parent?.name ?? "")) return;
+      if (object.parent?.userData?.pickProxy || !object.geometry?.attributes?.position) return;
+      if (!object.geometry.boundsTree) object.geometry.boundsTree = new MeshBVH(object.geometry, { indirect: true });
+      colliders.push(object);
+    });
+    buildingCollidersRef.current = colliders;
     // 지면 메시의 수평 범위(장면 좌표)와 평균 높이: 화면 검사(QA)가 모델 가장자리 안팎의 밝기를 잰다(data-model-edge).
     let minX = Infinity; let maxX = -Infinity; let minZ = Infinity; let maxZ = -Infinity; let sumY = 0; let n = 0;
     for (const { positions } of sources) {
@@ -1095,20 +1136,45 @@ export function CityModel({
   // 카메라(와 near 평면)를 지면 위에 둔다. OrbitControls(우선순위 -1)·시점 비행·클릭 포커스가 이번 프레임의
   // 자리를 정한 뒤, 그 자리가 지면 + 여유보다 낮으면 같은 거리에서 위로 돌려 올린다. 렌더 전에 고치므로
   // 땅속 프레임이 보이지 않고, 지면 격자가 연속이라 올라가는 움직임도 매끄럽다. 라벨 패스보다 앞에 둔다.
+  // 그다음 목표점에서 카메라까지 건물 벽이 있으면 카메라를 벽 앞으로 당기고, 카메라가 건물 안에 들어갔으면 바깥으로 밀어낸다
+  // (buildingClearance.mjs). 벽이 비켜나면 사용자가 정한 거리로 돌아간다. 카메라·목표점이 그대로면 다시 검사하지 않는다.
   useFrame(() => {
     const grid = groundGridRef.current;
-    if (!grid) return;
     const controls = controlsRef?.current;
     const target = controls?.target ?? null;
-    const position = [camera.position.x, camera.position.y, camera.position.z];
-    const groundAt = (x, z) => sampleGroundGrid(grid, x, z);
-    const next = target
-      ? clampOrbitAboveGround(position, [target.x, target.y, target.z], groundAt, {
-          minPolarAngle: controls.minPolarAngle ?? 0,
-        })
-      : clampOrbitAboveGround(position, position, groundAt);
-    if (!next) return;
-    camera.position.set(next[0], next[1], next[2]);
+    let moved = false;
+    if (grid) {
+      const position = [camera.position.x, camera.position.y, camera.position.z];
+      const groundAt = (x, z) => sampleGroundGrid(grid, x, z);
+      const next = target
+        ? clampOrbitAboveGround(position, [target.x, target.y, target.z], groundAt, {
+            minPolarAngle: controls.minPolarAngle ?? 0,
+          })
+        : clampOrbitAboveGround(position, position, groundAt);
+      if (next) {
+        camera.position.set(next[0], next[1], next[2]);
+        moved = true;
+      }
+    }
+    const colliders = buildingCollidersRef.current;
+    const pose = armPoseRef.current;
+    if (target && colliders.length > 0 && !(pose.position.equals(camera.position) && pose.target.equals(target))) {
+      const offset = pose.offset.copy(camera.position).sub(target);
+      const actual = offset.length();
+      if (actual > 1e-6) {
+        const desired = cameraArm.desired(actual);
+        offset.divideScalar(actual);
+        const length = resolveArmLength(castBuildingHits(colliders, target, offset, desired + ARM_EXIT_SEARCH), desired);
+        cameraArm.placed(length);
+        if (Math.abs(length - actual) > 1e-4) {
+          camera.position.copy(target).addScaledVector(offset, length);
+          moved = true;
+        }
+      }
+      pose.position.copy(camera.position);
+      pose.target.copy(target);
+    }
+    if (!moved) return;
     if (target) camera.lookAt(target);
     camera.updateMatrixWorld();
   });

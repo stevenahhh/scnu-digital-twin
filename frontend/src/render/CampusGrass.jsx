@@ -28,7 +28,7 @@ const TOPOGRAPHY_GRASS_COLOR = "#70964a";
 const RETINT_PATTERN = /retinted to (#[0-9a-f]{6})/i;
 
 // 덤불 하나: 가는 잎 3장을 방사형으로 기울여 세운다(장면 단위, 1 단위 = 약 1.6 m). 실제 잔디(5-10 cm)보다 큰 약 30 cm다:
-// 카메라가 지면 위 4 단위(CAMERA_GROUND_CLEARANCE)까지만 내려오므로 실제 크기로는 한두 픽셀이 되지 않는다.
+// 카메라가 지면 위 1.5 단위(CAMERA_GROUND_CLEARANCE)까지만 내려오므로 실제 크기로는 한두 픽셀이 되지 않는다.
 const BLADES = 3;
 const BLADE_HEIGHT = 0.2;
 const BLADE_WIDTH = 0.1;

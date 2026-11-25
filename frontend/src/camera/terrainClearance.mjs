@@ -5,8 +5,9 @@
 // 지면 격자를 만들 메시 이름. Topography*는 캠퍼스의 자연 지면, Ground_*는 도로·인도 같은 바닥면, Road_Markings는 노면 표시,
 // OuterTerrain은 둘레의 산, Context_Far_Ground_*는 그 위의 먼 주변 도로다(산에서 도로 자리는 잘려 나간다). 생성기가 바닥을 겹치지 않게 나누므로(lib/partition.mjs) 지형만으로는 구멍이 난다.
 export const GROUND_MESH_NAME = /^(Topography|Ground_|Road_Markings|OuterTerrain|Context_Far_Ground_)/;
-// 카메라(와 near 평면)가 지면 위에 남겨 둘 여유(m). near는 0.1이라 이 여유 안에 들어간다.
-export const CAMERA_GROUND_CLEARANCE = 4;
+// 카메라(와 near 평면)가 지면 위에 남겨 둘 여유(장면 단위, 약 2.4 m). 거리 높이 시점까지 내려가게 한다.
+// near는 0.1이라 이 여유 안에 들어간다.
+export const CAMERA_GROUND_CLEARANCE = 1.5;
 export const GROUND_GRID_CELL = 4;
 
 // sources: [{ positions, index }]. positions는 월드 좌표 [x, y, z, ...], index는 없으면 비색인 삼각형 목록.
