@@ -38,12 +38,16 @@ import { buildingNotice } from "../restrictions/restrictionModel.mjs";
 import { useCampusRestrictions } from "../restrictions/useCampusRestrictions.mjs";
 import { sessionStore } from "../auth/session.mjs";
 import { accountLabel, useSession } from "../auth/useSession.mjs";
+import { assistantTabs } from "../assistant/assistantTab.mjs";
+import { assistantContext, applyAssistantAction } from "../assistant/assistantActions.mjs";
+import { useAssistant } from "../assistant/useAssistant.mjs";
+import { AssistantPanel } from "../assistant/AssistantPanel.jsx";
 
 const D4SectionExperience = lazy(() => import("../vworld/D4SectionExperience").then((module) => ({ default: module.D4SectionExperience })));
 const ROOT_CLASS = "dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink";
 const D4_PRESET = CAMERA_PRESETS.find((preset) => preset.id === D4_PRESET_ID);
-// 학생 화면의 탭: 건물과 현황. 에너지·시뮬레이션은 관리자 대시보드(AppMain)에만 있다.
-export const STUDENT_TABS = Object.freeze(DASHBOARD_TABS.filter((tab) => tab.value === "building" || tab.value === "status"));
+// 학생 화면은 건물·현황·도우미를 제공한다. 도우미의 쓰기 권한은 서버에서 검사한다.
+export const STUDENT_TABS = Object.freeze(assistantTabs(DASHBOARD_TABS.filter((tab) => tab.value === "building" || tab.value === "status")));
 const isStudentTab = (value) => STUDENT_TABS.some((tab) => tab.value === value);
 // 학생 화면은 설치 계획을 읽지 않는다. 피드 집계(useFeedStatus)에는 빈 목록을 넘긴다.
 const NO_PLANS = Object.freeze({ status: "ready", plans: [], retry() {} });
@@ -98,6 +102,12 @@ export default function AppStudent() {
     onSectionExit: noop,
   });
   const isCampus = flow.buildingViewMode === "campus";
+  const assistant = useAssistant({
+    session, active: activeTab === "assistant",
+    context: () => assistantContext({ selection, activeTab, flow, clock }),
+    onAction: (event) => applyAssistantAction(event, { flow, camera, clock, panelState, setActiveTab, role: session?.account.role }),
+    onWriteComplete: restrictions.refresh,
+  });
   useDashboardUrlState({
     building: isCampus ? selection.selectedId : "BLD_D4", onBuilding: flow.selectFromUrl,
     clock, panelState, activeTab, setActiveTab, controlsRef: orbitControlsRef,
@@ -208,6 +218,7 @@ export default function AppStudent() {
         onTabChange={setActiveTab}
         scrollRef={panelScrollRef}
       >
+        {activeTab === "assistant" && <AssistantPanel assistant={assistant} />}
         {activeTab === "building" && (
           <PanelErrorBoundary label="건물">{inspector ?? <BuildingEmptyState />}</PanelErrorBoundary>
         )}

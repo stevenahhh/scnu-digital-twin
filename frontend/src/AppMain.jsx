@@ -29,7 +29,7 @@ import { useThemeMode } from "./hooks/useThemeMode.mjs";
 import { useMainBuildingFlow } from "./hooks/useMainBuildingFlow.mjs";
 import { useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
 import { DashboardShell, shellInsetRight, useSettledOpen } from "./panel/DashboardShell";
-import { DEFAULT_TAB } from "./panel/DashboardPanel";
+import { DASHBOARD_TABS, DEFAULT_TAB } from "./panel/DashboardPanel";
 import { usePanelState } from "./panel/usePanelState.mjs";
 import { useDashboardNavigation } from "./panel/useDashboardNavigation.mjs";
 import { CampusEnergyOverview } from "./panel/CampusEnergyOverview";
@@ -46,9 +46,14 @@ import { sessionStore } from "./auth/session.mjs";
 import { accountLabel, useSession } from "./auth/useSession.mjs";
 import { ModelEditorPanel } from "./editor/ModelEditorPanel";
 import { modelEditStore } from "./editor/modelEditsApi.mjs";
+import { assistantTabs } from "./assistant/assistantTab.mjs";
+import { assistantContext, applyAssistantAction } from "./assistant/assistantActions.mjs";
+import { useAssistant } from "./assistant/useAssistant.mjs";
+import { AssistantPanel } from "./assistant/AssistantPanel.jsx";
 
 const ROOT_CLASS = "dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink";
 const D4_PRESET = CAMERA_PRESETS.find((preset) => preset.id === D4_PRESET_ID);
+const MAIN_TABS = assistantTabs(DASHBOARD_TABS);
 
 export default function App() {
   return <Dashboard />;
@@ -104,6 +109,12 @@ function Dashboard() {
     onSectionExit: plans.refreshAll,
   });
   const isCampus = flow.buildingViewMode === "campus";
+  const assistant = useAssistant({
+    session, active: activeTab === "assistant",
+    context: () => assistantContext({ selection, activeTab, flow, clock }),
+    onAction: (event) => applyAssistantAction(event, { flow, camera, clock, panelState, setActiveTab, role: session?.account.role }),
+    onWriteComplete: restrictions.refresh,
+  });
   useDashboardUrlState({
     building: isCampus ? selection.selectedId : "BLD_D4", onBuilding: flow.selectFromUrl,
     clock, panelState, activeTab, setActiveTab, controlsRef: orbitControlsRef,
@@ -236,9 +247,11 @@ function Dashboard() {
           />
         )}
         activeTab={activeTab}
+        tabs={MAIN_TABS}
         onTabChange={setActiveTab}
         scrollRef={panelScrollRef}
       >
+        {activeTab === "assistant" && <AssistantPanel assistant={assistant} />}
         <DashboardTabContent
           activeTab={activeTab}
           building={inspector}

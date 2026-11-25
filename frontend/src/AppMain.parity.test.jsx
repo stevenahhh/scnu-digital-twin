@@ -108,7 +108,7 @@ vi.mock("./features/energy/installations/installationPlanApi.mjs", async (import
 import App from "./AppMain.jsx";
 import { CAMERA_PRESETS } from "./camera/cameraPresets.mjs";
 
-const C5_TABS = ["건물", "현황", "에너지", "시뮬레이션"];
+const C5_TABS = ["건물", "현황", "에너지", "시뮬레이션", "도우미"];
 const TRAFFIC_OFFLINE = "영상 분석 서버 연결 없음";
 const TRAFFIC_LIVE = "실시간 영상 분석 중";
 const WEATHER_NETWORK = "기상 서버에 연결할 수 없습니다";
@@ -198,7 +198,7 @@ describe("Main and VWorld feature parity", () => {
     expect(screen.getByText("건물 에너지 시뮬레이션")).toBeTruthy();
   });
 
-  it("renders exactly the four dashboard tabs in order", () => {
+  it("renders the five Main dashboard tabs including the assistant (#179)", () => {
     const { container } = render(<App />);
 
     const labels = [...container.querySelectorAll('[data-qa^="dashboard-tab-"]')].map((tab) => tab.textContent.trim());

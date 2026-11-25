@@ -58,9 +58,9 @@ const Rail = forwardRef(function Rail({ activeTab, tabs, tabAlerts, onOpen, clas
       data-qa="dashboard-rail"
       className={cx("pointer-events-auto absolute inset-y-0 flex w-[var(--dashboard-rail-width)] flex-col items-center gap-2 border-l border-hairline bg-surface-1 py-4", className)}
     >
-      <h2 className="sr-only text-body">{dashboardTitle(activeTab)}</h2>
+      <h2 className="sr-only text-body">{dashboardTitle(activeTab, tabs)}</h2>
       {tabs.map((tab) => {
-        const Icon = TAB_ICONS[tab.value];
+        const Icon = tab.icon ?? TAB_ICONS[tab.value];
         const active = tab.value === activeTab;
         const alerts = tabAlerts[tab.value] ?? 0;
         return (
@@ -169,7 +169,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
         className={hidden ? "invisible" : undefined}
         header={(
           <div className="flex h-11 items-center gap-2">
-            <h2 className="min-w-0 flex-1 truncate text-title text-ink">{dashboardTitle(activeTab)}</h2>
+            <h2 className="min-w-0 flex-1 truncate text-title text-ink">{dashboardTitle(activeTab, tabs)}</h2>
             <Button
               variant="ghost"
               iconOnly
