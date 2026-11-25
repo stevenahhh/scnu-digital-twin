@@ -23,6 +23,8 @@ joined by HTTP and shared `BLD_*` element identifiers.
 ├── common/data/               # Cross-domain campus and element contracts
 ├── common/campus_auth.py      # Accounts, tokens and the admin-only write rule for both APIs
 ├── backend/simulation/        # Traffic simulation API on port 8002
+├── backend/harness/           # Per-user LLM assistant harness on port 8004 (Claude via Timely)
+├── backend/twin_mcp/          # Twin MCP server: labelled digests of weather, vision, simulation
 ├── docs/                      # Static demonstration artifacts
 ├── vision_api.py              # Dashboard traffic endpoint on port 8001
 ├── pytest.ini                 # Root pytest config (weather/tests, backend/tests)
@@ -51,6 +53,8 @@ build outputs when mapping product code.
 | Dashboard traffic feed | `vision_api.py` | `GET /api/traffic`, default port 8001 |
 | WebSocket vision demo | `car_vision_model/` | Separate server and React 19 client |
 | Traffic simulation | `backend/simulation/main.py` | FastAPI + WebSocket, port 8002 |
+| Assistant harness | `backend/harness/main.py`, `backend/harness/loop.py` | `/chat/*` API, turn loop, eval sandbox; see `backend/harness/AGENTS.md` |
+| Twin MCP server | `backend/twin_mcp/server.py` | Tools, `twin://` resources, prompts; `python -m twin_mcp` for stdio |
 | Road and building restrictions | `backend/simulation/restriction_manager.py`, `frontend/src/restrictions/` | `RD_*` closures reroute agents, `BLD_*` alerts; kept in memory |
 | Safety-report PoC | `TrafficSafety/` | Separate OCR/NLP/Streamlit PoC |
 
@@ -139,6 +143,7 @@ Services, one terminal each:
 .venv/bin/python -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
 .venv/bin/python vision_api.py --source 0 --port 8001
 .venv/bin/python -m uvicorn simulation.main:app --app-dir backend --host 127.0.0.1 --port 8002
+TIMELY_API_KEY=... .venv/bin/python -m uvicorn harness.main:app --app-dir backend --host 127.0.0.1 --port 8004
 bun run --cwd frontend dev:main
 bun run --cwd frontend dev:vworld
 ```
@@ -146,6 +151,7 @@ bun run --cwd frontend dev:vworld
 .venv\Scripts\python.exe -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
 .venv\Scripts\python.exe vision_api.py --source 0 --port 8001
 .venv\Scripts\python.exe -m uvicorn simulation.main:app --app-dir backend --host 127.0.0.1 --port 8002
+$env:TIMELY_API_KEY = "..."; .venv\Scripts\python.exe -m uvicorn harness.main:app --app-dir backend --host 127.0.0.1 --port 8004
 bun run --cwd frontend dev:main
 bun run --cwd frontend dev:vworld
 ```
@@ -193,9 +199,21 @@ Auth (`common/campus_auth.py`, read by the weather and simulation processes):
 - Seed accounts for the prototype: student `20239901`, admin `admin`. Passwords
   are exactly 8 characters.
 
+Harness (`backend/harness/config.py`, environment only; full list there):
+
+- `TIMELY_API_KEY`: the timely-scnu key. Set it in the process environment only;
+  never in a file, `.env`, command history or log. Without it `/health` reports
+  `llm: key_missing` and chat returns 503 `llm_key_missing`.
+- `TIMELY_BASE_URL` (`https://hello.timelygpt.co.kr`), `HARNESS_MODEL`
+  (`claude-sonnet-5-5`), `HARNESS_REASONING_EFFORT_STUDENT`/`_ADMIN`.
+- `TWIN_WEATHER_URL`, `TWIN_VISION_URL`, `TWIN_SIMULATION_URL` (the local defaults).
+- `HARNESS_DATA_DIR` (default `backend/harness/data`, git-ignored): journals,
+  session jails, usage. `SCNU_AUTH_SECRET` must match the weather process.
+
 Frontend (`frontend/.env`, copied from `frontend/.env.example`): `VITE_API_URL` (weather; `VITE_WEATHER_API_URL`
 is a deprecated alias), `VITE_VISION_API_URL` (default `http://127.0.0.1:8001`),
-`VITE_SIMULATION_API_URL`, `VITE_SIMULATION_WS_URL`, `VITE_VWORLD_API_KEY`.
+`VITE_SIMULATION_API_URL`, `VITE_SIMULATION_WS_URL`, `VITE_ASSISTANT_API_URL`
+(default `http://127.0.0.1:8004`), `VITE_VWORLD_API_KEY`.
 
 Vision: `--model`, `--host` (default `0.0.0.0`), `--port`; Ultralytics
 auto-install is off (`YOLO_AUTOINSTALL=False`). Car demo: `--port` or
@@ -207,8 +225,9 @@ returns.
 
 ## NOTES
 
-- Local runtime is four processes: weather `8000`, vision `8001`, simulation
-  `8002`, frontend `5173`.
+- Local runtime is five processes: weather `8000`, vision `8001`, simulation
+  `8002`, assistant harness `8004`, frontend `5173`. The harness runs one worker
+  (in-memory session registry).
 - KMA/AirKorea calls may delay or time out while map and popup UI remain usable.
 - Vision startup loads a YOLO model and camera/stream; first launch can be slow.
 - No repository CI workflow was found. Validation is local and domain-specific.

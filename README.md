@@ -39,6 +39,8 @@
 | `weather/` | 기상, 미기후, 에너지(태양광) API | 8000 |
 | `vision_api.py`, `car_vision_model/` | YOLO 차량 계수. 대시보드용 엔드포인트와 별도 데모 | 8001, 8003 |
 | `backend/simulation/` | 교통 시뮬레이션 API와 WebSocket | 8002 |
+| `backend/harness/` | 계정별 세션으로 분리한 AI 도우미 하네스(Claude Sonnet 5.5, Timely 경유) | 8004 |
+| `backend/twin_mcp/` | 하네스가 트윈 데이터를 주고받는 MCP 서버 | |
 | `common/data/` | 건물, 도로, 교차로 ID와 지오메트리. 모든 서비스가 같은 `BLD_*` ID를 씁니다 | |
 | `common/campus_auth.py` | 계정과 로그인 토큰. 기상 API와 교통 시뮬레이션 API가 같이 씁니다 | |
 | `TrafficSafety/` | 안전 신고 OCR/NLP 실험(Streamlit). 대시보드와 따로 돕니다 | |
@@ -65,8 +67,11 @@ cp frontend/.env.example frontend/.env
 ```bash
 .venv/bin/python -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
 .venv/bin/python -m uvicorn simulation.main:app --app-dir backend --host 127.0.0.1 --port 8002
+.venv/bin/python -m uvicorn harness.main:app --app-dir backend --host 127.0.0.1 --port 8004
 bun run --cwd frontend dev:main
 ```
+
+AI 도우미(8004)는 `TIMELY_API_KEY` 환경변수가 있어야 답변합니다. 키는 셸 환경변수로만 넘기고 파일이나 `.env`에 쓰지 않습니다. 하네스는 `pip install -r backend/harness/requirements.txt`로 `mcp` 패키지를 추가로 설치해야 합니다. 자세한 내용은 [`backend/harness/AGENTS.md`](backend/harness/AGENTS.md)에 있습니다.
 
 브라우저에서 `http://127.0.0.1:5173`을 열면 로그인 화면이 먼저 뜹니다. `게스트 · 학생 모드`를 누르면 학생 화면이, `게스트 · 관리자 모드`를 누르면 기능이 다 있는 관리자 대시보드가 열립니다. 계정으로도 로그인합니다. 시제품용 계정은 학생 `20239901`과 관리자 `admin`이고 비밀번호는 둘 다 `12341234`입니다. 비밀번호는 8자리만 받습니다.
 
