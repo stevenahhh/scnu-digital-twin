@@ -244,7 +244,7 @@ export async function buildGround({ glb, inputs, parcelsDoc = loadParcels() }) {
         }
       }
     }
-    glb.addNode({ name: "Topography", children: topographyChildren, extras: { naturalGround: true, note: "natural ground only: roads, walkways, lots and markings are cut out of it (Ground_*, Road_Markings)" } }, { root: true });
+    glb.addNode({ name: "Topography", children: topographyChildren, extras: { naturalGround: true, note: "natural ground only: roads, walkways and lots are cut out of it (Ground_*); markings lie on top of it (Road_Markings)" } }, { root: true });
     if (d4NaturalChildren.length) glb.addNode({ name: "Ground_D4Natural", children: d4NaturalChildren, extras: { naturalGround: true, scope: { buildingId: "BLD_D4" }, note: "D4 natural ground in tiled CC0 grass/soil materials (estimated), cut from the same partition as Topography" } }, { root: true });
     return { chunks: topographyChildren.length, triangles };
   };

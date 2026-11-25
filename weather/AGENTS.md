@@ -90,6 +90,14 @@ weather/
   `{token, token_type, expires_at, account: {id, name, role, guest}}`.
   `GET /auth/me` returns the account for a token. The simulation service
   verifies the same tokens with the shared secret.
+- **Model edits (C6).** `GET /model/edits` (public) returns the campus-model
+  edit document `{version, revision, updated_at, updated_by, transforms, removed, added}`;
+  `PUT /model/edits` (admin) replaces it and must send the `revision` it
+  read, else 409 `{"detail": {"message", "revision"}}`. Objects are GLB
+  `extras.editable.id` values or `<Trees_*>#<index>`; transforms are
+  `{position, quaternion, scale}` local to the object's parent node, in scene
+  units. Added objects have `ADD_*` ids and a `prototype` id. Stored in
+  `MODEL_EDITS_FILE` (default `weather/data/model-edits.json`, git-ignored).
 
 ## COMMANDS
 

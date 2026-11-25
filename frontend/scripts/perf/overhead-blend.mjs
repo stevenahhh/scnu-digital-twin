@@ -65,7 +65,8 @@ const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const CAMPUS = join(HERE, "../campus-model/data/osm-campus.json");
 const BUILDINGS = join(HERE, "../campus-model/data/gis-buildings.json");
 // Ground-only render of the visible-ground mode: the GLB roots and runtime groups that are not ground.
-const VISIBLE_HIDE = "^(BLD_|CampusBuildings|Trees_|Furniture|Lamps_|campus-traffic)";
+// CampusBuilding covers the per-building model nodes (CampusBuilding_*); Furniture is the collection of every object node.
+const VISIBLE_HIDE = "^(BLD_|CampusBuilding|Trees_|Furniture|Lamps_|campus-traffic)";
 const METRES_PER_PIXEL = 0.25;
 const PASS_PX = 1;
 
@@ -238,6 +239,9 @@ const PIN_CLOCK = `(() => {
   }
   window.Date = PinnedDate;
   try { localStorage.setItem("scnu.renderQuality", "low"); } catch {}
+  // The default entry opens on the login screen (src/auth/session.mjs): start signed in as the guest admin, as
+  // scripts/qa/visual-qa.mjs does, so the campus scene mounts.
+  try { localStorage.getItem("scnu.session") ?? localStorage.setItem("scnu.session", JSON.stringify({ token: null, expiresAt: null, account: { id: "guest-admin", name: "게스트", role: "admin", guest: true } })); } catch {}
 })();`;
 const CAPTURE_STORE = `(() => {
   Object.defineProperty(Object.prototype, "__r3f", {

@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { ROWS, TILE_BAYS, buildD4FacadeAtlas, buildFacadeAtlas, canopyUv, hex, plinthUv, tileUv } from "../lib/facadeAtlas.mjs";
 import { D4_SCENE_ANCHOR, geoToModel, metres } from "../lib/frame.mjs";
 import { MeshData } from "../lib/meshData.mjs";
+import { pivotOf, rebase } from "../lib/objectNodes.mjs";
 import { Kit, rgb } from "../lib/solids.mjs";
 import { mulberry32 } from "../lib/raster.mjs";
 import { EQUIPMENT_MODULE_UV, EQUIPMENT_PLAIN_UV, ROOF_METRES, equipmentAtlas, roofTexture } from "../lib/textures.mjs";
@@ -2409,7 +2410,20 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
     return building.massForm ? massPrimitives(building, seed, context) : buildingPrimitives(building, seed, context);
   };
   const selectablePrimitives = selectableBuildings.map((building, index) => primitivesOf(building, 1000 + index));
-  const merged = new Map();
+  // Campus buildings without a uni.glb node are drawn by one editable node each (merged per material inside it):
+  // <pick proxy>_Model for a named building with a BLD_SCNU_* proxy, CampusBuilding_Site_<BLD_*> for the detached site
+  // masses of a selectable building, CampusBuilding_<GIS footprint index> for the rest.
+  const campusModels = new Map();
+  const modelOf = (name, editableId) => {
+    if (!campusModels.has(name)) campusModels.set(name, { editableId, buildings: [], merged: new Map() });
+    return campusModels.get(name);
+  };
+  const appendTo = (model, primitive) => {
+    if (!model.merged.has(primitive.material)) model.merged.set(primitive.material, aoMesh(primitive.colors ? { colors: true } : undefined));
+    const target = model.merged.get(primitive.material);
+    target.append({ positions: primitive.positions, normals: primitive.normals, uvs: primitive.uvs, colors: primitive.colors, indices: primitive.indices });
+    for (const value of primitive.ao) target.ao.push(value);
+  };
   campusBuildings.forEach((building, index) => {
     // A structure the furniture stage draws still allocates its AO charts, so the baked AO atlas layout stays valid.
     const primitives = primitivesOf(building, 5000 + index);
@@ -2417,28 +2431,22 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       console.log(`buildings: ${building.label ?? building.displayName} is drawn by stages/furniture.mjs; its generic mass is left out (label and pick proxy kept)`);
       return;
     }
-    primitives.forEach((primitive) => {
-      if (!merged.has(primitive.material)) merged.set(primitive.material, aoMesh(primitive.colors ? { colors: true } : undefined));
-      const target = merged.get(primitive.material);
-      target.append({ positions: primitive.positions, normals: primitive.normals, uvs: primitive.uvs, colors: primitive.colors, indices: primitive.indices });
-      for (const value of primitive.ao) target.ao.push(value);
-    });
+    const model = building.nodeId ? modelOf(`${building.nodeId}_Model`, building.nodeId)
+      : building.detachedFrom ? modelOf(`CampusBuilding_Site_${building.detachedFrom}`, `CampusBuilding_Site_${building.detachedFrom}`)
+        : modelOf(`CampusBuilding_${building.index}`, `CampusBuilding_${building.index}`);
+    model.buildings.push(building);
+    primitives.forEach((primitive) => appendTo(model, primitive));
   });
-  // Frame v2: a selectable building's detached site primitives (attachments outside its masses) are drawn with
-  // CampusBuildings, so the building's own bbox stays the GIS footprint the dashboards recentre on.
+  // Frame v2: a selectable building's detached site primitives (attachments outside its masses) are drawn by its
+  // CampusBuilding_Site_<BLD_*> node, so the building's own bbox stays the GIS footprint the dashboards recentre on.
   selectableBuildings.forEach((building, index) => {
     const detachedSite = selectablePrimitives[index].filter((primitive) => primitive.detached);
     if (!detachedSite.length) return;
     selectablePrimitives[index] = selectablePrimitives[index].filter((primitive) => !primitive.detached);
-    for (const primitive of detachedSite) {
-      if (!merged.has(primitive.material)) merged.set(primitive.material, aoMesh(primitive.colors ? { colors: true } : undefined));
-      const target = merged.get(primitive.material);
-      target.append({ positions: primitive.positions, normals: primitive.normals, uvs: primitive.uvs, colors: primitive.colors, indices: primitive.indices });
-      for (const value of primitive.ao) target.ao.push(value);
-    }
-    console.log(`buildings: ${building.nodeName} site attachments outside its masses drawn with CampusBuildings (Frame v2 bbox)`);
+    const model = modelOf(`CampusBuilding_Site_${building.nodeName}`, `CampusBuilding_Site_${building.nodeName}`);
+    for (const primitive of detachedSite) appendTo(model, primitive);
+    console.log(`buildings: ${building.nodeName} site attachments outside its masses drawn by CampusBuilding_Site_${building.nodeName} (Frame v2 bbox)`);
   });
-  const campusPrimitives = [...merged].map(([material, data]) => aoPrimitive(data, material));
   for (const building of [...selectableBuildings, ...campusBuildings].filter(b => b.facadeGrid)) {
     console.log(`facade grids ${building.facadeGrid.building}: requested ${[...building.facadeGrid.walls.keys()].join(",")}; applied ${[...building.facadeGrid.appliedWalls].join(",") || "none (mass outside GIS wall buffer)"}`);
   }
@@ -2490,12 +2498,18 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   // Front kits (lib/frontKit.mjs): one instanced unit-cube node per building front, coloured per instance; a child of
   // the building node, so a click on a fin selects the building.
   let kitMesh = null;
-  const addKitNode = (name, kit, root) => {
+  // parentPivot: the translation of a pivoted parent node; the kit's instances are scene positions, so the kit node
+  // takes the opposite translation.
+  const addKitNode = (name, kit, root, parentPivot = null) => {
     if (kitMesh === null) {
       const material = glb.addMaterial({ name: "Facade_FrontKit", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0.25, roughnessFactor: 0.5 } });
       kitMesh = glb.addMesh("Facade_FrontKit", [unitCube().toPrimitive(material)]);
     }
-    return glb.addNode({ name: `FrontKit_${name}`, mesh: kitMesh, extensions: glb.instancingExtension(kitInstances(kit)), extras: { pieces: kit.length, source: "front kit from VR (추정)" } }, { root });
+    return glb.addNode({
+      name: `FrontKit_${name}`, mesh: kitMesh, extensions: glb.instancingExtension(kitInstances(kit)),
+      ...(parentPivot ? { translation: parentPivot.map((v) => -v) } : {}),
+      extras: { pieces: kit.length, source: "front kit from VR (추정)" },
+    }, { root });
   };
   selectableBuildings.forEach((building, index) => {
     const mesh = addAoMesh(building.nodeName, selectablePrimitives[index]);
@@ -2506,6 +2520,7 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
       name: building.nodeName,
       mesh,
       extras: {
+        editable: { id: building.nodeName, kind: "building", category: "building" },
         displayName: building.displayName,
         source: building.footprintSource,
         footprintEstimated: building.footprintEstimated,
@@ -2542,17 +2557,37 @@ export async function buildBuildings({ glb, inputs, detailedStructures = [], sel
   });
 
   {
-    const mesh = addAoMesh("CampusBuildings", campusPrimitives);
-    glb.addNode({ name: "CampusBuildings", mesh, extras: {
+    // Mesh-less: keeps the campus-building extras; the geometry is on the per-building model nodes below.
+    glb.addNode({ name: "CampusBuildings", extras: {
       buildings: campusBuildings.map((b) => b.displayName).filter(Boolean),
       facadeReviews: [...new Map(campusBuildings.map(b => {
         const building = b.nodeId ?? b.detachedFrom ?? b.footprintSource;
         return [building, { building, estimated: true, fallbackReason: b.facadeFallbackReason }];
       })).values()],
-    } }, { root: true });
-    for (const building of campusBuildings) {
-      const kit = frontKits.get(building);
-      if (kit?.length && !building.drawnByFurniture) addKitNode(building.nodeName ?? building.displayName ?? "CampusBuilding", kit, true);
+      modelNodesNote: "each campus building is drawn by its own node (<BLD_SCNU_*>_Model, CampusBuilding_Site_<BLD_*>, CampusBuilding_<index>); this collection node holds no geometry",
+    // the Buildings/CampusBuildings collection node itself (lib/glb.mjs groupRoots), so packing's prune keeps it
+    } }, { collectionNode: "Buildings/CampusBuildings" });
+    // Each model node stands at its base pivot (bbox centre x/z, bbox minimum y; lib/objectNodes.mjs), its vertices
+    // relative to it; the AO atlas UVs (TEXCOORD_1) do not depend on position, so the baked AO stays valid.
+    for (const [name, model] of campusModels) {
+      const meshes = [...model.merged.values()];
+      const pivot = pivotOf(meshes);
+      const kits = model.buildings.filter((building) => frontKits.get(building)?.length)
+        .map((building) => addKitNode(building.nodeName ?? building.displayName ?? "CampusBuilding", frontKits.get(building), false, pivot));
+      const primitives = [...model.merged].map(([material, data]) => aoPrimitive(rebase(data, pivot), material));
+      glb.addNode({
+        ...(kits.length ? { children: kits } : {}),
+        name,
+        mesh: addAoMesh(name, primitives),
+        translation: pivot,
+        extras: {
+          editable: { id: model.editableId, kind: "building", category: "building" },
+          estimated: true,
+          estimateNote: "GIS footprint; height, massing and facade estimated (추정), not measured",
+          buildings: model.buildings.map((b) => b.displayName).filter(Boolean),
+        },
+      // explicit: a <BLD_SCNU_*>_Model name would otherwise fall into Pick_Proxies
+      }, { root: true, collection: "Buildings/CampusBuildings" });
     }
   }
 

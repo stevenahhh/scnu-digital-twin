@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 
-import { decimateDecal } from "./decimate.mjs";
+import { decimateDecal, footprintCover } from "./decimate.mjs";
 import { tmToScene } from "../../../src/geo/epsg5186.mjs";
 
 // A 10 x 2 unit strip gridded every 0.5 unit (the partition slivers of a lane line), 160 triangles.
@@ -42,6 +42,41 @@ const outline = ({ positions: p, indices }) => {
   }
   return new Set([...use].filter(([, n]) => n === 1).map(([key]) => key.split("|")).flat());
 };
+
+test("faces under a lifted layer are kept vertex for vertex while the rest of the strip collapses", async () => {
+  // a gentle bump the 2 cm tolerance flattens: collapsed faces leave the terrain, the locked ones must not
+  const mesh = strip((x, z) => 0.01 * Math.sin(x) * Math.cos(z));
+  const under = (tri) => tri.every(([x, z]) => x >= 4 && x <= 5 && z >= 0.5 && z <= 1.5);
+  const out = await decimateDecal({ ...mesh, toleranceM: 0.02, unitsPerMetre: 1, lockFace: under });
+  assert.ok(out.after < out.before, `${out.before} -> ${out.after}`);
+  const key = (p, v) => `${p[v * 3]},${p[v * 3 + 1]},${p[v * 3 + 2]}`;
+  const faces = (m) => {
+    const set = new Set();
+    for (let t = 0; t < m.indices.length; t += 3) set.add([0, 1, 2].map((k) => key(m.positions, m.indices[t + k])).sort().join("|"));
+    return set;
+  };
+  const kept = faces(out);
+  let locked = 0;
+  for (let t = 0; t < mesh.indices.length; t += 3) {
+    const ids = mesh.indices.slice(t, t + 3);
+    if (!under(ids.map((v) => [mesh.positions[v * 3], mesh.positions[v * 3 + 2]]))) continue;
+    locked += 1;
+    assert.ok(kept.has(ids.map((v) => key(Float32Array.from(mesh.positions), v)).sort().join("|")), `locked face ${t / 3} changed`);
+  }
+  assert.equal(locked, 8);
+});
+
+test("footprintCover: true for a triangle sharing area with a footprint, false for one only touching or apart", () => {
+  const cover = footprintCover([[[[0, 0], [2, 0], [2, 1], [0, 1]]], [[[10, 10], [12, 10], [11, 12]]]]);
+  assert.equal(cover([[1, 0.5], [3, 0.5], [3, 3]]), true);
+  assert.equal(cover([[11, 10.5], [11.2, 10.6], [11.1, 10.9]]), true, "inside the second footprint");
+  assert.equal(cover([[2, 0], [3, 0], [3, 1]]), false, "touches the edge only");
+  assert.equal(cover([[5, 5], [6, 5], [6, 6]]), false);
+  // a footprint with a hole: a triangle inside the hole is not covered
+  const ring = footprintCover([[[[0, 0], [10, 0], [10, 10], [0, 10]], [[4, 4], [6, 4], [6, 6], [4, 6]]]]);
+  assert.equal(ring([[4.5, 4.5], [5.5, 4.5], [5, 5.5]]), false);
+  assert.equal(ring([[1, 1], [2, 1], [1, 2]]), true);
+});
 
 test("a flat strip collapses to a few triangles with its plan area and outline vertices kept", async () => {
   const source = strip(() => 10);
@@ -137,3 +172,13 @@ for (const east of [243422.6, 243591.86]) {
     assert.ok(out.positions.every(Number.isFinite), "clipped interpolation must stay finite");
   });
 }
+
+test("a lone sliver face is dropped even when the primitive is too small to simplify", async () => {
+  // one marking element per node (lib/groundNodes.mjs) can be a single near-degenerate triangle
+  const out = await decimateDecal({
+    positions: [309.96721355814174, 0, -166.0794910394401, 309.7524874183762, 0, -166.130444771255, 309.75248738439507, 0, -166.130444750307],
+    indices: [0, 1, 2], toleranceM: 0.02, unitsPerMetre: 1.6,
+  });
+  assert.equal(out.indices.length, 0);
+  assert.equal(out.after, 0);
+});

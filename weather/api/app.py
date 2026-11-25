@@ -689,9 +689,11 @@ def get_environment_element_timeline(element_id: str):
 
 from weather.api.auth import router as auth_router
 from weather.api.energy import router as energy_router
+from weather.api.model_edits import router as model_edits_router
 
 app.include_router(auth_router)
 app.include_router(energy_router)
+app.include_router(model_edits_router)
 
 
 @app.exception_handler(RequestValidationError)

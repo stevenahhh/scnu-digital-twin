@@ -21,15 +21,18 @@
 //   tactile.mjs   tactile paving bands and guidance strips at every dropped kerb
 //   parking.mjs   stall rows, accessible bays, their symbols and the wheel stops from data/ground/parking.json
 //   roadMarkings.mjs  the record-defined circular-arc speed humps and sidecar height function
-//   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels
+//   surfaces.mjs  the Ground_* decal meshes (asphalt, pavers, lots, aprons, painted surfaces) with CC0 tiles; no photo pixels;
+//                 like the road markings (markings.mjs), one editable node per parcel or parcel group (lib/groundNodes.mjs)
 //   outerTerrain.mjs  the OuterTerrain hill ring around EXTENT, feathered onto Topography's edge
 //   context.mjs / contextGround.mjs  off-campus building masses and the streets around the campus beyond EXTENT
 //   trees.mjs     tree inventory and hedges (placeTrees, after the ground), species geometry and instanced Trees_* nodes (buildTrees)
 //   furniture.mjs the surveyed outdoor objects (loadFurniture, before the trees: footprints trees keep out of) and the
-//                 merged Furniture / Furniture_Glass nodes
-//                 (buildFurniture, after the ground, on the drawn terrain)
+//                 merged per-material meshes (buildFurniture, after the ground, on the drawn terrain), written to a
+//                 scratch GlbBuilder; furnitureObjects.mjs recovers each object's geometry from it and
+//                 lib/objectNodes.mjs emits one editable node per object (Furniture/<kind>/<id>) once the lamp heads
+//                 are drawn
 //   lights.mjs    lamp positions (placeLamps: surveyed lamps at their photo pole bases, pole placement contract), the
-//                 merged Lamps_heads and the instanced Lamps_pools
+//                 lamp heads (on the lamp nodes) and the instanced Lamps_pools
 // Plan-view ring helpers live in lib/geometry.mjs.
 //
 // Outputs: the uncompressed scripts/campus-model/.build/campus-v2.raw.glb, which pack.mjs turns into
@@ -46,6 +49,7 @@ import { EXTENT, SCENE_UNITS_PER_METRE, frameAssetExtras } from "./lib/frame.mjs
 import { SURFACE_CLASS } from "./lib/surfaceClass.mjs";
 import { loadRoadMarkings } from "./stages/roadMarkings.mjs";
 import { GlbBuilder } from "./lib/glb.mjs";
+import { emitObjectNodes } from "./lib/objectNodes.mjs";
 import { assertPaintOnParcels, pieceKey, retainPaint, loadParcels, PARCELS_PATH } from "./lib/parcels.mjs";
 import { candidatePaths } from "./qa/candidate.mjs";
 import { GroundPartition, TinPartition, splitByLine } from "./lib/partition.mjs";
@@ -54,6 +58,7 @@ import { buildEntrances } from "./stages/entrances.mjs";
 import { loadTmFootprints } from "./lib/footprints.mjs";
 import { buildGround } from "./stages/ground.mjs";
 import { buildFurniture, loadFurniture } from "./stages/furniture.mjs";
+import { furnitureObjects } from "./stages/furnitureObjects.mjs";
 import { buildLights, placeLamps } from "./stages/lights.mjs";
 import { buildContext, meshHeightAt } from "./stages/context.mjs";
 import { buildContextGround } from "./stages/contextGround.mjs";
@@ -65,6 +70,7 @@ import { KERB_EXPOSED_M, SLAB_DECAL_DROP_M, buildKerbs, prepareKerbs } from "./s
 import { loadInputs } from "./stages/sources.mjs";
 import { planTactile } from "./stages/tactile.mjs";
 import { buildHumpMeshes, buildSurfaceMeshes, describeSurfaces, humpLayers } from "./stages/surfaces.mjs";
+import { footprintCover } from "./lib/decimate.mjs";
 import { buildTrees, placeTrees } from "./stages/trees.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -145,9 +151,11 @@ const humps = markings;
 const humpNodes = await buildHumpMeshes({ glb, humps: humps.humps, surface, ao: aoTexture });
 
 // ---------------------------------------------------------------- ground partition (lib/partition.mjs)
-// The ground has no stacked layers: road markings claim their area first, then the ground classes by precedence (hump
-// tops, aprons, tiles, walkways, roads, lots, sports), then the natural Topography takes what is left. Every piece lies
-// on the terrain (plus the walkway slab or a hump's arc), so no two ground triangles share area.
+// The ground is one planar partition: the ground classes claim by precedence (aprons, tiles, walkways, gutters, roads,
+// lots, sports), then the natural Topography takes what is left, so no two ground triangles share area and every piece
+// lies on the terrain (plus the walkway slab or a hump's arc). The road markings are not cut out of it
+// (lib/groundNodes.mjs): they claim in a partition of their own (paint against paint) and lie MARKING_LIFT_M above the
+// intact ground under them, so moving or deleting a marking leaves whole pavement.
 const outerTerrain = await buildOuterTerrain({ glb, inputs });
 const outerHeightAt = meshHeightAt(outerTerrain.positions, outerTerrain.indices);
 // The hill ring is partitioned too: ground pieces beyond EXTENT (off-campus lots and courts) and the context streets
@@ -169,6 +177,7 @@ const claim = (piece) => {
   if (rest) out.push(...partition.claim(rest));
   return out;
 };
+const paintPartition = new GroundPartition(surface.grid);
 // the ground under a piece: the Topography inside EXTENT, the hill ring beyond it
 const groundSurface = {
   grid: surface.grid,
@@ -187,7 +196,9 @@ const stageTime = (label) => { console.log(`ground partition: ${label} in ${((pe
 const excludedParcelIds = new Set(surfaces.paintExcludedDetail.map(p => p.parcel));
 const paintExclusions = surfaces.parcels.filter(p => excludedParcelIds.has(p.id) && !p.paintAllowed)
   .map(p => [p.ring, ...p.holes].map(r => r.map(([e,n]) => tmToScene(e,n))));
-const markingMesh = await buildMarkings({ glb, markings, surface: groundSurface, extraHeight: humps.heightAt, claim, baseOffset: slabDecal, exclusions: paintExclusions });
+// the paint is cut along the hump tops' outlines, so no paint face spans a hump's raised edge
+const humpOutlines = humpLayers(humps.humps).map((layer) => layer.rings[0].map(([e, n]) => tmToScene(e, n)));
+const markingMesh = await buildMarkings({ glb, markings, surface: groundSurface, extraHeight: humps.heightAt, claim: (piece) => paintPartition.claim(piece), baseOffset: slabDecal, exclusions: paintExclusions, splits: humpOutlines });
 const markingReport = {
   symbols: { ...markings.pieceReport, ...markingMesh.roadEmission.summary },
   emission: markingMesh.roadEmission,
@@ -203,8 +214,10 @@ const groundLayers = [...layers, ...kerbs.gutters, ...tactile.layers, ...humpLay
   .map((layer, order) => ({ layer, order }))
   .sort((a, b) => b.layer.precedence - a.layer.precedence || b.order - a.order)
   .map(({ layer }) => layer);
+// The ground under the paint is not decimated, so it keeps the height the paint was lifted from.
 console.log(describeSurfaces(await buildSurfaceMeshes({
   glb, layers: groundLayers, surface: groundSurface, ao: aoTexture, claim,
+  lockFace: footprintCover(markings.pieces.map((piece) => piece.rings)),
   heightOffset: (layer, x, z) => (layer.hump ? humps.heightAt(x, z) : layer.walkway || layer.tactile ? slabDecal(x, z) : 0),
   refine: { maxEdgeM: 0.25, needsFine: (layer, p, reach) => layer.hump || ((layer.walkway || layer.tactile) && kerbs.plan.nearSlabChange(p, reach / SCENE_UNITS_PER_METRE)) },
 })));
@@ -214,9 +227,13 @@ stageTime("natural Topography");
 console.log(`ground partition: ${partition.cells.size} terrain triangles hold ground; Topography ${topography.triangles} natural triangles in ${topography.chunks} chunks`);
 // Furniture and lamps stand on the raised walkway slab where there is one (stages/kerbs.mjs).
 const { lamps, stats: lampStats, sites } = placeLamps({ inputs, furniture, selectableBuildings, campusBuildings, offCampusLots, groundInfo });
-const { glow } = buildFurniture({ glb, furniture, lamps, lampStats, sites, inputs, groundAt, wheelStops: parking.wheelStops });
+const furnitureScratch = new GlbBuilder();
+const { glow } = buildFurniture({ glb: furnitureScratch, furniture, lamps, lampStats, sites, inputs, groundAt, wheelStops: parking.wheelStops });
+const { objects, objectNumbers } = furnitureObjects({ glb, scratch: furnitureScratch, furniture, lamps, wheelStops: parking.wheelStops, glow });
 const treeInstances = await buildTrees({ glb, placement: treePlacement });
-buildLights({ glb, lamps, stats: lampStats, groundAt, glow });
+buildLights({ glb, lamps, stats: lampStats, groundAt, glow, objects });
+const objectNodes = emitObjectNodes(glb, objects, { objectNumbers });
+console.log(`object nodes: ${objectNodes.length} (${Object.entries(Object.groupBy(objectNodes, (node) => node.category)).map(([category, list]) => `${category} ${list.length}`).join(", ")})`);
 // Off-campus context masses on the drawn terrain (stages/context.mjs): merged per tile, not selectable, heights 추정.
 const inExtent = (x, z) => x >= EXTENT.minX && x <= EXTENT.maxX && z >= EXTENT.minZ && z <= EXTENT.maxZ;
 const contextGround = (x, z) => (inExtent(x, z) ? groundAt(x, z) : outerHeightAt(x, z) ?? groundAt(Math.min(Math.max(x, EXTENT.minX), EXTENT.maxX), Math.min(Math.max(z, EXTENT.minZ), EXTENT.maxZ)));
@@ -295,7 +312,6 @@ const collections = glb.groupRoots([
   { path: "Ground/Terrain", match: (name) => name === "Topography" },
   { path: "Ground/Surfaces", match: startsWith("Ground_") },
   { path: "Ground/Kerbs", match: (name) => name === "Kerbs" },
-  { path: "Ground/Markings", match: (name) => name === "Road_Markings" },
   { path: "Vegetation", match: startsWith("Trees_") },
   { path: "Furniture", match: startsWith("Furniture") },
   { path: "Lighting", match: startsWith("Lamps_") },
@@ -347,8 +363,13 @@ console.log(
   `campus-v2.glb: ${(bytes.length / 1048576).toFixed(2)} MiB, ${selectableBuildings.length} BLD nodes, ` +
   `${campusBuildings.length} other campus buildings, ${treeCount} trees ` +
   `(${Object.entries(treeInstances).map(([k, v]) => `${k} ${v.length}`).join(", ")}), ${markings.pieces.length} road-marking pieces ` +
-  `(${markingMesh.triangles} triangles, ${markingMesh.vertices} vertices from ${markingMesh.sourceTriangles} before conforming to the terrain)`,
+  `(${markingMesh.triangles} triangles, ${markingMesh.vertices} vertices in ${markingMesh.nodes} element nodes, from ${markingMesh.sourceTriangles} before conforming to the terrain)`,
 );
+{
+  const editable = glb.json.nodes.filter((node) => node.extras?.editable);
+  const primitives = glb.json.meshes.reduce((sum, mesh) => sum + mesh.primitives.length, 0);
+  console.log(`editable nodes: ${editable.length} (${Object.entries(Object.groupBy(editable, (node) => node.extras.editable.category)).map(([category, list]) => `${category} ${list.length}`).join(", ")}); ${primitives} primitives in the raw GLB`);
+}
 console.log(
   `OuterTerrain: ${outerTerrain.vertexCount} vertices, ${outerTerrain.triangleCount} triangles ` +
   `(${outerTerrain.vertexCountBefore} / ${outerTerrain.triangleCountBefore} before simplify), ` +

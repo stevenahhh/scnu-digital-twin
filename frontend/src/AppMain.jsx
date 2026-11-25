@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { cx } from "./ui/cx.mjs";
 import { getClearColor } from "./lighting/atmosphere.mjs";
 import { CampusCanvas } from "./render/CampusCanvas";
@@ -44,6 +44,8 @@ import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
 import { sessionStore } from "./auth/session.mjs";
 import { accountLabel, useSession } from "./auth/useSession.mjs";
+import { ModelEditorPanel } from "./editor/ModelEditorPanel";
+import { modelEditStore } from "./editor/modelEditsApi.mjs";
 
 const ROOT_CLASS = "dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink";
 const D4_PRESET = CAMERA_PRESETS.find((preset) => preset.id === D4_PRESET_ID);
@@ -54,6 +56,7 @@ export default function App() {
 
 function Dashboard() {
   useSimulationSocket();
+  const editing = useSyncExternalStore(modelEditStore.subscribe, () => modelEditStore.getState().editing);
   const orbitControlsRef = useRef(null);
   const panelRef = useRef(null);
   const mapLayerRef = useRef(null);
@@ -143,6 +146,7 @@ function Dashboard() {
   // 검색 결과: 칩 클릭과 같은 선택에 더해 카메라를 그 건물로 옮긴다.
   const handleSearchPick = (entry) => {
     flow.selectFromSearch(entry);
+    if (viewportMode === "phone" && entry.displayName?.endsWith(" · 공사 중")) panelState.setDetent("peek");
     camera.flyToBuilding(entry.elementId);
   };
   // 인스펙터 제목: 고른 건물의 레지스트리 이름, 없으면 클릭한 메시의 이름.
@@ -203,7 +207,7 @@ function Dashboard() {
         scene={{
           controlsRef: orbitControlsRef,
           selectedId: selection.selectedId,
-          labelsHidden: !isCampus,
+          labelsHidden: !isCampus || editing,
           occluderRef: panelRef,
           chromeRefs: labelChromeRefs,
           onLoadingChange: setIsSceneLoading,
@@ -213,6 +217,7 @@ function Dashboard() {
           restrictions: restrictions.items,
         }}
       />
+      {isCampus && !presentation.presenting && <ModelEditorPanel />}
       {isSceneLoading && <SceneLoadingNotice key={sceneAttempt} insetRight={mapInsetRight} onRetry={retryScene} />}
       <DashboardShell
         ref={panelRef}

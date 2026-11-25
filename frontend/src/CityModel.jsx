@@ -1,7 +1,7 @@
 import { useGLTF } from "@react-three/drei";
 import { extendCampusLoader } from "./render/campusGltfLoader";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createRoot } from "react-dom/client";
 import * as THREE from "three";
 import { MeshBVH, acceleratedRaycast } from "three-mesh-bvh";
@@ -54,6 +54,9 @@ import { WATER_ENV_INTENSITY, WATER_MATERIAL_NAME, patchWaterFresnel } from "./l
 import { clipPolygonAhead } from "./render/clipPolygon.mjs";
 import { POINTER_EXCLUDED_LAYER } from "./render/canvasLifecycle.mjs";
 import { CampusGrass } from "./render/CampusGrass";
+import { E2Worksite } from "./render/E2Worksite";
+import { ModelEditorScene } from "./editor/ModelEditorScene";
+import { modelEditStore } from "./editor/modelEditsApi.mjs";
 
 // 클릭하지 않아도 카메라가 이 거리 안으로 들어오면 "가까이 간" 것으로 본다.
 // 클릭 시 자동으로 붙는 카메라 거리(D4_CAMERA_OFFSET 기준 약 94유닛)보다 살짝
@@ -89,8 +92,8 @@ const KERB_MATERIAL_NAME = "Kerb";
 // 검사하면 포인터가 한 번 움직일 때 두 메시에만 약 9 ms가 들었다(측정). 경계 상자 트리(three-mesh-bvh)로 검사한다.
 // indirect라 인덱스 버퍼 순서는 그대로다.
 const BVH_MESH_PATTERN = /^(Topography_joined|OuterTerrain)/;
-// 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 지형 삼각형 위 4 cm에 얹은 얇은 메시다.
-// 지면 층(Ground_*, 최대 3.6 cm)보다 높고, 먼 거리의 깊이 정밀도에서도 겹치지 않도록 폴리곤 오프셋으로 늘 지면 앞에 그린다.
+// 노면 표시(Road_Marking, 생성기 stages/markings.mjs): 항공사진에서 찾은 도색을 그 아래의 온전한 포장면 위 6 mm에 얹은 얇은 메시다.
+// 포장면은 도색 모양으로 뚫지 않으므로, 먼 거리의 깊이 정밀도에서도 겹치지 않도록 폴리곤 오프셋으로 늘 지면 앞에 그린다.
 // 평평한 도색이라 그림자를 드리우지 않고, 캠퍼스 전체에 걸친 삼각형을 포인터가 움직일 때마다 검사하지 않도록 클릭 판정에서도 뺀다.
 // 밤에는 다른 발광 재질처럼 emissiveMap으로 은은하게 빛난다(밝기는 GLB의 emissive strength).
 const ROAD_MARKING_MATERIAL_NAME = "Road_Marking";
@@ -229,6 +232,8 @@ function getSelectableMeta(object) {
   const rawName = node?.name;
 
   if (!rawName) return null;
+  // 캠퍼스 건물 외관 노드(BLD_SCNU_*_Model)는 그리기만 한다. 선택은 같은 이름의 대리 프리즘(BLD_SCNU_*)이 받는다.
+  if (isBuildingModelNode(node)) return null;
 
   const buildingMeta = resolveBuildingMeta(rawName, {
     elementNames: ELEMENT_NAME_MAP,
@@ -255,7 +260,9 @@ function getSelectableMeta(object) {
     // 팝업·미기후 요청에 쓰는 요소 id. 대장 코드가 기존 요소와 같은 대리 노드는 그 요소(BLD_A6 등)를 쓴다.
     dataElementId:
       (proxy ? resolveProxyDataElementId(rawName, node.userData, ELEMENT_NAME_MAP) : null) ?? buildingMeta.elementId,
-    label: buildingMeta.label ?? (proxy ? node.userData.label ?? null : null),
+    label: (rawName === "BLD_SCNU_E2" && CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed)
+      ? `${node.userData.label} · 공사 중`
+      : buildingMeta.label ?? (proxy ? node.userData.label ?? null : null),
     proxy,
     // 생성기가 GLB extras에 남긴 추정 계보(새 필드). 패널의 추정 표기만 읽는다.
     heightLineage: node.userData?.heightLineage ?? null,
@@ -263,6 +270,10 @@ function getSelectableMeta(object) {
     formEstimated: isFormEstimated(node.userData?.formEstimated),
     facadeEstimated: node.userData?.facadeEstimated === true,
   };
+}
+
+function isBuildingModelNode(node) {
+  return /_Model$/.test(node?.name ?? "") && node.userData?.editable?.category === "building";
 }
 
 // extras.formEstimated는 추정한 항목 목록(문자열 배열)이거나 true다.
@@ -369,6 +380,8 @@ export function CityModel({
   ...props
 }) {
   const { scene, asset } = useGLTF(CAMPUS_MODEL_URL, true, true, extendCampusLoader);
+  // 관리자 모델 편집 중(editor/ModelEditorScene)에는 클릭을 편집기가 받는다. 건물 선택과 마우스오버 강조는 멈춘다.
+  const editing = useSyncExternalStore(modelEditStore.subscribe, () => modelEditStore.getState().editing);
   // Frame v2 GLB는 asset.extras.frameVersion을 기록한다. 없으면 v1(uni.glb) 규칙으로 재중심화한다.
   const frameVersion = asset?.extras?.frameVersion;
   const { camera, gl, scene: rootScene, invalidate, setEvents } = useThree();
@@ -650,7 +663,7 @@ export function CityModel({
       if (isNonCaster) nonCasterNames.push(child.name);
       child.receiveShadow = !(NON_RECEIVER_PARENT_PATTERN.test(child.parent?.name ?? "") || NON_RECEIVER_PARENT_PATTERN.test(child.name));
       child.material = child.material.clone();
-      if (isFurniture || isKerb) skipPointer(child);
+      if (isFurniture || isKerb || isBuildingModelNode(child) || isBuildingModelNode(child.parent)) skipPointer(child);
       // 연못 물(Furniture_Water): 하늘 환경맵을 비추고, 내려다보면 비치고 비스듬히 보면 거의 불투명(프레넬)
       if (child.material.name === WATER_MATERIAL_NAME) {
         child.material.onBeforeCompile = (shader) => patchWaterFresnel(shader);
@@ -1245,6 +1258,7 @@ export function CityModel({
   // R3F는 pointerup에 delta를 계산하지 않는다(항상 0). 클릭 여부는 pointerGuard가 누른 위치·시간으로 판단한다.
   // 캔버스에서 시작한 누르기만 받는다. 라벨을 누른 pointerup도 R3F 래퍼로 올라와 뒤 건물을 한 번 더 선택하기 때문이다.
   const handleClick = (e) => {
+    if (editing) return;
     const root = getSelectableRoot(e.object);
     const meta = getSelectableMeta(root);
     if (!meta) return;
@@ -1281,7 +1295,7 @@ export function CityModel({
 
   const handlePointerOver = (e) => {
     const meta = getSelectableMeta(e.object);
-    if (!meta) return;
+    if (!meta || editing) return;
 
     e.stopPropagation();
     if (pointerGuard.isDragDriven()) return;
@@ -1396,16 +1410,20 @@ export function CityModel({
   });
 
   return (
-    <group position={[-center.x, 0, -center.z]}>
-      <primitive
-        object={scene}
-        {...props}
-        onPointerUp={handleClick}
-        onPointerOver={handlePointerOver}
-        onPointerOut={handlePointerOut}
-      />
-      {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <CampusGrass scene={scene} quality={quality} />}
-    </group>
+    <>
+      <group position={[-center.x, 0, -center.z]}>
+        <primitive
+          object={scene}
+          {...props}
+          onPointerUp={handleClick}
+          onPointerOver={handlePointerOver}
+          onPointerOut={handlePointerOut}
+        />
+        {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <CampusGrass scene={scene} quality={quality} />}
+      {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <E2Worksite obscured={labelsHidden} controlsRef={controlsRef} />}
+      </group>
+      <ModelEditorScene scene={scene} controlsRef={controlsRef} />
+    </>
   );
 }
 

@@ -59,7 +59,7 @@ import { readFileSync } from "node:fs";
 //     (stages/parking.mjs joins markings.pieces in the build);
 //   - other painted areas (hatch stripes, hump bands): rectangles, or outlines with their edges
 //     snapped to their dominant directions.
-// All of it lies flush on the ground it is painted on, cut out of the surfaces under it (lib/partition.mjs).
+// All of it lies a few millimetres above the ground it is painted on, which stays whole (lib/groundNodes.mjs MARKING_LIFT_M).
 //
 // Crossings: OSM crossing ways (data/osm-ground.json) and the digitised crosswalk polygons
 // (docs/assets/data/crosswalks_wgs84.geojson) never draw stripes of their own. One that matches a drawn zebra is

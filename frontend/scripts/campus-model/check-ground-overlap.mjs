@@ -1,9 +1,13 @@
 #!/usr/bin/env bun
 // Checks that the campus ground is one planar partition (lib/partition.mjs): inside EXTENT every point of the plan is
-// covered by exactly one ground triangle (Topography_*, Ground_* surfaces, Road_Markings), seen from above.
+// covered by exactly one base ground triangle (Topography_*, Ground_* surfaces), seen from above. The Road_Markings_*
+// paint (lib/groundNodes.mjs groundRole) lies on top of that intact ground: no two paint triangles may share a sample,
+// and every paint sample needs base ground under it.
+// The editable surface and marking nodes (lib/groundNodes.mjs) hold their vertices relative to a translation-only pivot.
 // Reads the uncompressed .build/campus-v2.raw.glb. Samples a jittered 0.25-unit grid; a sample covered twice is an
 // overlap, a sample covered by none is a gap (buildings stand on the ground, so their footprints are ground too).
-// Exits 1 when the overlapping share or the gap share exceeds MAX_SHARE.
+// Exits 1 when the base overlapping share, the base gap share, the paint-on-paint share or the share of paint without
+// ground under it exceeds MAX_SHARE, or when the D4 scope has any of them.
 //   bun scripts/campus-model/check-ground-overlap.mjs [raw.glb]
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -11,14 +15,15 @@ import { fileURLToPath } from "node:url";
 import { EXTENT } from "./lib/frame.mjs";
 import { sceneToTm } from "../../src/geo/epsg5186.mjs";
 import { D4_MATERIAL_SCOPE } from "./lib/landcover.mjs";
+import { groundRole } from "./lib/groundNodes.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FILE = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : path.join(HERE, ".build", "campus-v2.raw.glb");
 // --all: the whole plan, the hill ring (OuterTerrain) and the context streets on it included, sampled every 1 unit
 const ALL = process.argv.includes("--all");
 const GROUND = ALL
-  ? /^(Topography_\d+|Ground_(?!Hump_)|Road_Markings$|OuterTerrain$|Context_Far_Ground_)/
-  : /^(Topography_\d+|Ground_(?!Context|Hump_)|Road_Markings$)/;
+  ? /^(Topography_\d+|Ground_(?!Hump_)|Road_Markings_|OuterTerrain$|Context_Far_Ground_)/
+  : /^(Topography_\d+|Ground_(?!Context|Hump_)|Road_Markings_)/;
 const STEP = ALL ? 1 : 0.25;
 const CELL = 1;
 // samples on a shared edge can land exactly on it; the jitter keeps that rare, this bounds what is left
@@ -43,12 +48,15 @@ const read = (accessorIndex) => {
 
 const triangles = [];
 const meshOf = [];
+const paint = [];
 const byMesh = {};
 for (const node of json.nodes) {
   if (node.mesh === undefined || !GROUND.test(node.name ?? "")) continue;
-  if (node.translation || node.rotation || node.scale || node.matrix) throw new Error(`${node.name} has a transform`);
+  if (node.rotation || node.scale || node.matrix) throw new Error(`${node.name} has a transform other than a translation`);
+  const [tx, , tz] = node.translation ?? [0, 0, 0];
   for (const primitive of json.meshes[node.mesh].primitives) {
-    const p = read(primitive.attributes.POSITION);
+    const local = read(primitive.attributes.POSITION);
+    const p = tx === 0 && tz === 0 ? local : Float64Array.from(local, (v, i) => v + (i % 3 === 0 ? tx : i % 3 === 2 ? tz : 0));
     const index = primitive.indices !== undefined ? read(primitive.indices) : Uint32Array.from({ length: p.length / 3 }, (_, i) => i);
     for (let t = 0; t < index.length; t += 3) {
       const [a, b, c] = [index[t], index[t + 1], index[t + 2]];
@@ -56,8 +64,10 @@ for (const node of json.nodes) {
       if (Math.abs(area2) < 1e-12) continue; // zero-area triangles cover nothing
       triangles.push([p[a * 3], p[a * 3 + 2], p[b * 3], p[b * 3 + 2], p[c * 3], p[c * 3 + 2]]);
       meshOf.push(node.name.startsWith("Topography_") ? "Topography" : node.name);
+      paint.push(groundRole(node.name) === "paint");
     }
-    const group = node.name.startsWith("Topography_") ? "Topography" : node.name;
+    // per class: the surfaces and markings are one node per parcel group or marking element
+    const group = node.name.startsWith("Topography_") ? "Topography" : node.name.match(/^(Road_Markings|Ground_[A-Za-z0-9]+|[^_]+)/)[0];
     byMesh[group] = (byMesh[group] ?? 0) + index.length / 3;
   }
 }
@@ -96,7 +106,11 @@ const inside = ([ax, az, bx, bz, cx, cz], x, z) => {
 let samples = 0;
 let gaps = 0;
 let overlaps = 0;
-const d4 = { samples: 0, overlaps: 0, gaps: 0 };
+let paintOverlaps = 0;
+let unsupported = 0;
+const d4 = { samples: 0, overlaps: 0, gaps: 0, paintOverlaps: 0, unsupported: 0 };
+const unsupportedAt = [];
+const paintAt = [];
 const overlapAt = [];
 const gapAt = [];
 const pairs = {};
@@ -108,8 +122,14 @@ for (let z = BOUNDS[1] + STEP / 2; z < BOUNDS[3]; z += STEP) {
     const sz = z + (random() - 0.5) * STEP * 0.8;
     const cell = cells[Math.floor((sz - BOUNDS[1]) / CELL) * cols + Math.floor((sx - BOUNDS[0]) / CELL)] ?? [];
     let hits = 0;
+    let paintHits = 0;
     const owners = [];
-    for (const k of cell) if (inside(triangles[k], sx, sz)) { hits += 1; owners.push(meshOf[k]); }
+    const paintOwners = [];
+    for (const k of cell) {
+      if (!inside(triangles[k], sx, sz)) continue;
+      if (paint[k]) { paintHits += 1; paintOwners.push(meshOf[k]); }
+      else { hits += 1; owners.push(meshOf[k]); }
+    }
     samples += 1;
     const [east, north] = sceneToTm(sx, sz);
     const [west, south, eastMax, northMax] = D4_MATERIAL_SCOPE.bbox;
@@ -117,6 +137,8 @@ for (let z = BOUNDS[1] + STEP / 2; z < BOUNDS[3]; z += STEP) {
       d4.samples++;
       if (hits > 1) d4.overlaps++;
       if (hits === 0) d4.gaps++;
+      if (paintHits > 1) d4.paintOverlaps++;
+      if (paintHits > 0 && hits === 0) d4.unsupported++;
     }
     const inExtent = sx >= EXTENT.minX && sx <= EXTENT.maxX && sz >= EXTENT.minZ && sz <= EXTENT.maxZ;
     if (hits === 0 && (!ALL || inExtent)) {
@@ -127,6 +149,14 @@ for (let z = BOUNDS[1] + STEP / 2; z < BOUNDS[3]; z += STEP) {
       const pair = owners.sort().join("+");
       pairs[pair] = (pairs[pair] ?? 0) + 1;
     }
+    if (paintHits > 1) {
+      paintOverlaps += 1;
+      if (paintAt.length < 10) paintAt.push([Number(sx.toFixed(2)), Number(sz.toFixed(2)), ...paintOwners.sort()]);
+    }
+    if (paintHits > 0 && hits === 0) {
+      unsupported += 1;
+      if (unsupportedAt.length < 10) unsupportedAt.push([Number(sx.toFixed(2)), Number(sz.toFixed(2))]);
+    }
     if (hits > 1) {
       overlaps += 1;
       if (overlapAt.length < 10) overlapAt.push([Number(sx.toFixed(2)), Number(sz.toFixed(2)), hits]);
@@ -136,11 +166,15 @@ for (let z = BOUNDS[1] + STEP / 2; z < BOUNDS[3]; z += STEP) {
 const share = (n) => n / samples;
 console.log(`ground triangles: ${triangles.length} (${Object.entries(byMesh).map(([k, v]) => `${k} ${v}`).join(", ")})`);
 console.log(`samples ${samples}: overlap ${overlaps} (${(share(overlaps) * 100).toFixed(4)} %), gap ${gaps} (${(share(gaps) * 100).toFixed(4)} %)`);
+console.log(`paint on the ground: paint on paint ${paintOverlaps} (${(share(paintOverlaps) * 100).toFixed(4)} %), paint without ground under it ${unsupported} (${(share(unsupported) * 100).toFixed(4)} %)`);
+if (paintAt.length) console.log(`first paint overlaps [x, z, nodes]: ${JSON.stringify(paintAt)}`);
+if (unsupportedAt.length) console.log(`first paint without ground [x, z]: ${JSON.stringify(unsupportedAt)}`);
 console.log(`overlap pairs: ${JSON.stringify(Object.entries(pairs).sort((a, b) => b[1] - a[1]).slice(0, 12))}`);
 if (gapAt.length) console.log(`first gaps [x, z]: ${JSON.stringify(gapAt)}`);
 if (overlapAt.length) console.log(`first overlaps [x, z, triangles]: ${JSON.stringify(overlapAt)}`);
 console.log(`D4 GROUND ${JSON.stringify(d4)}`);
 const ok = share(overlaps) <= MAX_SHARE && share(gaps) <= MAX_SHARE &&
-  d4.samples > 0 && d4.overlaps === 0 && d4.gaps === 0;
+  share(paintOverlaps) <= MAX_SHARE && share(unsupported) <= MAX_SHARE &&
+  d4.samples > 0 && d4.overlaps === 0 && d4.gaps === 0 && d4.paintOverlaps === 0 && d4.unsupported === 0;
 console.log(ok ? "GROUND PARTITION OK" : "GROUND PARTITION FAIL");
 process.exit(ok ? 0 : 1);

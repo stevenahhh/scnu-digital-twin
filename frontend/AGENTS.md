@@ -38,6 +38,7 @@ frontend/
 | VWorld layout/data flow | `src/AppVWorld.jsx` | Same panel and hooks, VWorld renderer |
 | Dashboard panel and tabs | `src/panel/` | One implementation for both entries |
 | 3D building mapping | `src/CityModel.jsx` | GLB names to `BLD_*` |
+| Admin model editor | `src/editor/` | `ModelEditorPanel` (admin UI), `ModelEditorScene` (gizmo, picking, applies saved edits on every screen), `sceneEditor.mjs`, `modelEditStore.mjs`; weather `/model/edits` |
 | VWorld building mapping | `src/vworld/buildingResolver.mjs` | `MODEL_NAME` contract |
 | VWorld map lifecycle | `src/vworld/VWorldRenderer.jsx` | SDK, boundary, D4 marker |
 | Popup API contract | `WEATHER_API.md` | Complete response and ID rules |

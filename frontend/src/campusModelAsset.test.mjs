@@ -79,7 +79,13 @@ test("campus-v2.glb gives every named SCNU campus building a labelled pick proxy
     ...elements.elements.map((element) => element.element_id),
   ]);
   const rootNames = topLevelNodes(campus).map((node) => node.name);
-  const proxies = campus.nodes.filter((node) => node.name.startsWith("BLD_SCNU_"));
+  // <proxy>_Model nodes draw the building (one editable node each, stages/buildings.mjs); the proxy is the pick prism
+  const models = campus.nodes.filter((node) => /^BLD_SCNU_.*_Model$/.test(node.name));
+  const proxies = campus.nodes.filter((node) => node.name.startsWith("BLD_SCNU_") && !models.includes(node));
+  for (const model of models) {
+    assert.deepEqual(model.extras?.editable, { id: model.name.replace(/_Model$/, ""), kind: "building", category: "building" }, `${model.name} editable extras`);
+    assert.ok(proxies.some((node) => node.name === model.extras.editable.id), `${model.name} has no pick proxy`);
+  }
   // 17 since 2026-10-29: the 14 annexes and greenhouses missing from the VR tour were removed (scnu-building-names.json status removed)
   assert.ok(proxies.length >= 17, `only ${proxies.length} BLD_SCNU_* nodes`);
   for (const record of [687709, 687746, 687750, 687777, 687828, 688041, 688059, 688401, 688403, 688981, 690033, 690034, 690076, 768570]) {
@@ -148,7 +154,8 @@ test("campus-v2.glb stands every VR-only building of vr-buildings.json, with est
     assert.ok(host, `${record.nodeId} (${record.name}) is neither a proxy nor matched into a uni.glb node`);
     assert.ok(host.extras.heightLineage, `${host.name} has no heightLineage`);
   }
-  const furniture = roots.find((node) => node.name === "Furniture");
+  // the Furniture collection node carries the survey extras (stages/furnitureObjects.mjs)
+  const furniture = campus.nodes.find((node) => node.name === "Furniture" && node.extras?.counts);
   assert.deepEqual(furniture?.extras?.counts?.gate_sign, { surveyed: 0, estimated: 1 }, "the A19 gate sign is not built exactly once");
 });
 

@@ -69,8 +69,9 @@ async function readCampusMeshCentres() {
     });
 }
 
-test("the shadow camera half-size covers the half-diagonal of the 510 x 383 campus box", () => {
-  assert.deepEqual(SHADOW_CAMERA_BOUNDS, { left: -320, right: 320, top: 320, bottom: -320, near: 1, far: 1400 });
+test("the shadow camera half-size covers the half-diagonal of the 546 x 383 campus box", () => {
+  // 546 wide: the RS0015 bus-stop shelter centre sits at x = +271.6 (shadowFrustum.mjs CAMPUS_BOX_SIZE)
+  assert.deepEqual(SHADOW_CAMERA_BOUNDS, { left: -335, right: 335, top: 335, bottom: -335, near: 1, far: 1400 });
   assert.equal(getShadowCameraBounds({ width: 100, depth: 0, margin: 0 }).right, 50);
   assert.ok(SHADOW_LIGHT_DISTANCE > SHADOW_CAMERA_BOUNDS.right, "light sits inside the campus");
   assert.ok(SHADOW_CAMERA_FAR >= SHADOW_LIGHT_DISTANCE + SHADOW_CAMERA_BOUNDS.right, "far plane cuts the campus");
