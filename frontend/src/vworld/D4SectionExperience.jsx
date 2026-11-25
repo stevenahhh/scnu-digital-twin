@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, SunMedium } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { D4RoomGridSelect } from "../components/D4RoomGridSelect";
 import { D4WingFloorSelect } from "../components/D4WingFloorSelect";
@@ -18,7 +18,8 @@ const PANE_TITLE_ID = "d4-pane-title";
 // 머리 하나: `상위로` 버튼과 브레드크럼(캠퍼스 › 공과대학 3호관 [D4] › 층 › 호실, 현재 위치가 제목). 캠퍼스 단계가 지도로 돌아가는 길이라
 // 폰에도 캠퍼스 시점 버튼 줄을 따로 두지 않는다.
 // 내용 순서: 건물 단계는 동·층 장면과 사용 중인 강의실, 층 단계는 층 고르기 -> 강의실 -> 상세.
-// 설치 계획은 에너지 탭의 `배치 편집`으로 들어온 요청(scenarioId·installationPlanId)이 있을 때만 `배치 편집` 단계로 연다.
+// 설치 계획은 에너지 탭의 `배치 편집`으로 들어온 요청(scenarioId·installationPlanId)이 있거나,
+// allowInstallation일 때(관리자 Main) 건물 단계의 `옥상 태양광 배치` 버튼을 누르면 `배치 편집` 단계로 연다.
 // 나가기는 Esc(한 번에 한 단계)나 브레드크럼·상위로뿐이다. 휠로 나가는 동작은 없다.
 export function D4SectionExperience({
   onClose,
@@ -31,6 +32,7 @@ export function D4SectionExperience({
   onRepresentativeChange,
   planRefreshKey,
   startInstallation = false,
+  allowInstallation = false,
   returnFocusRef,
 }) {
   const [isPlanOpen, setIsPlanOpen] = useState(startInstallation);
@@ -136,6 +138,10 @@ export function D4SectionExperience({
     setD4SelectedFloor(floor);
     setSelectedRoomId(null);
   };
+  const openInstallationPlans = () => {
+    setIsPlanEditorOpen(false);
+    setIsPlanOpen(true);
+  };
   const jumpToInUseRoom = (room) => {
     setD4ActiveWingId(room.wing);
     setD4SelectedFloor(room.floor);
@@ -208,6 +214,18 @@ export function D4SectionExperience({
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain pb-6">
+          {allowInstallation && level === "building" && (
+            <div className="px-4 pt-4">
+              <Button
+                size="sm"
+                data-qa="d4-open-installation"
+                icon={<SunMedium aria-hidden="true" className="h-4 w-4" />}
+                onClick={openInstallationPlans}
+              >
+                옥상 태양광 배치
+              </Button>
+            </div>
+          )}
           {d4View === "wings" ? (
             <D4WingFloorSelect
               building={building}
