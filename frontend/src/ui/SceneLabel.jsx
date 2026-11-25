@@ -118,7 +118,7 @@ export function SceneLabel({
             ≈
           </span>
         )}
-        <span className={cx("line-clamp-2 break-keep text-left", PHONE_NAME_WRAP)}>{name}</span>
+        <span className={cx("line-clamp-2 break-keep text-left", PHONE_NAME_WRAP)}>{name?.replace(/공사 중$/, "공사\u00a0중")}</span>
         {value && (
           <span data-qa="label-value" className={cx("shrink-0 tabular-nums text-ink-muted", state === "hover" ? "inline" : "hidden group-hover:inline")}>
             {value}

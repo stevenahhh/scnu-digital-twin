@@ -23,7 +23,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function Harness({ hasSelection = false }) {
+function Harness({ hasSelection = false, tabAlerts }) {
   const mode = useViewportMode();
   const panel = usePanelState(mode);
   const [tab, setTab] = useState("status");
@@ -37,6 +37,7 @@ function Harness({ hasSelection = false }) {
       activeTab={tab}
       onTabChange={setTab}
       hasSelection={hasSelection}
+      tabAlerts={tabAlerts}
     >
       <p>본문</p>
     </DashboardShell>
@@ -46,6 +47,18 @@ function Harness({ hasSelection = false }) {
 const shell = (container) => container.querySelector('[data-qa="dashboard-panel"]');
 
 describe("DashboardShell", () => {
+  it("puts a dot and the count on the tab that has something to check, on the rail and on the phone's closed sheet", () => {
+    window.matchMedia = mediaFor(1440);
+    const desktop = render(<Harness tabAlerts={{ status: 2 }} />);
+    const rail = screen.getByRole("button", { name: "현황, 확인할 알림 2건" });
+    expect(rail.querySelector("[data-qa=alert-dot]")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "에너지" }).querySelector("[data-qa=alert-dot]")).toBeNull();
+    desktop.unmount();
+    window.matchMedia = mediaFor(390);
+    render(<Harness tabAlerts={{ status: 2 }} />);
+    expect(screen.getByRole("button", { name: "패널 열기, 확인할 알림 2건" }).querySelector("[data-qa=alert-dot]")).toBeTruthy();
+  });
+
   it("renders the 56 px rail on a first visit at 1440 px with tab icons only, adding 건물 once something is selected", () => {
     window.matchMedia = mediaFor(1440);
     const { container, rerender } = render(<Harness />);
@@ -100,7 +113,6 @@ describe("DashboardShell", () => {
     expect(sheet.dataset.detent).toBe("peek");
     expect(screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent)).toEqual(["현황"]);
     expect(container.querySelector('[data-qa="sheet-time"]')).toBeNull();
-    expect(screen.getByRole("img", { name: "순천대학교" })).toBeTruthy();
     expect(container.querySelector("[data-qa=scrim], .backdrop-blur, [aria-modal=true]")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "패널 열기" }));
     expect(sheet.dataset.detent).toBe("half");

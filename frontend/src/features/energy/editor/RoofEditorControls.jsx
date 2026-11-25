@@ -1,5 +1,7 @@
 import { Check, List, Plus, Redo2, RotateCcw, Save, Trash2 } from "lucide-react";
-import { FIELD_INPUT } from "../shared/fieldStyles.mjs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { FIELD_CONTROL, FIELD_LABEL } from "../shared/fieldStyles.mjs";
 import { Alert } from "../../../ui/Alert.jsx";
 import { Button } from "../../../ui/Button.jsx";
 import { Sheet } from "../../../ui/Sheet.jsx";
@@ -17,12 +19,12 @@ const pressedClass = (pressed) => cx(pressed && "border-hairline-strong bg-surfa
 
 function NumberField({ label, value, min, max, step = 1, suffix, onChange }) {
   return (
-    <label className="flex flex-col gap-1 text-caption text-ink-muted">
+    <Label className={FIELD_LABEL}>
       <span>
         {label} <span className="text-ink-subtle">({suffix})</span>
       </span>
-      <input
-        className={FIELD_INPUT}
+      <Input
+        className={FIELD_CONTROL}
         aria-label={label}
         type="number"
         min={min}
@@ -31,7 +33,7 @@ function NumberField({ label, value, min, max, step = 1, suffix, onChange }) {
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
       />
-    </label>
+    </Label>
   );
 }
 

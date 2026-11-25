@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { cx } from "./ui/cx.mjs";
 import { getClearColor } from "./lighting/atmosphere.mjs";
 import { CampusCanvas } from "./render/CampusCanvas";
@@ -17,7 +17,7 @@ import { CompareButton, ComparisonPane } from "./panel/ComparisonPane";
 import { useComparisonSet } from "./state/useComparisonSet.mjs";
 import { gateTextFor } from "./labels/gateDistance.mjs";
 import { useSimulationSocket } from "./simulation";
-import { LegacyD4Pane } from "./panel/LegacyD4Pane";
+import { MainD4Pane } from "./panel/MainD4Pane";
 import { useViewportMode } from "./hooks/useViewportMode.mjs";
 import { useWeatherFeed } from "./hooks/useWeatherFeed";
 import { useTrafficFeed } from "./simulation/hooks/useTrafficFeed";
@@ -26,7 +26,7 @@ import { useInstallationPlans } from "./hooks/useInstallationPlans.mjs";
 import { useSelectionState } from "./hooks/useSelectionState.mjs";
 import { useSunClock } from "./hooks/useSunClock.mjs";
 import { useThemeMode } from "./hooks/useThemeMode.mjs";
-import { useLegacyBuildingFlow } from "./hooks/useLegacyBuildingFlow.mjs";
+import { useMainBuildingFlow } from "./hooks/useMainBuildingFlow.mjs";
 import { useDashboardUrlState } from "./hooks/useDashboardUrlState.mjs";
 import { DashboardShell, shellInsetRight, useSettledOpen } from "./panel/DashboardShell";
 import { DEFAULT_TAB } from "./panel/DashboardPanel";
@@ -37,29 +37,26 @@ import { DashboardTabContent } from "./panel/DashboardTabContent";
 import { MoreMenu } from "./panel/MoreMenu";
 import { usePresentationMode } from "./panel/usePresentationMode.mjs";
 import { tourPosition } from "./panel/presentationLayout.mjs";
-import { feedIssueCount } from "./panel/FeedStatus";
+import { statusTabAlerts } from "./panel/tabAlerts.mjs";
+import { buildingNotice } from "./restrictions/restrictionModel.mjs";
+import { useCampusRestrictions } from "./restrictions/useCampusRestrictions.mjs";
 import { useFeedStatus } from "./hooks/useFeedStatus.mjs";
 import { summarizeWeather } from "./panel/weatherSummary.mjs";
+import { sessionStore } from "./auth/session.mjs";
+import { accountLabel, useSession } from "./auth/useSession.mjs";
+import { ModelEditorPanel } from "./editor/ModelEditorPanel";
+import { modelEditStore } from "./editor/modelEditsApi.mjs";
 
-// ?ui=gallery는 공용 기본 요소 확인 화면만 띄운다. 따로 나눠 불러와 대시보드 번들에는 들어가지 않는다.
-const UiGallery = lazy(() => import("./ui/Gallery.jsx"));
 const ROOT_CLASS = "dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink";
 const D4_PRESET = CAMERA_PRESETS.find((preset) => preset.id === D4_PRESET_ID);
-const SHOW_UI_GALLERY = new URLSearchParams(window.location.search).get("ui") === "gallery";
 
 export default function App() {
-  if (SHOW_UI_GALLERY) {
-    return (
-      <Suspense fallback={null}>
-        <UiGallery />
-      </Suspense>
-    );
-  }
   return <Dashboard />;
 }
 
 function Dashboard() {
   useSimulationSocket();
+  const editing = useSyncExternalStore(modelEditStore.subscribe, () => modelEditStore.getState().editing);
   const orbitControlsRef = useRef(null);
   const panelRef = useRef(null);
   const mapLayerRef = useRef(null);
@@ -78,6 +75,7 @@ function Dashboard() {
     setSceneAttempt((value) => value + 1);
   };
   const [themeMode, setThemeMode] = useThemeMode();
+  const session = useSession();
   const weatherFeed = useWeatherFeed();
   const trafficFeed = useTrafficFeed();
   const clock = useSunClock();
@@ -85,6 +83,7 @@ function Dashboard() {
   const comparison = useComparisonSet();
   const plans = useInstallationPlans(selection.selectedBuildingId);
   const feeds = useFeedStatus({ weather: weatherFeed, traffic: trafficFeed, plans });
+  const restrictions = useCampusRestrictions();
   const panelScrollRef = useRef(null);
   const popup = usePopupData();
   const canvasStateRef = useRef(null);
@@ -96,7 +95,7 @@ function Dashboard() {
     onOrbitStart: interactionDpr.onStart,
     onOrbitEnd: interactionDpr.onEnd,
   });
-  const flow = useLegacyBuildingFlow({
+  const flow = useMainBuildingFlow({
     selection,
     popup,
     panel: { activeTab, setActiveTab, scrollRef: panelScrollRef, onSelectionShown: navigation.showSelection },
@@ -147,15 +146,16 @@ function Dashboard() {
   // 검색 결과: 칩 클릭과 같은 선택에 더해 카메라를 그 건물로 옮긴다.
   const handleSearchPick = (entry) => {
     flow.selectFromSearch(entry);
+    if (viewportMode === "phone" && entry.displayName?.endsWith(" · 공사 중")) panelState.setDetent("peek");
     camera.flyToBuilding(entry.elementId);
   };
-  const editor = flow.editorRequest;
   // 인스펙터 제목: 고른 건물의 레지스트리 이름, 없으면 클릭한 메시의 이름.
   const panelTitle = selection.selectedId ? flow.selectionTitle || selection.selectedTitle || selection.selectedId : "";
   const inspector = comparison.open ? (
     <ComparisonPane ids={comparison.ids} onRemove={comparison.remove} onClose={() => comparison.setOpen(false)} />
   ) : isCampus && selection.selectedId ? (
     <SelectionInspector
+      notice={buildingNotice(restrictions.items, selection.selectedId)}
       title={panelTitle}
       popup={popup}
       estimate={selection.selectedEstimate}
@@ -164,16 +164,14 @@ function Dashboard() {
       compare={comparison.ids.length > 0 && <CompareButton comparison={comparison} />}
       onOpenIndoor={isD4ElementId(`BLD_${selection.selectedBuildingId}`) ? () => flow.openD4Section() : null}
       onClose={flow.closeMicroclimate}
-      onShowAll={() => {
-        flow.closeMicroclimate();
-        camera.goHome();
-      }}
+      onShowAll={() => { flow.closeMicroclimate(); camera.goHome(); }}
     />
   ) : null;
 
   const moreMenu = (
     <MoreMenu mode={viewportMode} onTogglePresentation={presentation.toggle} quality={qualitySetting}
-      themeMode={themeMode} onThemeChange={setThemeMode} />
+      themeMode={themeMode} onThemeChange={setThemeMode}
+      accountLabel={session && accountLabel(session.account)} onLogout={session && sessionStore.logout} />
   );
 
   // 루트는 overflow: clip으로 자른다. hidden은 스크롤 컨테이너라서 Tab 포커스가 화면 밖 요소로 가면 대시보드가 밀려 남는다.
@@ -189,8 +187,6 @@ function Dashboard() {
         onTogglePresentation={presentation.toggle}
         tour={camera.touring ? tourPosition(CAMERA_PRESETS, camera.activePresetId) : null}
         moreMenu={moreMenu}
-        feedIssueCount={feedIssueCount(feeds)}
-        onOpenStatus={() => navigation.openTab("status")}
         camera={camera}
         clock={clock}
         playing={isTimePlaying}
@@ -211,15 +207,17 @@ function Dashboard() {
         scene={{
           controlsRef: orbitControlsRef,
           selectedId: selection.selectedId,
-          labelsHidden: !isCampus,
+          labelsHidden: !isCampus || editing,
           occluderRef: panelRef,
           chromeRefs: labelChromeRefs,
           onLoadingChange: setIsSceneLoading,
           attempt: sceneAttempt,
           presentation: presentation.presenting,
           onCompare: comparison.add,
+          restrictions: restrictions.items,
         }}
       />
+      {isCampus && !presentation.presenting && <ModelEditorPanel />}
       {isSceneLoading && <SceneLoadingNotice key={sceneAttempt} insetRight={mapInsetRight} onRetry={retryScene} />}
       <DashboardShell
         ref={panelRef}
@@ -230,9 +228,10 @@ function Dashboard() {
         onDetentChange={panelState.setDetent}
         hidden={presentation.presenting}
         hasSelection={isCampus && Boolean(selection.selectedId)}
+        tabAlerts={statusTabAlerts(feeds, restrictions.items)}
         onPaneExit={flow.exitD4Section}
         pane={!isCampus && (
-          <LegacyD4Pane
+          <MainD4Pane
             flow={flow} selection={selection} plans={plans} camera={camera} phone={viewportMode === "phone"}
           />
         )}
@@ -251,6 +250,7 @@ function Dashboard() {
           buildingId={selection.selectedBuildingId}
           hasSelection={Boolean(selection.selectedId)}
           onOpenRecommendation={openRecommendation}
+          restrictions={restrictions}
           campusOverview={(
             <CampusEnergyOverview refreshKey={plans.overlayRefreshKey} />
           )}

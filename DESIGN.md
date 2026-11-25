@@ -79,6 +79,23 @@ Layout: presentation mode - fixed: scene canvas, time readout, tour pager; scrol
 
 ## 5. Components
 
+Components are built on shadcn/ui: the Tailwind 3 generation of the `new-york` registry (Radix primitives), generated into `frontend/src/components/ui/` and themed only through the tokens. The shadcn colour variables in `tokens.css` are derived from the palette, and the radius classes map to the radius tokens (`rounded-md` control, `rounded-lg` and `rounded-xl` card). The primitives in `frontend/src/ui/` keep the project API and wrap those components.
+
+| Project primitive | shadcn source |
+|---|---|
+| Button | `button` |
+| StatusBadge | `badge` |
+| Alert | `alert` |
+| Breadcrumb | `breadcrumb` |
+| Disclosure | `collapsible` |
+| Skeleton | `skeleton` |
+| Popover, 더보기 and 시점 menus | `popover`, `dropdown-menu` (rendered in place, no portal) |
+| AccessibleDialog | `dialog` |
+| Segmented, dashboard tabs | `tabs`, `toggle-group` |
+| Login card, form fields | `card`, `input`, `label`, `select`, `separator` |
+
+Kept as project implementations: Sheet (the vaul drawer could not keep the detent heights, release-velocity snapping, reduced-motion cross-fade and handle semantics), the range inputs of TimeSlider and SliderRow (the QA harness drives `input[type=range]`), SearchField, MetricList, EstimateValue, SectionHeader, Spinner and the scene labels. Moving to the current shadcn generation needs Tailwind 4 first.
+
 Shared primitives live in `frontend/src/ui/` and both entries use them (Legacy `AppLegacy.jsx` and VWorld `AppVWorld.jsx`). Every interactive primitive shows a 2px `--colors-primary` focus-visible outline outside the element and has a hit area of at least 44px under `(pointer: coarse)`.
 
 ### Button
@@ -146,6 +163,13 @@ Shared primitives live in `frontend/src/ui/` and both entries use them (Legacy `
 - **States**: peek, half, full, dragging. Under reduced motion it cross-fades instead of sliding.
 - **Accessibility**: ArrowUp and ArrowDown move one detent, and Esc returns to peek. The scene above stays interactive. Focus is not trapped at peek or half, and the body scrolls only at full.
 
+### Wordmark
+- **Structure**: `국립순천대학교 디지털 트윈` as the page `h1`. On the map it is plain white text centred on the map area, with `--shadow-scene-text` and no background box. When the map is narrower than 760px it drops below the HUD row.
+
+### Alert dot
+- **Structure**: an 8px warning-colour dot on a panel tab (rail icon, tab label, or the closed phone sheet's toggle). It replaces status boxes on the map. The 현황 tab counts disconnected feeds and active restriction scenarios.
+- **Accessibility**: the dot is decorative; the control's accessible name carries `확인할 알림 N건`.
+
 ### Scene label chip
 - **Structure**: `button[data-qa="campus-label"]` with `data-element-id`, `data-tier` and `data-state`. It uses `--text-caption` (12px on desktop, 14px under a coarse pointer or below 640px), and a transform never scales it smaller. Weight is 500 (600 when selected). It has `rounded-control`, a `--colors-label-bg` background, a hairline border, a 1px `--colors-label-halo` halo and an optional code badge. It is at most 160px wide and two lines long, and it can show a leader line to its anchor when displaced.
 - **States**: idle, hover (one elevation step plus the headline value), focus, selected (accent border and text, always kept), dimmed (60 %), no-data (hollow dot), stale (grey dot), estimated (dashed border, `≈` glyph, `명칭 추정` in the accessible name).
@@ -194,6 +218,7 @@ Shared primitives live in `frontend/src/ui/` and both entries use them (Legacy `
 
 - Only opacity, transform and filter animate.
 - During a drag or fly-to, the label layer fades to 40 % and freezes. One settle pass runs after the motion ends.
+- Loading veil: from the login screen until the first scene frame, a WebGL canvas draws the real terrain as contours through the scene's own camera, read every frame (before the canvas exists it uses the camera stored in the address, else the campus's first camera). A front driven by downloaded bytes spreads from the point the camera looks at, then the veil opens from the same point onto the scene. Nothing in it is a stored image or a fixed timeline.
 - Reduced motion: under `prefers-reduced-motion: reduce`, `index.css` shortens every transition and animation to 0.01ms. This is the only permitted `!important`. Users get the same states without movement, and sheets cross-fade.
 
 ## 7. Depth & Surface

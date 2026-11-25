@@ -32,8 +32,14 @@ export class GlbBuilder {
       buffers: [{ byteLength: 0 }],
     };
     this.chunks = [];
+    // bufferView index -> its bytes (readBufferView, readAccessor)
+    this.viewChunks = [];
     this.byteLength = 0;
     this.extensionsUsed = new Set();
+    // root node index -> collection path given by addNode({ collection }), taken by groupRoots before any match rule
+    this.rootCollections = new Map();
+    // collection path -> node index given by addNode({ collectionNode }): groupRoots uses that node as the collection
+    this.collectionNodes = new Map();
   }
 
   addBufferView(bytes, target) {
@@ -44,10 +50,25 @@ export class GlbBuilder {
     }
     const view = { buffer: 0, byteOffset: this.byteLength, byteLength: bytes.byteLength };
     if (target) view.target = target;
-    this.chunks.push(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength));
+    const chunk = new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    this.chunks.push(chunk);
+    this.viewChunks.push(chunk);
     this.byteLength += bytes.byteLength;
     this.json.bufferViews.push(view);
     return this.json.bufferViews.length - 1;
+  }
+
+  readBufferView(index) {
+    return this.viewChunks[index];
+  }
+
+  // A copy of an accessor's data as the typed array it was written from.
+  readAccessor(index) {
+    const accessor = this.json.accessors[index];
+    const Type = { [FLOAT]: Float32Array, [UNSIGNED_INT]: Uint32Array, [UNSIGNED_SHORT]: Uint16Array, [UNSIGNED_BYTE]: Uint8Array }[accessor.componentType];
+    const size = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 }[accessor.type];
+    const bytes = this.readBufferView(accessor.bufferView);
+    return new Type(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + accessor.count * size * Type.BYTES_PER_ELEMENT));
   }
 
   addAccessor(array, type, { target = ARRAY_BUFFER, normalized = false, minMax = false } = {}) {
@@ -129,15 +150,20 @@ export class GlbBuilder {
     return { EXT_mesh_gpu_instancing: { attributes } };
   }
 
-  addNode(node, { root = false } = {}) {
+  // collectionNode: this mesh-less node becomes the collection node of that path in groupRoots (it keeps its name and
+  // extras and gains extras.collection), so a data-only node is never an empty leaf, which gltf-transform's prune drops.
+  addNode(node, { root = false, collection = null, collectionNode = null } = {}) {
     this.json.nodes.push(node);
     const index = this.json.nodes.length - 1;
     if (root) this.json.scenes[0].nodes.push(index);
+    if (root && collection) this.rootCollections.set(index, collection);
+    if (collectionNode) this.collectionNodes.set(collectionNode, index);
     return index;
   }
 
   // Moves every scene root node under a collection node (identity transform, extras.collection = true): the first
-  // group whose match(name) is true takes the node, nested groups by "Parent/Child" names. Blender's glTF importer shows
+  // group whose match(name) is true takes the node (a root added with a collection path goes there instead), nested
+  // groups by "Parent/Child" names. Blender's glTF importer shows
   // each collection node as an empty with its children, so the outliner reads as layers. Throws on a root no group takes.
   groupRoots(groups) {
     const scene = this.json.scenes[0];
@@ -145,7 +171,13 @@ export class GlbBuilder {
     const collection = (pathName) => {
       if (byPath.has(pathName)) return byPath.get(pathName);
       const parts = pathName.split("/");
-      const index = this.json.nodes.push({ name: parts.at(-1), children: [], extras: { collection: true } }) - 1;
+      const carrier = this.collectionNodes.get(pathName);
+      if (carrier !== undefined) {
+        const node = this.json.nodes[carrier];
+        if (node.mesh !== undefined || node.children?.length) throw new Error(`groupRoots: collection node ${pathName} must be mesh-less and childless`);
+        Object.assign(node, { children: [], extras: { ...node.extras, collection: true } });
+      }
+      const index = carrier ?? this.json.nodes.push({ name: parts.at(-1), children: [], extras: { collection: true } }) - 1;
       if (parts.length === 1) scene.nodes.push(index);
       else this.json.nodes[collection(parts.slice(0, -1).join("/"))].children.push(index);
       byPath.set(pathName, index);
@@ -155,9 +187,12 @@ export class GlbBuilder {
     scene.nodes = [];
     for (const index of roots) {
       const name = this.json.nodes[index].name ?? "";
-      const group = groups.find((g) => g.match(name));
-      if (!group) throw new Error(`groupRoots: no collection for root node ${name}`);
-      this.json.nodes[collection(group.path)].children.push(index);
+      const path = this.rootCollections.get(index) ?? groups.find((g) => g.match(name))?.path;
+      if (!path) throw new Error(`groupRoots: no collection for root node ${name}`);
+      this.json.nodes[collection(path)].children.push(index);
+    }
+    for (const [pathName] of this.collectionNodes) {
+      if (!byPath.has(pathName)) throw new Error(`groupRoots: collection node ${pathName} received no children`);
     }
     return byPath;
   }

@@ -12,6 +12,18 @@ const trafficFeed = { state: "offline", stats: null, message: "영상 분석 서
 const feeds = { weather: down, traffic: down, energy: down };
 const retry = { weather: () => {}, traffic: () => {}, energy: () => {} };
 
+describe("StatusTab restriction notices", () => {
+  it("lists active restrictions first and says they are a simulation scenario", () => {
+    const restrictions = [{ id: "RST_1", target_type: "building", target_id: "BLD_C1", target_name: "도서관", cause: "construction", access: null, message: "외벽 보수", segments: [] }];
+    render(<StatusTab summary={summary} feeds={feeds} retry={retry} trafficFeed={trafficFeed} restrictions={restrictions} />);
+    const notices = document.querySelector("[data-qa=restriction-notices]");
+    expect(within(notices).getByText("도서관")).toBeTruthy();
+    expect(within(notices).getByText("공사 중")).toBeTruthy();
+    expect(within(notices).getByText("외벽 보수")).toBeTruthy();
+    expect(notices.textContent).toContain("실제 공지가 아닙니다");
+  });
+});
+
 describe("StatusTab weather group while the weather feed is down", () => {
   it("keeps the five weather rows right below the alert, empty, with one 다시 시도 in the group", () => {
     render(<StatusTab summary={summary} feeds={feeds} retry={retry} trafficFeed={trafficFeed} />);

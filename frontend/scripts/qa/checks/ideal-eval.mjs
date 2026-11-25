@@ -24,13 +24,13 @@ export function controlBudgetLimit(viewport, fixtures) {
 }
 
 // IS-03: two sorted name lists are equal.
-export function compareNameSets(legacy, vworld) {
-  const a = [...legacy].sort();
+export function compareNameSets(main, vworld) {
+  const a = [...main].sort();
   const b = [...vworld].sort();
-  const onlyLegacy = a.filter((name) => !b.includes(name));
+  const onlyMain = a.filter((name) => !b.includes(name));
   const onlyVworld = b.filter((name) => !a.includes(name));
   const same = a.length === b.length && a.every((name, index) => name === b[index]);
-  return { same, onlyLegacy, onlyVworld, legacyCount: a.length, vworldCount: b.length };
+  return { same, onlyMain, onlyVworld, mainCount: a.length, vworldCount: b.length };
 }
 
 // IS-10: data-source values that occur more than once.
@@ -141,7 +141,7 @@ export function cameraRestAt(samples, holdMs = CAMERA_REST_HOLD_MS) {
 }
 
 // IS-31/IS-38: two reads of { rendered, commanded } poses. rendered = the live camera; commanded = the latest pose the
-// app sent to VWorld map.lookat.moveTo (null when there is no such stream, as in Legacy). Either moving is motion;
+// app sent to VWorld map.lookat.moveTo (null when there is no such stream, as in Main). Either moving is motion;
 // a missing rendered pose is never still. `by` names the reading that decided the deltas.
 export function cameraVerdict(from, to) {
   const rendered = cameraMotion(from?.rendered, to?.rendered);

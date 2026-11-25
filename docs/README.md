@@ -8,7 +8,7 @@
   3D 뷰 렌더러는 VWorld로 교체했습니다.
 - 건물 선택은 `MODEL_NAME` 기반 `BLD_*` ID로 먼저 매핑하고,
   VWorld 내에 실제 모델이 없는 D4은 좌표 마커 폴백으로 처리합니다.
-- Legacy 화면과 VWorld 화면을 별도 엔트리(`index.html`, `index-vworld.html`)로 병행 실행할 수 있습니다.
+- Main 화면과 VWorld 화면을 별도 엔트리(`index.html`, `index-vworld.html`)로 병행 실행할 수 있습니다.
 
 ## 관련 폴더
 
@@ -74,14 +74,14 @@ cd backend && ../.venv/bin/python -m uvicorn simulation.main:app --host 127.0.0.
 cd backend; ..\.venv\Scripts\python -m uvicorn simulation.main:app --host 127.0.0.1 --port 8002
 ```
 
-4) Frontend (`127.0.0.1:5173`), Legacy 모드:
+4) Frontend (`127.0.0.1:5173`), Main 모드:
 
 ```bash
-cd frontend && bun install && bun run dev:legacy
+cd frontend && bun install && bun run dev:main
 ```
 
 ```powershell
-cd frontend; bun install; bun run dev:legacy
+cd frontend; bun install; bun run dev:main
 ```
 
 VWorld 모드:
@@ -110,7 +110,7 @@ cp docs\vworld-key.local.example.js docs\vworld-key.local.js
 
 ## 확인 포인트
 
-- Legacy/VWorld 모두:
+- Main/VWorld 모두:
   - 브라우저 접속 후 지도가 정상 렌더링되는지
 - VWorld 모드만:
   - 지도가 안 뜨면 `frontend/.env`의 `VITE_VWORLD_API_KEY` 값 확인

@@ -9,6 +9,7 @@ import { resolveAnchor } from "../lib/anchors.mjs";
 import { loadTmFootprints } from "../lib/footprints.mjs";
 import { D4_SCENE_ANCHOR, metres } from "../lib/frame.mjs";
 import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
+import { groundRole } from "../lib/groundNodes.mjs";
 
 const model = process.argv[2] ?? fileURLToPath(new URL("../../../public/campus-v2.glb", import.meta.url));
 const read = name => JSON.parse(readFileSync(new URL(`../data/${name}`, import.meta.url), "utf8"));
@@ -74,10 +75,12 @@ const ringArea = ring => {
 const outlines = Object.values(read("ground/junctions.json")).flatMap(j => j.approaches)
   .flatMap(a => a.guideLines ?? []).filter(g => ["RZ-015-outer", "RZ-015-inner"].includes(g.id));
 // Same upward-plan coverage contract as check-ground-overlap.mjs, restricted
-// to the authorised TM bbox. Ignore zero-area wall projections.
+// to the authorised TM bbox: one base ground triangle per sample; the road
+// markings never stack on each other and always have base ground under them.
+// Ignore zero-area wall projections.
 const area = [243422.55, 263767.58, 243591.87, 263991.06];
 const bins = new Map(), cell = 1;
-for (const node of nodes.filter(n => /^(Topography_\d+|Topography_joined|Ground_(?!Hump_)|Road_Markings$|OuterTerrain$|Context_Far_Ground_)/.test(n.getName()))) {
+for (const node of nodes.filter(n => /^(Topography_\d+|Topography_joined|Ground_(?!Hump_)|Road_Markings_|OuterTerrain$|Context_Far_Ground_)/.test(n.getName()))) {
   if (!node.getMesh()) continue;
   const m = node.getWorldMatrix();
   for (const primitive of node.getMesh().listPrimitives()) {
@@ -89,6 +92,7 @@ for (const node of nodes.filter(n => /^(Topography_\d+|Topography_joined|Ground_
     for (let k = 0; k < (index?.getCount() ?? points.length); k += 3) {
       const t = [0, 1, 2].map(i => points[index ? index.getScalar(k+i) : k+i]);
       t.owner = `${node.getName()}/${primitive.getMaterial()?.getName()}`;
+      t.paint = groundRole(node.getName()) === "paint";
       if (ringArea(t) < 1e-10) continue;
       const lo = [0, 1].map(i => Math.max(area[i], Math.min(...t.map(p => p[i]))));
       const hi = [0, 1].map(i => Math.min(area[i+2], Math.max(...t.map(p => p[i]))));
@@ -102,18 +106,21 @@ for (const node of nodes.filter(n => /^(Topography_\d+|Topography_joined|Ground_
     }
   }
 }
-let samples = 0, overlaps = 0, gaps = 0;
+let samples = 0, overlaps = 0, gaps = 0, paintOverlaps = 0, unsupported = 0;
 const overlapPairs = {}, overlapExamples = [];
 for (let x = area[0]+0.137; x < area[2]; x += 0.4) {
   for (let y = area[1]+0.193; y < area[3]; y += 0.4) {
-    const hits = (bins.get(`${Math.floor(x/cell)},${Math.floor(y/cell)}`) ?? []).filter(t => {
+    const all = (bins.get(`${Math.floor(x/cell)},${Math.floor(y/cell)}`) ?? []).filter(t => {
       const signs = t.map((a, i) => {
         const b = t[(i+1)%3];
         return (b[0]-a[0])*(y-a[1])-(b[1]-a[1])*(x-a[0]);
       });
       return !(signs.some(v => v < 0) && signs.some(v => v > 0));
     });
+    const hits = all.filter(t => !t.paint), paintHits = all.length - hits.length;
     samples++;
+    if (paintHits > 1) paintOverlaps++;
+    if (paintHits > 0 && hits.length === 0) unsupported++;
     if (hits.length > 1) {
       overlaps++;
       const pair = hits.map(t => t.owner).sort().join("+");
@@ -134,7 +141,8 @@ const report = {
     pass: Math.abs(ringArea(plaza.ring)-888.8) < 1, source: "l3-ground north extension (estimated)" },
   triangleSeeds: { count: outlines.length, pass: outlines.length === 2 &&
     outlines.every(g => g.points?.length === 4 && g.points[0].every((v, k) => v === g.points[3][k])) },
-  groundOverlap: { bboxTM: area, samples, overlaps, gaps, overlapPairs, overlapExamples, pass: overlaps === 0 && gaps === 0 },
+  groundOverlap: { bboxTM: area, samples, overlaps, gaps, paintOverlaps, unsupported, overlapPairs, overlapExamples,
+    pass: overlaps === 0 && gaps === 0 && paintOverlaps === 0 && unsupported === 0 },
 };
 report.pass = report.anchor.pass && report.doorCount.pass && doors.every(d => d.pass) &&
   report.bridgeSeed.pass && report.plazaSeed.pass && report.triangleSeeds.pass && report.groundOverlap.pass;

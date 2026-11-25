@@ -1,12 +1,12 @@
 import { DIM_ALPHA, HOVER_HEX, SELECTION_HEX } from "../ui/sceneTokens.mjs";
 import { sceneToModelLocal } from "./labelProjection.mjs";
 
-// VWorld 캠퍼스 오버레이의 선택·호버 표시(Legacy CityModel과 같은 뜻): 선택이 있으면 오버레이 전체를 DIM_ALPHA만큼 어둡게 하고
+// VWorld 캠퍼스 오버레이의 선택·호버 표시(Main CityModel과 같은 뜻): 선택이 있으면 오버레이 전체를 DIM_ALPHA만큼 어둡게 하고
 // (화면 값 기준), 고른 건물은 경계 상자에 강조색 반투명 상자, 마우스를 올린 건물은 호버 색 상자를
 // 겹친다. SDK 모델에는 건물별 재질이 없어(feature id 없음) 상자를 덧그린다. 상자는 오버레이 modelMatrix를 그대로 쓴다.
 export const SELECTION_FILL_ALPHA = 0.5;
 export const HOVER_FILL_ALPHA = 0.24;
-// Cesium Model.color를 ColorBlendMode.HIGHLIGHT로 두면 모델 색에 곱한다(Legacy의 dimLinearChannel과 같은 결과).
+// Cesium Model.color를 ColorBlendMode.HIGHLIGHT로 두면 모델 색에 곱한다(Main의 dimLinearChannel과 같은 결과).
 // Cesium에는 HIGHLIGHT·REPLACE·MIX만 있다: 없는 이름(MODULATE)을 쓰면 undefined가 들어가 모델 전체가 검게 그려졌다.
 export const DIM_MODULATE = 1 - DIM_ALPHA;
 

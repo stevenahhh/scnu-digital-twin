@@ -32,7 +32,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,6 +42,8 @@ if _WEATHER_ROOT not in sys.path:
     sys.path.insert(0, _WEATHER_ROOT)
 
 import config
+
+from common.campus_auth import require_admin_for_writes
 
 # 기존 collectors / domain (zone 기반)
 from weather.collectors.cache import CacheResult, TTLCache
@@ -71,6 +73,7 @@ app = FastAPI(
         "**기존**: `/environment/*` 엔드포인트 — zone 기반 환경 정보 (하위 호환)"
     ),
     version="0.2.0",
+    dependencies=[Depends(require_admin_for_writes)],
 )
 
 app.add_middleware(
@@ -85,7 +88,7 @@ app.add_middleware(
     ),
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Accept"],
+    allow_headers=["Content-Type", "Accept", "Authorization"],
 )
 
 
@@ -684,9 +687,13 @@ def get_environment_element_timeline(element_id: str):
         raise _weather_http_error(exc) from None
 
 
+from weather.api.auth import router as auth_router
 from weather.api.energy import router as energy_router
+from weather.api.model_edits import router as model_edits_router
 
+app.include_router(auth_router)
 app.include_router(energy_router)
+app.include_router(model_edits_router)
 
 
 @app.exception_handler(RequestValidationError)

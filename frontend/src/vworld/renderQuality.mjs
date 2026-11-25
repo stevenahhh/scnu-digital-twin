@@ -1,4 +1,4 @@
-// VWorld 지도(Cesium)의 렌더링 품질: Legacy 설정의 낮음·보통·높음과 같은 단계. SDK가 그리므로 Cesium이 가진 손잡이만 쓴다.
+// VWorld 지도(Cesium)의 렌더링 품질: Main 설정의 낮음·보통·높음과 같은 단계. SDK가 그리므로 Cesium이 가진 손잡이만 쓴다.
 // 낮음 = 해상도 0.75배, 보정 없음 / 보통 = 원래 해상도 + 계단 현상 보정(FXAA) / 높음 = 보통 + 그림자.
 export const VWORLD_QUALITY = Object.freeze({
   low: Object.freeze({ resolutionScale: 0.75, fxaa: false, shadows: false }),

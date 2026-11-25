@@ -1,10 +1,11 @@
 // Planar mirror reflections on the plaza pools (helpers and shader: waterReflection.mjs).
 //
-// Finds the Furniture_Water mesh of the campus model, splits it into its pools, and puts a three.js Reflector over
+// Finds every Furniture_Water mesh of the campus model (one per pond or fountain object node), splits their world-space
+// triangles into pools, and puts a three.js Reflector over
 // each: a mirror camera renders the scene into a texture of WATER_REFLECTION_SIZE[quality] px, only while that pool
 // is drawn (the Reflector renders from onBeforeRender, which frustum culling skips), never inside another mirror's
 // pass, and without re-rendering the shadow map (Reflector keeps shadowMap.autoUpdate off in its pass). The source
-// water mesh is hidden while the mirrors stand and shown again when they are removed.
+// water meshes are hidden while the mirrors stand and shown again when they are removed.
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { BufferAttribute, BufferGeometry, Color, DataTexture, DoubleSide, Frustum, LinearFilter, Matrix4, RepeatWrapping, SRGBColorSpace, Sphere, Vector2, Vector3 } from "three";
@@ -16,25 +17,39 @@ const RIPPLE_SIZE = 64;
 const SEARCH_EVERY_FRAMES = 30;
 
 function findWater(scene) {
-  let found = null;
+  const found = [];
   scene.traverse((o) => {
-    if (!found && o.isMesh && o.material?.name === WATER_MATERIAL_NAME && !o.userData.waterMirror) found = o;
+    if (o.isMesh && o.material?.name === WATER_MATERIAL_NAME && !o.userData.waterMirror) found.push(o);
   });
   return found;
 }
 
-function buildMirrors(source, size, ripple, tier, clock) {
-  source.updateWorldMatrix(true, false);
-  const pos = source.geometry.getAttribute("position");
-  const world = new Float32Array(pos.count * 3);
+// All water meshes in world space as one indexed triangle list, so splitPools sees every pool.
+function worldTriangles(sources) {
+  const count = sources.reduce((sum, source) => sum + source.geometry.getAttribute("position").count, 0);
+  const world = new Float32Array(count * 3);
+  const indices = [];
   const v = new Vector3();
-  const buffer = new Vector2();
-  for (let i = 0; i < pos.count; i += 1) {
-    v.fromBufferAttribute(pos, i).applyMatrix4(source.matrixWorld);
-    world.set([v.x, v.y, v.z], i * 3);
+  let base = 0;
+  for (const source of sources) {
+    source.updateWorldMatrix(true, false);
+    const pos = source.geometry.getAttribute("position");
+    for (let i = 0; i < pos.count; i += 1) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(source.matrixWorld);
+      world.set([v.x, v.y, v.z], (base + i) * 3);
+    }
+    const index = source.geometry.getIndex();
+    if (index) for (let i = 0; i < index.count; i += 1) indices.push(base + index.getX(i));
+    else for (let i = 0; i < pos.count; i += 1) indices.push(base + i);
+    base += pos.count;
   }
-  const index = source.geometry.getIndex();
-  const pools = splitPools(world, index ? Array.from(index.array) : null);
+  return { world, indices };
+}
+
+function buildMirrors(sources, size, ripple, tier, clock) {
+  const { world, indices } = worldTriangles(sources);
+  const buffer = new Vector2();
+  const pools = splitPools(world, indices);
   const color = new Color(WATER_BASE_COLOUR);
   return pools.map(({ triangles, planeY }) => {
     // the pool in the Reflector's local XY plane (normal +Z); the mesh turns it face-up at planeY
@@ -96,7 +111,7 @@ function buildMirrors(source, size, ripple, tier, clock) {
 
 export function WaterReflections({ quality = "low" }) {
   const { scene } = useThree();
-  const state = useRef({ source: null, mirrors: [], frames: 0, ripple: null, clock: { frame: 0, atRest: false }, lastCam: null, frustum: new Frustum(), projection: new Matrix4() });
+  const state = useRef({ sources: [], mirrors: [], frames: 0, ripple: null, clock: { frame: 0, atRest: false }, lastCam: null, frustum: new Frustum(), projection: new Matrix4() });
 
   useEffect(() => {
     const s = state.current;
@@ -117,16 +132,16 @@ export function WaterReflections({ quality = "low" }) {
   useFrame((state3) => {
     const { clock } = state3;
     const s = state.current;
-    if (s.source && !s.source.parent) clear(s); // the model was reloaded
-    if (!s.source) {
+    if (s.sources.some((source) => !source.parent)) clear(s); // the model was reloaded
+    if (!s.sources.length) {
       s.frames += 1;
       if (s.frames % SEARCH_EVERY_FRAMES !== 1) return;
       const water = findWater(scene);
-      if (!water || !s.ripple) return;
-      s.source = water;
+      if (!water.length || !s.ripple) return;
+      s.sources = water;
       s.mirrors = buildMirrors(water, reflectionSizeFor(quality), s.ripple, quality, s.clock);
       for (const m of s.mirrors) scene.add(m);
-      water.visible = false;
+      for (const source of water) source.visible = false;
     }
     s.clock.frame += 1;
     // at rest: the camera has not moved since the previous frame
@@ -151,8 +166,8 @@ function clear(s) {
     m.geometry.dispose();
     m.material.dispose();
   }
-  if (s.source) s.source.visible = true;
+  for (const source of s.sources) source.visible = true;
   s.mirrors = [];
-  s.source = null;
+  s.sources = [];
   s.frames = 0;
 }

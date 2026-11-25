@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { parseCampusComparison, parseRecommendationResponse } from "./campusComparison.mjs";
 import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
 import { WEATHER_API_URL } from "../../../simulation/utils/apiConfig.js";
+import { authorizedFetch } from "../../../auth/session.mjs";
 import { kstToday } from "../shared/energyContext.mjs";
 import { GROUP } from "../shared/fieldStyles.mjs";
 import { Alert } from "../../../ui/Alert.jsx";
@@ -20,7 +21,7 @@ async function json(response) {
   return body;
 }
 
-export function createCampusComparisonClient(apiBase = WEATHER_API_URL, fetchImpl = fetch) {
+export function createCampusComparisonClient(apiBase = WEATHER_API_URL, fetchImpl = authorizedFetch) {
   return {
     async load({ date, weatherPreset, signal }) {
       const response = await fetchImpl(

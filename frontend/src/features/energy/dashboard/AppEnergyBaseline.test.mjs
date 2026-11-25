@@ -4,7 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-// The dev branch keeps Legacy and VWorld entry points separate. Both render the shared panel shell (src/panel/),
+// The dev branch keeps Main and VWorld entry points separate. Both render the shared panel shell (src/panel/),
 // whose energy tab owns the energy feature boundary; the entry itself never calls the energy API.
 test("AppVWorld exposes an energy tab and a dedicated feature boundary", async () => {
   const [app, panel, tabs, energyTab] = await Promise.all([

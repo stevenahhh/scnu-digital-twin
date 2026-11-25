@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("default entry remains Legacy without requiring the VWorld SDK", async () => {
+test("default entry remains Main without requiring the VWorld SDK", async () => {
   const [html, appModule] = await Promise.all([
     readFile(new URL("../../index.html", import.meta.url), "utf8"),
     readFile(new URL("../App.jsx", import.meta.url), "utf8"),
@@ -10,7 +10,7 @@ test("default entry remains Legacy without requiring the VWorld SDK", async () =
 
   assert.match(html, /src="\/src\/index\.jsx"/);
   assert.doesNotMatch(html, /map\.vworld\.kr|VITE_VWORLD_API_KEY/);
-  assert.match(appModule, /from ["']\.\/AppLegacy["']/);
+  assert.match(appModule, /import\(["']\.\/AppMain["']\)/);
   assert.doesNotMatch(appModule, /AppVWorld/);
 });
 

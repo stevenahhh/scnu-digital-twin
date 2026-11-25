@@ -8,10 +8,10 @@
 // model:build attaches it only to the layout it was baked for. See README.md for the two-step loop.
 //
 //   bun scripts/campus-model/bake/bake-ao.mjs [raw.glb] [out.png] [size] [rays]
-//       [--materials Facade_*,Roof_*] [--occluders BLD_*,CampusBuildings,Topography_*,OuterTerrain]
+//       [--materials Facade_*,Roof_*] [--occluders BLD_*,CampusBuilding*,Topography_*,OuterTerrain]
 //       [--distance 3] [--workers N]
 //   bun scripts/campus-model/bake/bake-ao.mjs --planar      ground AO (stages/ground.mjs planar TEXCOORD_1):
-//       defaults to data/ao-ground.png, 1024^2, --materials Ground, --occluders BLD_*,CampusBuildings,Trees_*_crown,
+//       defaults to data/ao-ground.png, 1024^2, --materials Ground, --occluders BLD_*,CampusBuilding*,Trees_*_crown,
 //       --targets Topography_* (target node names; OuterTerrain's material is also named Ground),
 //       --distance 6; checks asset.extras.aoGroundLayout instead of the building atlas layout.
 import { availableParallelism } from "node:os";
@@ -347,8 +347,8 @@ async function main() {
   const positional = [];
   const planar = process.argv.includes("--planar");
   const options = planar
-    ? { materials: "Ground", targets: "Topography_*", occluders: "BLD_*,CampusBuildings,Trees_*_crown", distance: "6" }
-    : { materials: "Facade_*,Roof_*", targets: "*", occluders: "BLD_*,CampusBuildings,Topography_*,OuterTerrain", distance: "3" };
+    ? { materials: "Ground", targets: "Topography_*", occluders: "BLD_*,CampusBuilding*,Trees_*_crown", distance: "6" }
+    : { materials: "Facade_*,Roof_*", targets: "*", occluders: "BLD_*,CampusBuilding*,Topography_*,OuterTerrain", distance: "3" };
   options.workers = String(Math.max(1, availableParallelism() - 1));
   for (let k = 2; k < process.argv.length; k += 1) {
     const arg = process.argv[k];

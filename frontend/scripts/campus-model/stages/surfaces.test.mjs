@@ -27,12 +27,13 @@ test("shared paving textures preserve each surface class albedo at equal precede
   await buildSurfaceMeshes({
     glb, surface, decimate: false,
     layers: meshes.map((mesh, i) => ({
-      mesh, precedence: 5, rings: [tmRect(100 + i * 10, -200, 104 + i * 10, -196)],
+      mesh, parcel: `PARCEL_TEST_${i}`, precedence: 5, rings: [tmRect(100 + i * 10, -200, 104 + i * 10, -196)],
       source: "project-estimated",
     })),
   });
   const materials = meshes.map((name) => {
-    const mesh = glb.json.meshes.find((m) => m.name === name);
+    // one editable node per parcel or plan cell (lib/groundNodes.mjs), named <class>_<group id>
+    const mesh = glb.json.meshes.find((m) => m.name.startsWith(`${name}_`));
     return glb.json.materials[mesh.primitives[0].material];
   });
   for (let i = 0; i < meshes.length; i++) {
@@ -120,7 +121,7 @@ test("D4 pavement emits native detail maps and preserves the curated plaza repea
   const glb = new GlbBuilder();
   await buildSurfaceMeshes({
     glb, surface, decimate:false,
-    layers:[{ mesh:"Ground_Plaza", pattern:"d4-stripes", precedence:5,
+    layers:[{ mesh:"Ground_Plaza", parcel:"PARCEL_TEST_D4_PLAZA", pattern:"d4-stripes", precedence:5,
       rings:[[[243520,263880],[243524,263880],[243524,263884],[243520,263884]]] }],
   });
   const mat=glb.json.materials.find(m=>m.name==="Ground_Plaza_D4");

@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// Visual QA harness: replays S01..S18 in Legacy/VWorld at D (1440x900 @1x), P (390x844 @2x) and T (834x1194 @2x touch),
+// Visual QA harness: replays S01..S18 in Main/VWorld at D (1440x900 @1x), P (390x844 @2x) and T (834x1194 @2x touch),
 // runs the requested checks, compares each scenario with baselines.json and exits non-zero on any
 // regression. See scripts/qa/README.md for the CLI and the exit-code contract.
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -17,6 +17,10 @@ import { openTab } from "./lib/tabs.mjs";
 
 const QA_DIR = path.dirname(fileURLToPath(import.meta.url));
 const BASELINE_FILE = path.join(QA_DIR, "baselines.json");
+// The default entry opens on the login screen. The harness measures the dashboard behind it, so every Main pass starts
+// signed in as the guest admin (src/auth/session.mjs; no token, the fixture server has no auth routes).
+const QA_SESSION = JSON.stringify({ token: null, expiresAt: null, account: { id: "guest-admin", name: "게스트", role: "admin", guest: true } });
+const QA_SESSION_SCRIPT = `try { localStorage.getItem("scnu.session") ?? localStorage.setItem("scnu.session", ${JSON.stringify(QA_SESSION)}); } catch {}`;
 
 const FLAGS = {
   "--entry": "value", "--viewport": "value", "--theme": "value", "--states": "value", "--only": "value",
@@ -61,7 +65,7 @@ export function parseArgs(argv) {
     if (!allowed.includes(chosen)) throw new UsageError(`invalid ${name} ${chosen}`);
     return [chosen];
   };
-  args.entries = pick(args.entry, ["legacy", "vworld"], "legacy", "--entry");
+  args.entries = pick(args.entry, ["main", "vworld"], "main", "--entry");
   args.viewports = parseViewports(args.viewport);
   args.reducedMotion = Boolean(args.reducedMotion);
   args.themes = pick(args.theme, ["dark", "light"], "dark", "--theme");
@@ -243,9 +247,10 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
       entries.push({ id: check.id, entry, state: "-", viewport: "T", theme, scenarioKey: null, pass: true, na: true, measured: "n/a on T (tablet policy: the row names D/P states)", expected: null });
     }
   }
-  // Every pass is a first visit: Legacy and VWorld share the origin, and a choice an earlier pass stored (the panel
+  // Every pass is a first visit: Main and VWorld share the origin, and a choice an earlier pass stored (the panel
   // opened from the rail at S08 writes scnu.panelOpen=true) must not decide how the next pass starts.
   await b.view.cdp("Storage.clearDataForOrigin", { origin: new URL(baseUrl).origin, storageTypes: "local_storage,session_storage,indexeddb" });
+  if (entry === "main") await b.view.cdp("Page.addScriptToEvaluateOnNewDocument", { source: QA_SESSION_SCRIPT });
   const memo = new Map();
   const page = entry === "vworld" ? "/index-vworld.html" : "/";
   const ctx = {
@@ -394,7 +399,7 @@ async function runPass({ args, entry, viewport, theme, baseUrl, selected, baseli
       }
     }
     const s16Pass = args.themes.includes("light") ? theme === "light" : theme === args.themes[0];
-    if (entry === "legacy" && args.stateIds.includes("S16") && s16Pass && (mode === "capture" || probeNeeds("S16", fixtureLabel))) await runState(stateById("S16"), "S16", fixtureLabel, true);
+    if (entry === "main" && args.stateIds.includes("S16") && s16Pass && (mode === "capture" || probeNeeds("S16", fixtureLabel))) await runState(stateById("S16"), "S16", fixtureLabel, true);
     if (args.stateIds.includes("S17") && (mode === "capture" || S17_SUBSTATES.some((id) => probeNeeds(id, "up")))) {
       await setFixtures(baseUrl, { mode: "up" });
       const lastSub = available.indexOf("S13");

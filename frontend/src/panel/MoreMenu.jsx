@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Ellipsis, Link, Presentation, Settings } from "lucide-react";
-import { Button, COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
+import { Ellipsis, Link, LogOut, Presentation, Settings } from "lucide-react";
+import { DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut } from "@/components/ui/dropdown-menu";
+import { Button } from "../ui/Button.jsx";
 import { Popover } from "../ui/Popover.jsx";
 import { cx } from "../ui/cx.mjs";
 import { SettingsSheet } from "./SettingsSheet.jsx";
@@ -10,38 +11,21 @@ const COPIED_MS = 2000;
 
 function MenuItem({ icon: Icon, shortcut, onSelect, qa, children }) {
   return (
-    <button
-      type="button"
-      role="menuitem"
-      data-qa={qa}
-      aria-keyshortcuts={shortcut}
-      onClick={onSelect}
-      className={cx(
-        "flex min-h-10 w-full items-center gap-2 rounded-control px-2 text-left text-body text-ink hover:bg-surface-2",
-        "transition-[color] duration-micro",
-        COARSE_TARGET,
-        FOCUS_RING,
-      )}
-    >
-      <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-ink-muted" />
+    <DropdownMenuItem data-qa={qa} aria-keyshortcuts={shortcut} onSelect={() => onSelect()}>
+      <Icon aria-hidden="true" className="text-ink-muted" />
       <span className="flex-1">{children}</span>
-      {shortcut && <kbd className="text-caption text-ink-muted">{shortcut}</kbd>}
-    </button>
+      {shortcut && <DropdownMenuShortcut>{shortcut}</DropdownMenuShortcut>}
+    </DropdownMenuItem>
   );
-}
-
-function moveFocus(event) {
-  const step = { ArrowDown: 1, ArrowUp: -1 }[event.key];
-  if (!step) return;
-  const items = [...event.currentTarget.querySelectorAll("[role=menuitem]")];
-  const index = items.indexOf(document.activeElement);
-  items[(index + step + items.length) % items.length]?.focus();
-  event.preventDefault();
 }
 
 // HUD 오른쪽 끝의 `더보기`: 설정, 발표 모드, 링크 복사. 어느 탭에서나 같은 자리에 있다.
 // 링크를 복사하지 못하면(클립보드 권한 없음) 주소를 읽기 전용 칸에 골라 둔 채로 보여 준다.
-export function MoreMenu({ mode, onTogglePresentation, themeMode, onThemeChange, quality, getHref = () => window.location.href }) {
+// onTogglePresentation이 없으면 발표 모드 항목을 빼고(학생 화면), accountLabel·onLogout이 있으면 계정 한 줄과 로그아웃을 단다.
+export function MoreMenu({
+  mode, onTogglePresentation = null, themeMode, onThemeChange, quality, accountLabel = null, onLogout = null,
+  getHref = () => window.location.href,
+}) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [link, setLink] = useState({ copied: false, manual: null });
   const wrapperRef = useRef(null);
@@ -87,17 +71,22 @@ export function MoreMenu({ mode, onTogglePresentation, themeMode, onThemeChange,
         label="더보기"
         role="menu"
         align="end"
-        className="min-w-48 p-1"
+        className="min-w-48"
         renderTrigger={(props) => (
           <Button {...props} variant="secondary" iconOnly label="더보기" data-qa="more-menu" icon={<Ellipsis aria-hidden="true" className="h-4 w-4" />} />
         )}
       >
-        {({ close }) => (
-          <div className="flex flex-col" onKeyDown={moveFocus}>
-            <MenuItem icon={Settings} onSelect={() => { close(); setSettingsOpen(true); }}>설정</MenuItem>
-            <MenuItem icon={Presentation} shortcut="P" qa="presentation-toggle" onSelect={() => { close(); onTogglePresentation(); }}>발표 모드</MenuItem>
-            <MenuItem icon={Link} onSelect={() => { close(); copyLink(); }}>링크 복사</MenuItem>
-          </div>
+        <MenuItem icon={Settings} onSelect={() => setSettingsOpen(true)}>설정</MenuItem>
+        {onTogglePresentation && (
+          <MenuItem icon={Presentation} shortcut="P" qa="presentation-toggle" onSelect={onTogglePresentation}>발표 모드</MenuItem>
+        )}
+        <MenuItem icon={Link} onSelect={copyLink}>링크 복사</MenuItem>
+        {onLogout && (
+          <>
+            <DropdownMenuSeparator />
+            {accountLabel && <DropdownMenuLabel data-qa="account-label" className="py-1 text-caption text-ink-muted">{accountLabel}</DropdownMenuLabel>}
+            <MenuItem icon={LogOut} qa="logout" onSelect={onLogout}>로그아웃</MenuItem>
+          </>
         )}
       </Popover>
       <p role="status" className={cx("absolute right-0 top-full mt-2 whitespace-nowrap text-caption text-ink-muted", !link.copied && "sr-only")}>
@@ -108,7 +97,7 @@ export function MoreMenu({ mode, onTogglePresentation, themeMode, onThemeChange,
           readOnly
           aria-label="공유 링크"
           value={link.manual}
-          ref={(node) => node?.select()}
+          ref={(node) => { node?.focus(); node?.select(); }}
           onBlur={() => setLink({ copied: false, manual: null })}
           className="absolute right-0 top-full mt-2 w-56 rounded-control border border-hairline-strong bg-surface-1 px-2 py-1 text-caption text-ink"
         />

@@ -1,6 +1,6 @@
 // Cascade selection for three's built-in lit materials (Standard, Physical, Lambert, Phong, Toon), as a patch of
 // ShaderChunk.lights_fragment_begin. It changes shading only when a scene has two or more directional lights and
-// every one of them casts a shadow: that is the Legacy campus on medium/high, where SunCascades adds intensity-0
+// every one of them casts a shadow: that is the Main campus on medium/high, where SunCascades adds intensity-0
 // cascade lights next to the sun light. Then the sun (directional light 0) is lit once and shadowed by the first
 // cascade whose map contains the fragment (finest first), so cascades need no per-material defines or uniforms.
 // Scenes with one directional light (the low tier, the D4 detail canvases) compile the stock loop unchanged.

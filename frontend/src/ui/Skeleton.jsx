@@ -1,8 +1,9 @@
-import { cx } from "./cx.mjs";
+import { Skeleton as ShadcnSkeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 const SHAPES = {
-  line: "h-4 w-full rounded-control",
-  block: "h-16 w-full rounded-card",
+  line: "h-4 w-full rounded-md",
+  block: "h-16 w-full rounded-lg",
   circle: "h-8 w-8 rounded-pill",
 };
 
@@ -12,14 +13,9 @@ export function Skeleton({ shape = "line", lines = 1, className }) {
   return (
     <div aria-hidden="true" data-qa="skeleton" className="flex w-full flex-col gap-2">
       {Array.from({ length: count }, (_, index) => (
-        <div
+        <ShadcnSkeleton
           key={index}
-          className={cx(
-            "animate-pulse bg-surface-2 motion-reduce:animate-none",
-            SHAPES[shape],
-            shape === "line" && count > 1 && index === count - 1 && "w-2/3",
-            className,
-          )}
+          className={cn(SHAPES[shape], shape === "line" && count > 1 && index === count - 1 && "w-2/3", className)}
         />
       ))}
     </div>

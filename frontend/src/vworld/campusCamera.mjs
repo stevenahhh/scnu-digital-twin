@@ -2,9 +2,9 @@ import { FLY_DURATION_MS, focusViewFrom, resolveCameraPreset } from "../camera/c
 import { sceneToModelLocal } from "./labelProjection.mjs";
 import { TILT_LIMITS } from "../camera/cameraCommands.mjs";
 
-// Legacy 카메라 시점(cameraPresets.mjs, 재중심화한 장면 좌표)을 VWorld(Cesium) 카메라로 옮긴다.
+// Main 카메라 시점(cameraPresets.mjs, 재중심화한 장면 좌표)을 VWorld(Cesium) 카메라로 옮긴다.
 // 장면 좌표 + 캠퍼스 중심(D4 앵커로 구한 재중심화 값) = campus-buildings.glb 모델 좌표 -> 모델 지역 좌표(glTF z, x, y)
-// -> 오버레이 modelMatrix -> 지구 고정 좌표. focus 시점은 GLB 노드 경계 상자로 다시 풀고, 나머지는 Legacy와 같은 고정 좌표다.
+// -> 오버레이 modelMatrix -> 지구 고정 좌표. focus 시점은 GLB 노드 경계 상자로 다시 풀고, 나머지는 Main와 같은 고정 좌표다.
 
 // GLTFLoader가 노드 이름에서 지우는 글자(PropertyBinding.sanitizeNodeName): 공백은 _로, [ ] . : / 는 뺀다.
 export function runtimeNodeName(name) {
@@ -45,7 +45,7 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
 
   const heightOf = (position) => (position && Cesium.Cartographic?.fromCartesian ? Cesium.Cartographic.fromCartesian(position)?.height : undefined);
   // 비행이 끝나면 onFinish. 움직임 줄이기에서는 바로 옮긴다. 시점을 못 풀면(오버레이 전) false.
-  // Legacy useFlyTo와 같은 시간·곡선(800ms, 2차 가감속)이고, 출발·도착 중 높은 쪽보다 위로 솟지 않는다(SDK 기본 비행의 고도 호 없음).
+  // Main useFlyTo와 같은 시간·곡선(800ms, 2차 가감속)이고, 출발·도착 중 높은 쪽보다 위로 솟지 않는다(SDK 기본 비행의 고도 호 없음).
   // 새 비행은 SDK가 앞 비행을 끊고 시작한다.
   const flyTo = (preset, { onFinish, reducedMotion = false } = {}) => {
     const view = viewOf(preset);
@@ -68,7 +68,7 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return true;
   };
 
-  // 화면 가운데 지표점: 확대·회전의 중심(Legacy OrbitControls의 target에 해당). 지형을 못 집으면 타원체로.
+  // 화면 가운데 지표점: 확대·회전의 중심(Main OrbitControls의 target에 해당). 지형을 못 집으면 타원체로.
   const viewCenter = () => {
     const canvas = scene.canvas;
     const middle = new Cesium.Cartesian2((canvas?.clientWidth ?? 0) / 2, (canvas?.clientHeight ?? 0) / 2);
@@ -76,7 +76,7 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return (ray && scene.globe?.pick?.(ray, scene)) ?? scene.camera.pickEllipsoid?.(middle) ?? null;
   };
 
-  // 카메라 단추(Legacy CameraControls와 같은 단계): factor < 1이면 가운데 지표점으로 그만큼 다가가고, > 1이면 물러난다.
+  // 카메라 단추(Main CameraControls와 같은 단계): factor < 1이면 가운데 지표점으로 그만큼 다가가고, > 1이면 물러난다.
   // 사람의 조작(단추·키 한 단계, 끌기·휠)이 시작되면 진행 중인 비행을 그 자리에서 끊는다.
   const cancelFlight = () => scene.camera.cancelFlight?.();
 
@@ -93,8 +93,8 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return true;
   };
 
-  // 기울이기(Legacy tiltBy와 같은 뜻): 가운데 지표점에서 본 카메라의 극각(그 자리 법선과 이루는 각)을 angle만큼 늘린다.
-  // 양수면 지평선 쪽으로 눕는다. 극각은 Legacy OrbitControls의 범위(TILT_LIMITS) 안에 머문다.
+  // 기울이기(Main tiltBy와 같은 뜻): 가운데 지표점에서 본 카메라의 극각(그 자리 법선과 이루는 각)을 angle만큼 늘린다.
+  // 양수면 지평선 쪽으로 눕는다. 극각은 Main OrbitControls의 범위(TILT_LIMITS) 안에 머문다.
   const tiltBy = (angle) => {
     const pivot = viewCenter();
     if (!pivot) return false;
@@ -141,7 +141,7 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return true;
   };
 
-  // 방향키(Legacy OrbitControls처럼 땅 위로 옮기기): right·forward는 화면 가운데까지 거리에 대한 비율. 높이와 보는 방향은 그대로.
+  // 방향키(Main OrbitControls처럼 땅 위로 옮기기): right·forward는 화면 가운데까지 거리에 대한 비율. 높이와 보는 방향은 그대로.
   const panBy = (right, forward) => {
     const pivot = viewCenter();
     if (!pivot) return false;
@@ -166,13 +166,13 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     return true;
   };
 
-  // 지구 고정 좌표 -> Legacy 장면 좌표(toWorld의 역). 공유 링크의 cam=이 두 대시보드에서 같은 뜻이 된다.
+  // 지구 고정 좌표 -> Main 장면 좌표(toWorld의 역). 공유 링크의 cam=이 두 대시보드에서 같은 뜻이 된다.
   const toScene = (world, matrix) => {
     const inverse = Cesium.Matrix4.inverse(matrix, new Cesium.Matrix4());
     const local = Cesium.Matrix4.multiplyByPoint(inverse, world, new Cesium.Cartesian3());
     return [local.y - center.x, local.z, local.x - center.z];
   };
-  // 지금 시점(Legacy 장면 좌표의 카메라 위치와 화면 가운데 지표점). 오버레이 전이나 가운데에 땅이 없으면 null.
+  // 지금 시점(Main 장면 좌표의 카메라 위치와 화면 가운데 지표점). 오버레이 전이나 가운데에 땅이 없으면 null.
   const poseOf = () => {
     const matrix = getModelMatrix();
     const pivot = matrix ? viewCenter() : null;
@@ -198,7 +198,7 @@ export function createVWorldCampusCamera({ Cesium, scene, getModelMatrix, boxes,
     if (!matrix || !Number.isFinite(lonLat?.longitude) || !Number.isFinite(lonLat?.latitude) || !Cesium.Cartesian3.fromDegrees) return null;
     return toScene(Cesium.Cartesian3.fromDegrees(lonLat.longitude, lonLat.latitude, lonLat.height ?? 0), matrix);
   };
-  // 건물을 고르면 그 건물로 비행한다(Legacy 클릭 비행과 같은 거리, 지금 카메라가 있는 방위에서 다가간다).
+  // 건물을 고르면 그 건물로 비행한다(Main 클릭 비행과 같은 거리, 지금 카메라가 있는 방위에서 다가간다).
   const flyToFocus = (target, options) => (target ? flyTo({ id: "focus", ...focusViewFrom(poseOf(), target) }, options) : false);
 
   return { viewOf, flyTo, focusTarget, flyToFocus, cancelFlight, zoomBy, rotateBy, tiltBy, panBy, poseOf, applyPose };

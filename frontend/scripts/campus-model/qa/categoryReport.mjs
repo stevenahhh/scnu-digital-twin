@@ -13,8 +13,8 @@ export function buildCategoryReport(run, input) {
     id: metric, metric, value, threshold: 1, operator: 'gte', status: 'measured', evidence,
     reason: value === 0 ? 'No generated instance of this subcategory was found in the candidate.' : null,
   });
-  const meshes = pattern => {
-    const selected = nodes.flatMap((n, i) => pattern.test(n.name ?? '') && Number.isInteger(n.mesh)
+  const meshes = (pattern, match = n => pattern.test(n.name ?? '')) => {
+    const selected = nodes.flatMap((n, i) => match(n) && Number.isInteger(n.mesh)
       ? [{ node: i, mesh: n.mesh, name: n.name }] : []);
     const triangles = selected.reduce((sum, n) => sum + gltf.meshes[n.mesh].primitives.reduce((total, p) =>
       total + (gltf.accessors[p.indices ?? p.attributes.POSITION].count / 3), 0), 0);
@@ -70,7 +70,8 @@ export function buildCategoryReport(run, input) {
       { ...measured('instances', trees.reduce((sum, n) => sum + n.extras.instances, 0), `${rawPath}#/nodes`),
         objects: trees.map(n => ({ name: n.name, instances: n.extras.instances, source: n.extras.source })) }]],
     ['생울타리·화단', [objects('plantersAndHedges', /hedge|planter|shrub/), ...meshes(/^Trees_hedge/)]],
-    ['간판·현판·LED', [objects('signs', /^(sign|gate_sign|plaque|led)/), ...meshes(/^Furniture_Screen$/)]],
+    ['간판·현판·LED', [objects('signs', /^(sign|gate_sign|plaque|led)/), ...meshes(null, n => Number.isInteger(n.mesh) &&
+      gltf.meshes[n.mesh].primitives.some(p => gltf.materials?.[p.material]?.name === 'Furniture_Screen'))]],
     ['캠퍼스 밖 건물·도로·외곽 지형', [
       ...meshes(/^(Context_|Ground_Context_|OuterTerrain)/),
       measured('outerTerrainMeshes', nodes.filter(n => n.name === 'OuterTerrain' && Number.isInteger(n.mesh)).length, `${rawPath}#/nodes`),

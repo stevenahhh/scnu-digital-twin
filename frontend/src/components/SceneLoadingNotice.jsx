@@ -1,17 +1,16 @@
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { useProgress } from "@react-three/drei";
-import { FileLoader } from "three";
 import { LoaderCircle } from "lucide-react";
 import { CAMPUS_MODEL_URL } from "../campusModelAsset.mjs";
 import { Button } from "../ui/Button.jsx";
+import { tapCampusModelBytes } from "../loading/campusModelBytes.mjs";
 
 // 3D 모델 로딩이 이 시간을 넘기면 지연 안내와 다시 시도 버튼을 보여 준다.
 export const SCENE_SLOW_AFTER_MS = 15000;
 const MEGABYTE = 1024 * 1024;
 const MODEL_FILE = CAMPUS_MODEL_URL.split("/").pop();
 
-// 3D 모델의 바이트 진행률. drei의 useProgress는 항목 수만 세므로, 같은 URL을 FileLoader로 한 번 더 요청해 three가
-// 진행 중인 요청에 콜백을 합치게 한다(중복 요청 없음). 항목이 하나라도 끝났거나(loaded > 0) 로딩 관리자가 쉬고 있으면
+// 3D 모델의 바이트 진행률. drei의 useProgress는 항목 수만 세므로 진행 중인 요청에 콜백을 합친다. 항목이 하나라도 끝났거나(loaded > 0) 로딩 관리자가 쉬고 있으면
 // 바이트 수신은 이미 끝난 뒤라 붙지 않는다. 안내가 떠 있는 동안(마운트된 동안)만 붙는다.
 function useCampusModelProgress() {
   const { active: managerActive, loaded: itemsLoaded } = useProgress();
@@ -22,18 +21,14 @@ function useCampusModelProgress() {
     if (tappedRef.current || !managerActive || itemsLoaded > 0) return undefined;
     tappedRef.current = true;
     let disposed = false;
-    const loader = new FileLoader();
-    loader.setResponseType("arraybuffer");
-    loader.load(
-      CAMPUS_MODEL_URL,
-      () => {
+    tapCampusModelBytes({
+      onLoad: () => {
         if (!disposed) setBytes((previous) => ({ loaded: previous?.total ?? 0, total: previous?.total ?? 0, done: true }));
       },
-      (event) => {
+      onProgress: (event) => {
         if (!disposed && event.lengthComputable) setBytes({ loaded: event.loaded, total: event.total, done: false });
       },
-      () => {},
-    );
+    });
     return () => {
       disposed = true;
     };
@@ -65,7 +60,7 @@ export const SceneLoadingNotice = forwardRef(function SceneLoadingNotice({ inset
     <div
       ref={ref}
       role="status"
-      className="pointer-events-none absolute inset-y-0 left-0 z-[5] flex items-center justify-center px-10"
+      className="pointer-events-none absolute inset-y-0 left-0 z-[50] flex items-center justify-center px-10"
       style={{ right: insetRight }}
     >
       <div className="flex items-center gap-3 rounded-card border border-hairline bg-surface-1 px-4 py-3 text-body text-ink-muted shadow-popover">

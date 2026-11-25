@@ -1,4 +1,4 @@
-// Legacy 캠퍼스 카메라 시점 목록. 장면 좌표계는 +x 동, +y 위, +z 남(0.6242 units/m)이고 CityModel이
+// Main 캠퍼스 카메라 시점 목록. 장면 좌표계는 +x 동, +y 위, +z 남(0.6242 units/m)이고 CityModel이
 // BLD_D4 라벨 앵커가 D4_LABEL_TARGET(-214.35, 24, -93.251, campusTrafficCoordinates.mjs)에 오도록 모델을 다시 중심화한 뒤의 좌표다.
 //
 // `focus`가 있는 시점은 비행 직전에 장면 안의 BLD_* 노드 경계 상자로 목표점을 다시 구한다(건물 중심 + offset).

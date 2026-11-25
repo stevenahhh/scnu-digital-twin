@@ -6,7 +6,7 @@ import { cx } from "../ui/cx.mjs";
 
 // 지도 오른쪽 아래 카메라 단추: 확대·축소·왼쪽/오른쪽 회전·전체 보기. 마우스 없이도 장면을 움직일 수 있다.
 // 툴팁과 aria-keyshortcuts에 지도에서 같은 일을 하는 키를 적는다(useCameraKeys와 같은 키).
-// Legacy는 OrbitControls(controlsRef)를, VWorld는 onZoom(factor)·onRotate(radians)로 Cesium 카메라를 움직인다(같은 단계).
+// Main는 OrbitControls(controlsRef)를, VWorld는 onZoom(factor)·onRotate(radians)로 Cesium 카메라를 움직인다(같은 단계).
 // collapsible(폰): `카메라 조작` 토글 하나만 보이고, 누르면 그 아래로 같은 다섯 단추가 펼쳐진다. 다시 누르거나 지도를 만지면 접힌다.
 export function CameraControls({ controlsRef, onZoom, onRotate, onHome, collapsible = false, className = "", style }) {
   const [open, setOpen] = useState(false);

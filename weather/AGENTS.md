@@ -11,6 +11,7 @@ and UI-ready building popup responses.
 ```text
 weather/
 ├── api/app.py                 # FastAPI app and all HTTP routes
+├── api/auth.py                # /auth/login, /auth/guest, /auth/me (logic in common/campus_auth.py)
 ├── collectors/                # KMA/AirKorea adapters, upstream.py, cache.py
 ├── domain/                    # Legacy zone-level environment model
 ├── processors/                # Element microclimate and thermal pipeline
@@ -79,6 +80,24 @@ weather/
   lookup is `{"stale": true, "error": <kind>}`. Sample-feature responses add
   `"sample_data": true`.
 - **Configuration (C4).** See the root `AGENTS.md` CONFIGURATION section.
+- **Auth (C5).** GET, HEAD and OPTIONS are public. Every other method needs
+  `Authorization: Bearer <token>` from an admin account, checked once by the
+  app-wide dependency `require_admin_for_writes`: no or bad token is 401
+  `{"detail": "로그인이 필요합니다"}` with `WWW-Authenticate: Bearer`, a student
+  token is 403 `{"detail": "관리자 권한이 필요합니다"}`. `POST /auth/login`
+  takes `{id, password}` (password exactly 8 characters, else 422) and
+  `POST /auth/guest` takes `{role}`; both return
+  `{token, token_type, expires_at, account: {id, name, role, guest}}`.
+  `GET /auth/me` returns the account for a token. The simulation service
+  verifies the same tokens with the shared secret.
+- **Model edits (C6).** `GET /model/edits` (public) returns the campus-model
+  edit document `{version, revision, updated_at, updated_by, transforms, removed, added}`;
+  `PUT /model/edits` (admin) replaces it and must send the `revision` it
+  read, else 409 `{"detail": {"message", "revision"}}`. Objects are GLB
+  `extras.editable.id` values or `<Trees_*>#<index>`; transforms are
+  `{position, quaternion, scale}` local to the object's parent node, in scene
+  units. Added objects have `ADD_*` ids and a `prototype` id. Stored in
+  `MODEL_EDITS_FILE` (default `weather/data/model-edits.json`, git-ignored).
 
 ## COMMANDS
 

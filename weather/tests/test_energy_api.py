@@ -5,6 +5,7 @@ import sqlite3
 import pytest
 
 from fastapi.testclient import TestClient
+from common.campus_auth import authenticate, issue_token
 from weather.api.app import create_app
 from weather.api.energy import _ready_paths
 from weather.energy.persistence import Database
@@ -26,7 +27,9 @@ def payload(origin_x: float = 24.5, count: int = 2, origin_y: float = 63.0) -> d
 
 def client(tmp_path, monkeypatch) -> TestClient:
     monkeypatch.setenv("WEATHER_ENERGY_DB", str(tmp_path / "api.sqlite3"))
-    return TestClient(create_app())
+    monkeypatch.setenv("SCNU_AUTH_SECRET", "energy-api-test-secret")
+    admin_token = issue_token(authenticate("admin", "12341234"))["token"]
+    return TestClient(create_app(), headers={"Authorization": f"Bearer {admin_token}"})
 
 
 def test_existing_routes_and_local_vite_cors(tmp_path, monkeypatch) -> None:

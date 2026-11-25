@@ -12,7 +12,7 @@ const SELECTION_ANIMATION_MS = FLY_DURATION_MS + SETTLE_MS;
 const TRAFFIC_SETTLE_MS = 1500;
 const PANEL_TRANSITION_MS = 450;
 
-// Legacy 3D Canvas의 그리기 정책: demand 루프, 조작 중 DPR 낮추기, 품질 단계, Canvas 생성 뒤 처리.
+// Main 3D Canvas의 그리기 정책: demand 루프, 조작 중 DPR 낮추기, 품질 단계, Canvas 생성 뒤 처리.
 // selectionKey·panelKey가 바뀌면 전환 애니메이션이 끝날 때까지 루프를 잠시 계속 돌린다.
 // canvasStateRef는 생성된 R3F 상태를 담는다(카메라 비행이 장면을 읽는다). interactionDpr은 useInteractionDpr()의 값이다.
 export function useCampusRendering({ canvasStateRef, interactionDpr, modalOpen, selectionKey, panelKey }) {

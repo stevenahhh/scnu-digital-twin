@@ -7,6 +7,10 @@ export class PanelErrorBoundary extends Component {
     return { hasError: true };
   }
 
+  componentDidCatch(error) {
+    this.props.onError?.(error);
+  }
+
   render() {
     if (this.state.hasError) {
       const alert = (

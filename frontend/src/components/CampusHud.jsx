@@ -10,7 +10,6 @@ import { CameraControls } from "./CameraControls";
 import { HudToolbar } from "./HudToolbar";
 import { SearchField } from "./SearchField";
 import { TimeSlider } from "./TimeSlider";
-import { FeedStatusChip } from "./hud/FeedStatusChip";
 import { FOLLOW_MOTION, FOLLOW_ROOT, usePanelFollow } from "./hud/usePanelFollow.mjs";
 
 const PRESSED = "aria-pressed:bg-surface-2 aria-pressed:text-ink";
@@ -18,16 +17,15 @@ const sceneTimeReadout = (minuteOfDay) => `장면 ${formatMinuteOfDay(minuteOfDa
 // 폰 검색 칸은 시점·더보기 단추(와 끊긴 피드 칩) 옆에서 80 px 안팎이다. 긴 예시 문구 대신 이 문구를 쓴다.
 export const PHONE_SEARCH_PLACEHOLDER = "건물 검색";
 
-// 두 대시보드가 같이 쓰는 지도 위 조작. 위쪽 한 줄(hud-bar)은 검색, 시점 메뉴, 끊긴 피드가 있을 때만 상태 칩 하나,
-// 오른쪽 끝의 워드마크와 moreMenu다. 시간 카드는 왼쪽 아래, 카메라 묶음은 오른쪽 아래(폰은 토글 하나)에 놓인다.
+// 두 대시보드가 같이 쓰는 지도 위 조작. 위쪽 한 줄(hud-bar)은 검색, 시점 메뉴, 오른쪽 끝의 moreMenu다. 학교 이름은 지도 폭의
+// 가운데에 그림자 글자로 놓고, 폭이 좁으면 그 줄 아래로 내린다. 끊긴 피드는 패널 현황 탭 아이콘의 점이 알린다. 시간 카드는 왼쪽 아래, 카메라 묶음은 오른쪽 아래(폰은 토글 하나)에 놓인다.
 // 장면 시각은 시간 카드에만 보인다. 오른쪽은 패널(레일)이 차지한 폭만큼 비키고, 패널이 미끄러지는 동안 오른쪽 묶음이
-// 패널과 같은 transform으로 따라간다(usePanelFollow). camera는 덕 타이핑이다: Legacy는 controlsRef, VWorld는
-// zoomBy·rotateBy를 준다. statusSlot·compareSlot은 받아도 쓰지 않는다(피드 상태는 feedIssueCount 칩, 비교는
-// 인스펙터가 맡는다). 지도보다 앞에 두어 Tab이 라벨보다 먼저 닿는다.
+// 패널과 같은 transform으로 따라간다(usePanelFollow). camera는 덕 타이핑이다: Main는 controlsRef, VWorld는
+// zoomBy·rotateBy를 준다. 비교는 인스펙터가 맡는다. 지도보다 앞에 두어 Tab이 라벨보다 먼저 닿는다.
 export const CampusHud = forwardRef(function CampusHud(
   {
     mode = "desktop", insetRight, camera, clock, playing, onPlayingChange, presenting = false, onTogglePresentation,
-    tour = null, search = null, moreMenu = null, feedIssueCount = 0, onOpenStatus, sceneWeather = null, sheetDetent = null,
+    tour = null, search = null, moreMenu = null, sceneWeather = null, sheetDetent = null,
   },
   ref,
 ) {
@@ -71,9 +69,10 @@ export const CampusHud = forwardRef(function CampusHud(
       data-qa="campus-hud"
       data-label-chrome-layer=""
       aria-hidden={sheetFull ? "true" : undefined}
-      className={cx("pointer-events-none absolute left-0 top-0 z-[6] transition-none", FOLLOW_ROOT, sheetFull && "invisible")}
+      className={cx("pointer-events-none absolute left-0 top-0 z-[6] transition-none [container-type:inline-size]", FOLLOW_ROOT, sheetFull && "invisible")}
       style={{ right: follow.right, bottom: phone ? `${SHELL_PEEK_HEIGHT}px` : "0px" }}
     >
+      <Wordmark className="absolute left-1/2 top-4 flex h-10 -translate-x-1/2 items-center whitespace-nowrap text-body font-semibold text-on-primary [text-shadow:var(--shadow-scene-text)] [@container(max-width:760px)]:top-[3.75rem] [@container(max-width:760px)]:h-6 [@container(max-width:760px)]:text-caption" />
       <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex min-w-0 flex-nowrap items-center gap-2">
         {search && (
           <SearchField
@@ -86,9 +85,7 @@ export const CampusHud = forwardRef(function CampusHud(
         {cameraReady && (
           <HudToolbar presets={CAMERA_PRESETS} activeId={camera.activePresetId} onSelect={camera.selectPreset} compact={phone} />
         )}
-        <FeedStatusChip count={feedIssueCount} onOpen={onOpenStatus} />
         <div className={cx("ml-auto flex shrink-0 items-center gap-2", FOLLOW_MOTION)} style={follow.style}>
-          {!phone && <Wordmark className="rounded-control bg-[var(--colors-label-bg)] px-2 py-1 text-ink-muted" />}
           {moreMenu}
         </div>
       </div>

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { MARKING_LIFT_M } from "../lib/groundNodes.mjs";
 import test from "node:test";
 import { sceneToTm, tmToScene } from "../../../src/geo/epsg5186.mjs";
 import { humpBands, loadRoadMarkings, roadMarkingPlan } from "./roadMarkings.mjs";
@@ -246,6 +247,19 @@ test("junction road text uses the recorded words and rejects unsupported charact
   assert.throws(() => plan(section(), approach({ text: [{ text: "☃", lane: 0, atM: 10 }] })), /ND_TEST.*glyph/);
 });
 
+test("hump height holds on the hump's side edges, where a paint vertex rounds a hair outside the footprint", () => {
+  const markings = plan(section({ humps: [{ atM: 15, lengthM: 4, heightM: 0.12, bands: true }] }));
+  const { tm, widthM } = markings.humps[0];
+  const side = [-tm.forward[1], tm.forward[0]];
+  for (const sign of [1, -1]) {
+    // float rounding of a vertex placed on the edge: well under a micrometre outward
+    const edge = tm.centre.map((v, k) => v + sign * side[k] * (widthM / 2 + 1e-8));
+    assert.ok(Math.abs(markings.heightAt(...tmToScene(...edge)) - 0.12) < 1e-6, `side ${sign}`);
+  }
+  const beyond = tm.centre.map((v, k) => v + side[k] * (widthM / 2 + 0.01));
+  assert.equal(markings.heightAt(...tmToScene(...beyond)), 0, "a centimetre beyond the edge is road");
+});
+
 test("record geometry reaches the Road_Markings GLB mesh with hump elevation", async () => {
   const markings = plan(section({ humps: [{ atM: 15, lengthM: 4, heightM: 0.12, bands: true }] }));
   const glb = new GlbBuilder();
@@ -253,26 +267,30 @@ test("record geometry reaches the Road_Markings GLB mesh with hump elevation", a
     glb, markings, extraHeight: markings.heightAt, decimate: false,
     surface: { grid: { step: 20, x0: 0, z0: 0 }, height: () => 10, normal: () => [0, 1, 0] },
   });
-  const node = glb.json.nodes.find(n => n.name === "Road_Markings");
-  assert.ok(node);
-  const primitive = glb.json.meshes[node.mesh].primitives[0];
-  const accessor = glb.json.accessors[primitive.attributes.POSITION];
+  // one editable node per marking element (Road_Markings_<id>), local positions plus its translation
+  const nodes = glb.json.nodes.filter(n => n.name.startsWith("Road_Markings_"));
+  assert.ok(nodes.length);
   const bytes = Buffer.concat(glb.chunks);
-  const view = glb.json.bufferViews[accessor.bufferView];
   let peak = 0;
+  for (const node of nodes) for (const primitive of glb.json.meshes[node.mesh].primitives) {
+  assert.equal(glb.json.materials[primitive.material].name, "Road_Marking");
+  const accessor = glb.json.accessors[primitive.attributes.POSITION];
+  const view = glb.json.bufferViews[accessor.bufferView];
+  const [tx, ty, tz] = node.translation;
   for (let i = 0; i < accessor.count; i += 1) {
     const offset = view.byteOffset + i * 12;
-    const x = bytes.readFloatLE(offset), y = bytes.readFloatLE(offset + 4), z = bytes.readFloatLE(offset + 8);
+    const x = bytes.readFloatLE(offset) + tx, y = bytes.readFloatLE(offset + 4) + ty, z = bytes.readFloatLE(offset + 8) + tz;
     // The GLB stores float32: an across-road edge can round just outside the
     // footprint, where heightAt correctly returns zero. Test the independently
     // specified arc, not a second discontinuous containment test at that edge.
     const [e] = sceneToTm(x, z);
     const expected = 0.12 * Math.max(0, 1 - ((e - origin[0] - 15) / 2) ** 2);
-    assert.ok(Math.abs(y - 10 - expected * SCENE_UNITS_PER_METRE) < 1e-5);
-    peak = Math.max(peak, (y - 10) / SCENE_UNITS_PER_METRE);
+    // the paint lies MARKING_LIFT_M above the hump's arc (lib/groundNodes.mjs), not flush with it
+    assert.ok(Math.abs(y - 10 - (expected + MARKING_LIFT_M) * SCENE_UNITS_PER_METRE) < 1e-5);
+    peak = Math.max(peak, (y - 10) / SCENE_UNITS_PER_METRE - MARKING_LIFT_M);
+  }
   }
   assert.ok(peak > 0.119 && peak <= 0.12001);
-  assert.equal(glb.json.materials[primitive.material].name, "Road_Marking");
 });
 
 test("hump ground layers use each record length rather than the legacy shared length", () => {
@@ -311,14 +329,16 @@ test("paint mesh clips the whole excluded island, including a neighbouring strip
     exclusions: [[[[203,-201],[205,-201],[205,-197],[203,-197]]]],
     surface: { grid: { step: 20, x0: 0, z0: 0 }, height: () => 0, normal: () => [0,1,0] },
   });
-  const p = glb.json.meshes[0].primitives[0], bytes = Buffer.concat(glb.chunks);
+  const node = glb.json.nodes.find(n => n.mesh !== undefined);
+  const [tx, , tz] = node.translation;
+  const p = glb.json.meshes[node.mesh].primitives[0], bytes = Buffer.concat(glb.chunks);
   const positions = glb.json.accessors[p.attributes.POSITION], indices = glb.json.accessors[p.indices];
   const posOffset = glb.json.bufferViews[positions.bufferView].byteOffset;
   const indexOffset = glb.json.bufferViews[indices.bufferView].byteOffset;
   const indexSize = indices.componentType === 5123 ? 2 : 4;
   const point = i => {
     const k = indexSize === 2 ? bytes.readUInt16LE(indexOffset+i*2) : bytes.readUInt32LE(indexOffset+i*4);
-    return [bytes.readFloatLE(posOffset+k*12), bytes.readFloatLE(posOffset+k*12+8)];
+    return [bytes.readFloatLE(posOffset+k*12) + tx, bytes.readFloatLE(posOffset+k*12+8) + tz];
   };
   let area = 0;
   for (let i=0; i<indices.count; i+=3) {

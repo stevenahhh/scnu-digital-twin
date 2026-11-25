@@ -15,7 +15,7 @@
 세 가지가 한 저장소에 들어 있습니다.
 
 - 3D 캠퍼스 모델과 그 생성기. 지형, 건물 29동, 도로와 인도, 연석, 차선과 횡단보도, 수목 2,650그루, 가로등까지 `frontend/scripts/campus-model/`이 만들어 냅니다. 결과물은 `frontend/public/campus-v2.glb` 파일 하나입니다. 19 MB, 삼각형 약 100만 개.
-- 대시보드 두 벌. Three.js로 그리는 Legacy와 VWorld 지도 위에 올리는 VWorld. 같은 패널과 같은 데이터를 쓰고 렌더러만 다릅니다.
+- 대시보드. Three.js로 그리는 Main이 제품입니다. 로그인하면 계정 역할에 따라 학생 화면이나 관리자 대시보드가 열립니다. VWorld 지도 위에 올리는 VWorld 엔트리는 개발을 멈추고 빌드만 유지합니다.
 - 뒤에서 숫자를 대 주는 Python 서비스. 기상청과 에어코리아 자료를 받아 건물별 미기후를 추정하는 `weather/`, 보행자와 차량을 따로 움직이는 교통 시뮬레이션 `backend/simulation/`, 정문 카메라에서 차량을 세는 `vision_api.py`.
 
 화면에 나오는 숫자 중 상당수는 계측값이 아니라 추정값입니다. 건물 높이, 재질, 일사량, 전력 수요가 그렇습니다. 화면마다 `추정` 표시를 달아 두었고 어떤 데이터를 어디서 가져와 어떻게 쓰기로 했는지는 [`docs/data-licences.md`](docs/data-licences.md)에 적었습니다.
@@ -35,11 +35,12 @@
 
 | 폴더 | 하는 일 | 포트 |
 |---|---|---|
-| `frontend/` | 대시보드(Legacy, VWorld)와 캠퍼스 모델 생성기 | 5173 |
+| `frontend/` | 대시보드(Main, 동결한 VWorld)와 캠퍼스 모델 생성기 | 5173 |
 | `weather/` | 기상, 미기후, 에너지(태양광) API | 8000 |
 | `vision_api.py`, `car_vision_model/` | YOLO 차량 계수. 대시보드용 엔드포인트와 별도 데모 | 8001, 8003 |
 | `backend/simulation/` | 교통 시뮬레이션 API와 WebSocket | 8002 |
 | `common/data/` | 건물, 도로, 교차로 ID와 지오메트리. 모든 서비스가 같은 `BLD_*` ID를 씁니다 | |
+| `common/campus_auth.py` | 계정과 로그인 토큰. 기상 API와 교통 시뮬레이션 API가 같이 씁니다 | |
 | `TrafficSafety/` | 안전 신고 OCR/NLP 실험(Streamlit). 대시보드와 따로 돕니다 | |
 | `docs/` | 정적 데모 페이지, 테스트 증빙, 데이터 라이선스 기록 | |
 
@@ -64,10 +65,14 @@ cp frontend/.env.example frontend/.env
 ```bash
 .venv/bin/python -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
 .venv/bin/python -m uvicorn simulation.main:app --app-dir backend --host 127.0.0.1 --port 8002
-bun run --cwd frontend dev:legacy
+bun run --cwd frontend dev:main
 ```
 
-브라우저에서 `http://127.0.0.1:5173`을 엽니다. 기상 API가 없어도 지도와 건물 선택은 됩니다. 패널의 날씨 칸만 "기상 갱신 없음"으로 뜹니다. VWorld 모드는 `dev:vworld`로 띄우고 `/index-vworld.html`로 들어갑니다. Vision API(8001)는 YOLO 가중치와 카메라가 있을 때만 필요합니다.
+브라우저에서 `http://127.0.0.1:5173`을 열면 로그인 화면이 먼저 뜹니다. `게스트 · 학생 모드`를 누르면 학생 화면이, `게스트 · 관리자 모드`를 누르면 기능이 다 있는 관리자 대시보드가 열립니다. 계정으로도 로그인합니다. 시제품용 계정은 학생 `20239901`과 관리자 `admin`이고 비밀번호는 둘 다 `12341234`입니다. 비밀번호는 8자리만 받습니다.
+
+읽기는 누구에게나 열려 있고 설치 계획 저장이나 시뮬레이션 제어 같은 쓰기는 서버가 관리자 토큰을 확인합니다. 서비스에 올리기 전에는 `SCNU_AUTH_GUEST_ENABLED=0`으로 게스트 로그인을 끄고 `common/campus_auth.py`의 계정을 바꿉니다.
+
+기상 API가 없어도 게스트 단추로 들어가면 지도와 건물 선택은 됩니다. 패널의 날씨 칸만 "기상 갱신 없음"으로 뜹니다. VWorld 모드는 `dev:vworld`로 띄우고 `/index-vworld.html`로 들어갑니다. Vision API(8001)는 YOLO 가중치와 카메라가 있을 때만 필요합니다.
 
 카메라 제스처(두 대시보드 공통): 트랙패드는 핀치 확대·축소, 두 손가락 가로 쓸기 회전, Option(Alt)+두 손가락 세로 쓸기 기울이기이고, 터치 화면은 한 손가락 끌기 회전, 두 손가락 핀치 확대·끌기 이동·비틀기 회전입니다(`frontend/src/camera/cameraGestures.mjs`).
 
@@ -105,7 +110,7 @@ git push -u origin feature/<작업명>
 
 한 파일을 여러 명이 동시에 고치면 충돌이 납니다. 작업 단위를 컴포넌트나 모듈로 나누고 작업이 길어지면 원격 `dev`를 수시로 자기 브랜치에 합칩니다. 충돌은 PR 전에 로컬에서 풉니다.
 
-Legacy와 VWorld는 둘 다 살아 있는 제품입니다. 패널이나 데이터 흐름을 바꾸면 두 빌드 모두 통과해야 합니다. 이 저장소는 비공개이지만 사업단 증빙이 필요하면 공개될 수 있으니 민감한 값은 처음부터 넣지 않습니다.
+제품은 Main입니다. VWorld는 기능 개발과 검수를 멈추지만 패널이나 데이터 흐름 같은 공용 코드를 바꾸면 `build:vworld`는 통과해야 합니다. 이 저장소는 비공개이지만 사업단 증빙이 필요하면 공개될 수 있으니 민감한 값은 처음부터 넣지 않습니다.
 
 ---
 
@@ -187,25 +192,25 @@ cp weather\.env.example weather\.env; cp frontend\.env.example frontend\.env
 
 #### Frontend (`127.0.0.1:5173`)
 
-Legacy(Three.js)와 VWorld는 별개 엔트리입니다.
+Main(Three.js)과 VWorld는 별개 엔트리입니다.
 
 ```bash
-bun run --cwd frontend dev:legacy
+bun run --cwd frontend dev:main
 bun run --cwd frontend dev:vworld
 ```
 
-Legacy는 `http://127.0.0.1:5173`, VWorld는 `http://127.0.0.1:5173/index-vworld.html`에서 엽니다. 건물을 누르면 `BLD_*` 상세가 열리고 공과대학 3호관(D4)은 층과 호실까지 들어갑니다.
+Main은 `http://127.0.0.1:5173`, VWorld는 `http://127.0.0.1:5173/index-vworld.html`에서 엽니다. 건물을 누르면 `BLD_*` 상세가 열리고 공과대학 3호관(D4)은 층과 호실까지 들어갑니다.
 
 ### 다른 포트로 실행
 
 백엔드는 `--port`만 바꾸고 프런트엔드에는 같은 포트를 가리키는 `VITE_*` 값을 줍니다. Vite 포트는 `--port`로 바꿉니다.
 
 ```bash
-export VITE_API_URL=http://127.0.0.1:18000 && export VITE_VISION_API_URL=http://127.0.0.1:18001 && export VITE_SIMULATION_API_URL=http://127.0.0.1:18002 && export VITE_SIMULATION_WS_URL=ws://127.0.0.1:18002/ws/simulation && cd frontend && bun run dev:legacy -- --port 15173
+export VITE_API_URL=http://127.0.0.1:18000 && export VITE_VISION_API_URL=http://127.0.0.1:18001 && export VITE_SIMULATION_API_URL=http://127.0.0.1:18002 && export VITE_SIMULATION_WS_URL=ws://127.0.0.1:18002/ws/simulation && cd frontend && bun run dev:main -- --port 15173
 ```
 
 ```powershell
-$env:VITE_API_URL="http://127.0.0.1:18000"; $env:VITE_VISION_API_URL="http://127.0.0.1:18001"; $env:VITE_SIMULATION_API_URL="http://127.0.0.1:18002"; $env:VITE_SIMULATION_WS_URL="ws://127.0.0.1:18002/ws/simulation"; cd frontend; bun run dev:legacy -- --port 15173
+$env:VITE_API_URL="http://127.0.0.1:18000"; $env:VITE_VISION_API_URL="http://127.0.0.1:18001"; $env:VITE_SIMULATION_API_URL="http://127.0.0.1:18002"; $env:VITE_SIMULATION_WS_URL="ws://127.0.0.1:18002/ws/simulation"; cd frontend; bun run dev:main -- --port 15173
 ```
 
 ### 테스트와 빌드
@@ -231,16 +236,16 @@ PC와 휴대폰이 같은 Wi-Fi에 있어야 합니다. 백엔드는 `--host 0.0
 ```bash
 .venv/bin/python -m uvicorn api.app:app --app-dir weather --host 0.0.0.0 --port 8000
 .venv/bin/python -m uvicorn simulation.main:app --app-dir backend --host 0.0.0.0 --port 8002
-export VITE_API_URL="http://<LAN IP>:8000" && export VITE_VISION_API_URL="http://<LAN IP>:8001" && export VITE_SIMULATION_API_URL="http://<LAN IP>:8002" && export VITE_SIMULATION_WS_URL="ws://<LAN IP>:8002/ws/simulation" && cd frontend && bun run dev:legacy -- --host 0.0.0.0
+export VITE_API_URL="http://<LAN IP>:8000" && export VITE_VISION_API_URL="http://<LAN IP>:8001" && export VITE_SIMULATION_API_URL="http://<LAN IP>:8002" && export VITE_SIMULATION_WS_URL="ws://<LAN IP>:8002/ws/simulation" && cd frontend && bun run dev:main -- --host 0.0.0.0
 ```
 
 ```powershell
 .venv\Scripts\python.exe -m uvicorn api.app:app --app-dir weather --host 0.0.0.0 --port 8000
 .venv\Scripts\python.exe -m uvicorn simulation.main:app --app-dir backend --host 0.0.0.0 --port 8002
-$env:VITE_API_URL="http://<LAN IP>:8000"; $env:VITE_VISION_API_URL="http://<LAN IP>:8001"; $env:VITE_SIMULATION_API_URL="http://<LAN IP>:8002"; $env:VITE_SIMULATION_WS_URL="ws://<LAN IP>:8002/ws/simulation"; cd frontend; bun run dev:legacy -- --host 0.0.0.0
+$env:VITE_API_URL="http://<LAN IP>:8000"; $env:VITE_VISION_API_URL="http://<LAN IP>:8001"; $env:VITE_SIMULATION_API_URL="http://<LAN IP>:8002"; $env:VITE_SIMULATION_WS_URL="ws://<LAN IP>:8002/ws/simulation"; cd frontend; bun run dev:main -- --host 0.0.0.0
 ```
 
-Vision API는 기본값이 `--host 0.0.0.0`이라 그대로 둡니다. 휴대폰 브라우저에서 `http://<LAN IP>:5173`을 엽니다. VWorld 모드는 API 키에 그 호스트(LAN IP)가 등록돼 있어야 지도 인증을 통과합니다. 등록이 안 됐으면 Legacy 모드로 봅니다.
+Vision API는 기본값이 `--host 0.0.0.0`이라 그대로 둡니다. 휴대폰 브라우저에서 `http://<LAN IP>:5173`을 엽니다. VWorld 모드는 API 키에 그 호스트(LAN IP)가 등록돼 있어야 지도 인증을 통과합니다. 등록이 안 됐으면 Main 모드로 봅니다.
 
 ### 문제 해결
 
@@ -270,7 +275,7 @@ $env:WEATHER_ENERGY_DB = $EnergyDbPath
 두 번째 PowerShell에서 Vite를 띄웁니다. 프런트엔드는 기본으로 `http://127.0.0.1:8000`의 FastAPI를 씁니다.
 
 ```powershell
-cd frontend; bun run dev:legacy -- --host 127.0.0.1 --port 5173 --strictPort
+cd frontend; bun run dev:main -- --host 127.0.0.1 --port 5173 --strictPort
 ```
 
 ### seed와 reset

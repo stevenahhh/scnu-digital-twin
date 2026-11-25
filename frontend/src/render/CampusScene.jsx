@@ -10,10 +10,12 @@ import { ShadowBaker } from "../lighting/ShadowBaker";
 import { SUN_DISC_HEX } from "../lighting/sceneBackground.mjs";
 import { SceneWeatherBinding } from "../weather/SceneWeatherBinding";
 import { CampusTrafficSimulation } from "../simulation";
+import { campusLoad } from "../loading/campusLoad.mjs";
 
 // 모델 응답이 멈췄을 때 다시 시도: 캐시된 요청을 지우면, attempt로 다시 마운트된 Suspense가 GLB를 새로 받는다(페이지는 새로 읽지 않는다).
 export function clearCampusModel() {
   useGLTF.clear(CAMPUS_MODEL_URL);
+  campusLoad.restart();
 }
 
 // 보통/높음 품질의 후처리 청크. 낮음에서는 마운트하지 않으므로 내려받지도 않는다.
@@ -29,6 +31,20 @@ function SceneLoadingSignal({ onChange }) {
   return null;
 }
 
+// 모델과 함께 마운트된다. 첫 장면이 그려질 두 프레임 뒤에 로딩 화면에 알린다.
+function SceneReadySignal() {
+  useEffect(() => {
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(campusLoad.markSceneReady);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      campusLoad.markSceneGone();
+    };
+  }, []);
+  return null;
+}
+
 // 3D 캠퍼스 장면(R3F Canvas의 자식). 값이 실제로 바뀔 때만 다시 그리도록 memo로 감싼다: 장면 트리가 다시 그려지면
 // 인라인 이벤트 핸들러가 바뀐 것으로 보고 R3F가 invalidate해서 demand 루프가 한 장을 더 그린다.
 export const CampusScene = memo(function CampusScene({
@@ -36,7 +52,7 @@ export const CampusScene = memo(function CampusScene({
   controlsRef, selectedId, labelsHidden, occluderRef, chromeRefs,
   activePresetId, selectedElementId, selectionOutline, onLabelRegistry, onDragStart, headlineById,
   onSelect, onBuildingClick, onBuildingProximity, onD4Enter, onOrbitStart, onOrbitEnd, onLoadingChange, attempt = 0, presentation = false,
-  onCompare,
+  onCompare, restrictions, labelRegistry,
 }) {
   return (
     <>
@@ -86,8 +102,9 @@ export const CampusScene = memo(function CampusScene({
           presentation={presentation}
           quality={quality}
         />
-        <CampusTrafficSimulation contactShadows={quality === "high"} />
+        <CampusTrafficSimulation contactShadows={quality === "high"} restrictions={restrictions} labelRegistry={labelRegistry} labelsHidden={labelsHidden} />
         <ShadowBaker sunKey={sunVector.join(",")} />
+        <SceneReadySignal />
       </Suspense>
       <OrbitControls
         ref={controlsRef}

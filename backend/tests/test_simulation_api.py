@@ -1,10 +1,18 @@
+import pytest
 from fastapi.testclient import TestClient
 
+from common.campus_auth import authenticate, issue_token
 from simulation.main import app
 
 
-def test_health_and_simulation_controls():
-    with TestClient(app) as client:
+@pytest.fixture
+def admin_headers(monkeypatch):
+    monkeypatch.setenv("SCNU_AUTH_SECRET", "simulation-api-test-secret")
+    return {"Authorization": f"Bearer {issue_token(authenticate('admin', '12341234'))['token']}"}
+
+
+def test_health_and_simulation_controls(admin_headers):
+    with TestClient(app, headers=admin_headers) as client:
         assert client.get("/health").status_code == 200
         started = client.post(
             "/api/simulation/start",
@@ -23,8 +31,8 @@ def test_health_and_simulation_controls():
         assert client.post("/api/simulation/reset").json()["status"] == "stopped"
 
 
-def test_websocket_sends_simulation_update():
-    with TestClient(app) as client:
+def test_websocket_sends_simulation_update(admin_headers):
+    with TestClient(app, headers=admin_headers) as client:
         client.post("/api/simulation/start", json={"counts": {"car": 1, "person": 1, "scooter": 1}})
         with client.websocket_connect("/ws/simulation") as websocket:
             payload = websocket.receive_json()

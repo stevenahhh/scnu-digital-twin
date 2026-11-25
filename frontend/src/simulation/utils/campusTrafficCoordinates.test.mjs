@@ -16,7 +16,7 @@ const repoFile = (relative) => new URL(`../../../../${relative}`, import.meta.ur
 const GIS_D4_CENTRE_TM = [243507.55, 263879.65];
 
 // Building centers the simulation network was built against (backend/build_mobility_data.py BUILDING_TARGETS),
-// in the Legacy display frame: Frame v1 bounding-box centers after CityModel recenters D4_ANCHOR onto the Frame v2
+// in the Main display frame: Frame v1 bounding-box centers after CityModel recenters D4_ANCHOR onto the Frame v2
 // traffic origin (the v1 values moved by the origin shift, so their simulation positions are unchanged).
 const DISPLAY_TARGETS = {
   BLD_D4: [-215.27, -91.24],

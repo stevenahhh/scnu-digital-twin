@@ -2,6 +2,7 @@ import { calculateEnergyBalance } from "../domain/energyBalance.mjs";
 import { calculateBuildingDemand } from "../domain/demand.mjs";
 import { D4_BUILDING_DATA, D4_ROOMS } from "../domain/d4Campus.mjs";
 import { WEATHER_API_URL } from "../../../simulation/utils/apiConfig.js";
+import { authorizedFetch } from "../../../auth/session.mjs";
 
 export const DASHBOARD_RATES = Object.freeze({ electricityPriceKrwPerKwh: 160, carbonIntensityKgCo2ePerKwh: 0.45 });
 
@@ -101,7 +102,7 @@ async function json(response) {
   return body;
 }
 
-export function createEnergyDashboardClient(apiBase = WEATHER_API_URL, fetchImpl = fetch) {
+export function createEnergyDashboardClient(apiBase = WEATHER_API_URL, fetchImpl = authorizedFetch) {
   const get = (path, signal) => fetchImpl(`${apiBase}${path}`, { headers: { Accept: "application/json" }, signal }).then(json);
   return { async load({ buildingId, date, scenarioId, signal }) {
     const [building, summaries] = await Promise.all([get(`/energy/buildings/${encodeURIComponent(buildingId)}`, signal), get(`/energy/buildings/${encodeURIComponent(buildingId)}/scenarios`, signal)]);

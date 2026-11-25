@@ -40,6 +40,3 @@ export function FeedStatusRow({ feed, status, onRetry, liveText, liveTone }) {
     </div>
   );
 }
-
-// HUD 상태 칩의 숫자: 끊긴 피드(기상·교통·에너지) 수.
-export const feedIssueCount = (feeds) => ["weather", "traffic", "energy"].filter((feed) => isFeedDown(feeds[feed])).length;

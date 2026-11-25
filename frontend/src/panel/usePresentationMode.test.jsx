@@ -8,7 +8,7 @@ afterEach(cleanup);
 
 const panelState = { open: true, detent: "half", setOpen: vi.fn(), setDetent: vi.fn() };
 
-// The camera tour as AppLegacy wires it: touring state plus stopTour.
+// The camera tour as AppMain wires it: touring state plus stopTour.
 function usePresentationWithTour() {
   const [touring, setTouring] = useState(false);
   const presentation = usePresentationMode({

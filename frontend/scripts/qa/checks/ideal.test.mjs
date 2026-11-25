@@ -54,7 +54,7 @@ test("rows that act on the page do it in parts marked mutates; IS-38 includes bo
     const check = IDEAL_CHECKS.get(id);
     assert.ok(check.parts.length > 0 && check.parts.every((part) => part.mutates === true), id);
   }
-  const s04 = (viewport) => ({ entry: "legacy", state: "S04", viewport, theme: "dark", fixtures: "down" });
+  const s04 = (viewport) => ({ entry: "main", state: "S04", viewport, theme: "dark", fixtures: "down" });
   assert.equal(appliesTo(IDEAL_CHECKS.get("IS-38").parts[0], s04("D")), true);
   assert.equal(appliesTo(IDEAL_CHECKS.get("IS-38").parts[0], s04("P")), true);
 });
@@ -62,7 +62,7 @@ test("rows that act on the page do it in parts marked mutates; IS-38 includes bo
 test("S01 rows tell the feeds-down frame from the S17 fixtures-up frame", () => {
   const is08 = IDEAL_CHECKS.get("IS-08");
   const is09 = IDEAL_CHECKS.get("IS-09");
-  const frame = (fixtures) => ({ entry: "legacy", state: "S01", viewport: "D", theme: "dark", fixtures });
+  const frame = (fixtures) => ({ entry: "main", state: "S01", viewport: "D", theme: "dark", fixtures });
   assert.equal(appliesTo(is08, frame("up")), true);
   assert.equal(appliesTo(is08, frame("down")), false);
   assert.equal(appliesTo(is09, frame("down")), true);
@@ -75,7 +75,7 @@ test("S01 rows tell the feeds-down frame from the S17 fixtures-up frame", () => 
 
 test("IS-39 measures its own delayed request in a plain run and in a --delay-ms run", () => {
   const part = IDEAL_CHECKS.get("IS-39").parts[0];
-  for (const fixtures of ["down", "delay"]) assert.equal(appliesTo(part, { entry: "legacy", state: "S09E", viewport: "D", theme: "dark", fixtures }), true);
+  for (const fixtures of ["down", "delay"]) assert.equal(appliesTo(part, { entry: "main", state: "S09E", viewport: "D", theme: "dark", fixtures }), true);
 });
 
 test("the page helpers are the ideal-state section 6.1 definitions", () => {

@@ -1,17 +1,25 @@
 import { Play } from "lucide-react";
 import { useEffect, useMemo, useReducer, useRef } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { createBuildingAnalysisClient } from "./analysisApi.mjs";
 import { buildAnalysisReport, parseAnalysisRun } from "./analysisContracts.mjs";
 import { analysisReducer, createAnalysisState } from "./analysisState.mjs";
 import { AnalysisInsights, AnalysisKpis, AnalysisSeriesChart } from "./BuildingAnalysisPanels.jsx";
 import { toKoreanEnergyError } from "../shared/energyErrorMessages.mjs";
 import { kstToday } from "../shared/energyContext.mjs";
-import { FIELD_INPUT, FIELD_LABEL } from "../shared/fieldStyles.mjs";
+import { FieldSelect } from "../shared/FieldSelect.jsx";
+import { FIELD_CONTROL, FIELD_LABEL } from "../shared/fieldStyles.mjs";
 import { Alert } from "../../../ui/Alert.jsx";
 import { Button } from "../../../ui/Button.jsx";
 import { Disclosure } from "../../../ui/Disclosure.jsx";
 import { SectionHeader } from "../../../ui/SectionHeader.jsx";
 import { StatusBadge } from "../../../ui/StatusBadge.jsx";
+
+// Select 항목 값은 빈 문자열일 수 없어서 "고르지 않음"을 따로 둔다.
+const NO_ALTERNATIVE = "__no-alternative__";
+const NO_RUN = "__no-run__";
+const planOption = (plan) => ({ value: plan.id, label: plan.name });
 
 const EMPTY_PLANS_MESSAGES = Object.freeze({
   loading: "설치 계획을 불러오는 중입니다.",
@@ -87,8 +95,9 @@ export function BuildingAnalysis({
     return () => controller.abort();
   }, [api, buildingId, planKey, representativePlanId]);
 
-  const change = (field) => (event) =>
-    dispatch({ type: "draft", field, value: event.target.value || (field === "alternativePlanId" ? null : "") });
+  const changeRepresentative = (value) => dispatch({ type: "draft", field: "representativePlanId", value });
+  const changeAlternative = (value) =>
+    dispatch({ type: "draft", field: "alternativePlanId", value: value === NO_ALTERNATIVE ? null : value });
   const condition = (field) => (event) =>
     dispatch({ type: "draft", condition: true, field, value: event.target.value });
   const costConditionsValid = [
@@ -137,8 +146,8 @@ export function BuildingAnalysis({
     }
   };
 
-  const selectRun = (event) => {
-    const run = state.runs.find((item) => item.id === event.target.value);
+  const selectRun = (value) => {
+    const run = state.runs.find((item) => item.id === value);
     if (run)
       dispatch({
         type: "report",
@@ -166,87 +175,63 @@ export function BuildingAnalysis({
             <>
               <p className="break-keep text-caption text-ink-muted">무태양광 기준선과 비교 · 예측 수요 15분 간격</p>
               <div className="grid grid-cols-2 gap-2">
-                <label className={FIELD_LABEL}>
-                  대표 설치 계획
-                  <select
-                    aria-label="대표 설치 계획"
-                    value={state.draft.representativePlanId}
-                    onChange={change("representativePlanId")}
-                    className={FIELD_INPUT}
-                  >
-                    {plans.map((plan) => (
-                      <option key={plan.id} value={plan.id}>
-                        {plan.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className={FIELD_LABEL}>
-                  대안 설치 계획
-                  <select
-                    aria-label="대안 설치 계획"
-                    value={state.draft.alternativePlanId ?? ""}
-                    onChange={change("alternativePlanId")}
-                    className={FIELD_INPUT}
-                  >
-                    <option value="">대안 없음</option>
-                    {plans
-                      .filter((plan) => plan.id !== state.draft.representativePlanId)
-                      .map((plan) => (
-                        <option key={plan.id} value={plan.id}>
-                          {plan.name}
-                        </option>
-                      ))}
-                  </select>
-                </label>
+                <FieldSelect
+                  label="대표 설치 계획"
+                  value={state.draft.representativePlanId}
+                  onValueChange={changeRepresentative}
+                  options={plans.map(planOption)}
+                />
+                <FieldSelect
+                  label="대안 설치 계획"
+                  value={state.draft.alternativePlanId ?? NO_ALTERNATIVE}
+                  onValueChange={changeAlternative}
+                  options={[
+                    { value: NO_ALTERNATIVE, label: "대안 없음" },
+                    ...plans.filter((plan) => plan.id !== state.draft.representativePlanId).map(planOption),
+                  ]}
+                />
               </div>
               <Disclosure summary="고급 · 요금·탄소 계수와 이전 실행">
                 <div className="flex flex-col gap-2">
                   <div className="grid grid-cols-2 gap-2">
-                    <label className={FIELD_LABEL}>
+                    <Label className={FIELD_LABEL}>
                       전기요금 (KRW/kWh)
-                      <input
+                      <Input
                         aria-label="전기요금 (KRW/kWh)"
                         type="number"
                         min="0"
                         step="1"
                         value={state.draft.conditions.electricityPriceKrwPerKwh}
                         onChange={condition("electricityPriceKrwPerKwh")}
-                        className={FIELD_INPUT}
+                        className={FIELD_CONTROL}
                       />
-                    </label>
-                    <label className={FIELD_LABEL}>
+                    </Label>
+                    <Label className={FIELD_LABEL}>
                       탄소배출계수 (kgCO2/kWh)
-                      <input
+                      <Input
                         aria-label="탄소배출계수 (kgCO2/kWh)"
                         type="number"
                         min="0"
                         step="0.01"
                         value={state.draft.conditions.carbonIntensityKgCo2ePerKwh}
                         onChange={condition("carbonIntensityKgCo2ePerKwh")}
-                        className={FIELD_INPUT}
+                        className={FIELD_CONTROL}
                       />
-                    </label>
+                    </Label>
                   </div>
                   {state.runs.length > 0 && (
-                    <label className={FIELD_LABEL}>
-                      이전 실행 스냅샷
-                      <select
-                        aria-label="이전 실행 스냅샷"
-                        value={state.report?.id ?? ""}
-                        onChange={selectRun}
-                        className={FIELD_INPUT}
-                      >
-                        <option value="" disabled>
-                          실행 선택
-                        </option>
-                        {state.runs.map((run) => (
-                          <option key={run.id} value={run.id}>
-                            {run.date} · {run.plans.representative.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                    <FieldSelect
+                      label="이전 실행 스냅샷"
+                      value={state.report?.id ?? NO_RUN}
+                      onValueChange={selectRun}
+                      options={[
+                        { value: NO_RUN, label: "실행 선택", disabled: true },
+                        ...state.runs.map((run) => ({
+                          value: run.id,
+                          label: `${run.date} · ${run.plans.representative.name}`,
+                        })),
+                      ]}
+                    />
                   )}
                 </div>
               </Disclosure>

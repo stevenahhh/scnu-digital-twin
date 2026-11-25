@@ -21,6 +21,16 @@ describe("Disclosure", () => {
     expect(button.getAttribute("aria-expanded")).toBe("false");
   });
 
+  it("keeps what was typed inside when it is closed and reopened", async () => {
+    const user = userEvent.setup();
+    render(<Disclosure summary="고급" defaultOpen><input aria-label="계수" /></Disclosure>);
+    await user.type(screen.getByRole("textbox", { name: "계수" }), "12");
+    const button = screen.getByRole("button", { name: "고급" });
+    await user.click(button);
+    await user.click(button);
+    expect(screen.getByRole("textbox", { name: "계수" }).value).toBe("12");
+  });
+
   it("starts open with defaultOpen", () => {
     render(<Disclosure summary="자세히" defaultOpen>내용</Disclosure>);
     expect(screen.getByRole("button", { name: "자세히" }).getAttribute("aria-expanded")).toBe("true");

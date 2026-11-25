@@ -6,7 +6,7 @@ import logging
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import AbstractSet, Dict, Iterable, List, NamedTuple, Sequence, Tuple
 
 try:
     from .data_loader import load_json
@@ -74,6 +74,17 @@ class GraphPath:
     edge_widths: Tuple[float | None, ...] = ()
     edge_lanes: Tuple[int, ...] = ()
     edge_offset_caps: Tuple[float | None, ...] = ()
+
+
+class RouteStep(NamedTuple):
+    source: str
+    target: str
+    edge: GraphEdge
+    reverse: bool
+
+    @property
+    def points(self) -> Tuple[Point, ...]:
+        return tuple(reversed(self.edge.points)) if self.reverse else self.edge.points
 
 
 class MobilityGraph:
@@ -151,17 +162,20 @@ class MobilityGraph:
             return float(table[f"{edge.kind}_estimated"])
         return float(table.get(edge.kind, 1.0))
 
-    def shortest_path(
-        self,
-        origin: str,
-        destination: str,
-        agent_type: str,
-        edge_cost_factors: Dict[str, float] | None = None,
-    ) -> GraphPath:
+    def anchor_node(self, poi_id: str, agent_type: str) -> str:
         # a POI shared by cars and people has a vehicle anchor on the road/lot surface (vehicle_node_id)
         key = "vehicle_node_id" if agent_type == "car" else "node_id"
-        origin_node = str(self.poi(origin).get(key) or self.poi(origin)["node_id"])
-        destination_node = str(self.poi(destination).get(key) or self.poi(destination)["node_id"])
+        return str(self.poi(poi_id).get(key) or self.poi(poi_id)["node_id"])
+
+    def find_route(
+        self,
+        origin_node: str,
+        destination_node: str,
+        agent_type: str,
+        edge_cost_factors: Dict[str, float] | None = None,
+        blocked_edges: AbstractSet[str] = frozenset(),
+    ) -> List[RouteStep] | None:
+        """Cheapest node-to-node steps avoiding blocked_edges, or None when no such route exists."""
         queue: List[Tuple[float, str]] = [(0.0, origin_node)]
         distance = {origin_node: 0.0}
         previous: Dict[str, Tuple[str, GraphEdge, bool]] = {}
@@ -172,7 +186,7 @@ class MobilityGraph:
             if node_id == destination_node:
                 break
             for neighbor, edge, reverse in self.adjacency.get(node_id, ()):
-                if agent_type not in edge.allowed_types:
+                if agent_type not in edge.allowed_types or edge.edge_id in blocked_edges:
                     continue
                 factor = max(0.1, float((edge_cost_factors or {}).get(edge.edge_id, 1.0)))
                 candidate = cost + edge.length * self._kind_cost(agent_type, edge.kind) * self._policy_multiplier(agent_type, edge) * factor
@@ -183,32 +197,62 @@ class MobilityGraph:
                     previous[neighbor] = (node_id, edge, reverse)
                     heapq.heappush(queue, (candidate, neighbor))
         if destination_node not in distance:
-            raise ValueError(f"{agent_type} 경로를 찾을 수 없습니다: {origin} → {destination}")
-
-        steps: List[Tuple[str, str, GraphEdge, bool]] = []
+            return None
+        steps: List[RouteStep] = []
         current = destination_node
         while current != origin_node:
             prior, edge, reverse = previous[current]
-            steps.append((prior, current, edge, reverse))
+            steps.append(RouteStep(prior, current, edge, reverse))
             current = prior
         steps.reverse()
+        return steps
 
+    def shortest_path(
+        self,
+        origin: str,
+        destination: str,
+        agent_type: str,
+        edge_cost_factors: Dict[str, float] | None = None,
+        blocked_edges: AbstractSet[str] = frozenset(),
+    ) -> GraphPath:
+        origin_node = self.anchor_node(origin, agent_type)
+        steps = self.find_route(origin_node, self.anchor_node(destination, agent_type), agent_type, edge_cost_factors, blocked_edges)
+        if steps is None:
+            raise ValueError(f"{agent_type} 경로를 찾을 수 없습니다: {origin} → {destination}")
+        return self.build_path((origin, destination), agent_type, origin_node, steps)
+
+    def path_steps(self, path: GraphPath) -> List[RouteStep]:
+        steps = []
+        for index, edge_id in enumerate(path.edge_ids):
+            source, target = path.node_ids[index], path.node_ids[index + 1]
+            edge = self.edges[edge_id]
+            steps.append(RouteStep(source, target, edge, edge.source != source))
+        return steps
+
+    def edge_end_distances(self, path: GraphPath) -> List[float]:
+        """Route distance at the end of each edge of path, following build_path's point merging."""
+        ends: List[float] = []
+        count = 0
+        last: Point | None = None
+        for step in self.path_steps(path):
+            oriented = step.points
+            count += len(oriented) - (1 if last is not None and math.dist(last, oriented[0]) <= 1e-6 else 0)
+            last = oriented[-1]
+            ends.append(path.cumulative_lengths[count - 1])
+        return ends
+
+    def build_path(self, od: Tuple[str, str], agent_type: str, origin_node: str, steps: Sequence[RouteStep]) -> GraphPath:
+        origin, destination = od
         points: List[Point] = []
         node_ids = [origin_node]
         edge_ids: List[str] = []
-        edge_kinds: List[str] = []
-        road_ids: List[str | None] = []
-        speed_limits: List[float] = []
-        for _, target, edge, reverse in steps:
-            oriented = list(reversed(edge.points)) if reverse else list(edge.points)
+        for step in steps:
+            oriented = step.points
             if points and math.dist(points[-1], oriented[0]) <= 1e-6:
                 oriented = oriented[1:]
             points.extend(oriented)
-            node_ids.append(target)
-            edge_ids.append(edge.edge_id)
-            edge_kinds.extend([edge.kind] * max(1, len(oriented)))
-            road_ids.extend([(edge.road_ids[0] if edge.road_ids else None)] * max(1, len(oriented)))
-            speed_limits.extend([edge.speed_limit] * max(1, len(oriented)))
+            node_ids.append(step.target)
+            edge_ids.append(step.edge.edge_id)
         if len(points) < 2:
             point = (float(self.nodes[origin_node]["x"]), float(self.nodes[origin_node]["z"]))
             points = [point, (point[0] + 0.01, point[1])]
@@ -221,7 +265,7 @@ class MobilityGraph:
         # one segment. Normalize defensively for authored multi-point edges.
         segment_edge_ids, segment_kinds, segment_roads, segment_speeds = [], [], [], []
         segment_derived, segment_widths, segment_lanes, segment_caps = [], [], [], []
-        for _, _, edge, reverse in steps:
+        for _, _, edge, _ in steps:
             count = max(1, len(edge.points) - 1)
             segment_edge_ids.extend([edge.edge_id] * count)
             segment_kinds.extend([edge.kind] * count)

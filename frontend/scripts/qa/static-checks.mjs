@@ -217,14 +217,14 @@ function importantOutsideReducedMotion(ctx, files) {
 
 // ---------------------------------------------------------------- rules
 export const RULES = [
-  ["V-S-01", locRule("src/AppLegacy.jsx", 250)],
+  ["V-S-01", locRule("src/AppMain.jsx", 250)],
   ["V-S-02", locRule("src/features/energy/analysis/analysisContracts.mjs", 250)],
   ["V-S-03", check((ctx) => {
     const hits = ctx.files.filter((file) => file.endsWith(".css")).filter((file) => pureLoc(ctx.read(file)) > 250).map((file) => `${file}:1 (${pureLoc(ctx.read(file))} LOC)`);
     return result(hits);
   })],
   ["V-S-04", check((ctx) => {
-    const content = ctx.read("src/AppLegacy.jsx") ?? "";
+    const content = ctx.read("src/AppMain.jsx") ?? "";
     const start = content.search(/(export default )?function App\s*\(/);
     if (start < 0) return { pass: true, count: 0, first: "App function absent" };
     let index = content.indexOf("{", content.indexOf(")", start));
@@ -237,10 +237,10 @@ export const RULES = [
     } while (depth > 0 && index < content.length);
     const span = content.slice(from, index).split("\n").length;
     const line = content.slice(0, start).split("\n").length;
-    return { pass: span <= 250, count: span, first: `src/AppLegacy.jsx:${line}` };
+    return { pass: span <= 250, count: span, first: `src/AppMain.jsx:${line}` };
   })],
-  ["V-S-05", zeroMatches("src/AppLegacy.jsx", /\/\/ const period/)],
-  ["V-S-06", narrowedCatch("src/AppLegacy.jsx")],
+  ["V-S-05", zeroMatches("src/AppMain.jsx", /\/\/ const period/)],
+  ["V-S-06", narrowedCatch("src/AppMain.jsx")],
   ["V-S-07", zeroMatches("src/simulation/components/NetworkDebugLayer.jsx", /\.catch\(\(\) => \{\}\)/)],
   ["V-S-08", all(zeroMatches("src/simulation/components/RouteEditorPanel.jsx", /\.catch\(\(\) => setQuality\(null\)\)/), check((ctx) => {
     const content = ctx.read("src/simulation/components/RouteEditorPanel.jsx") ?? "";
@@ -257,7 +257,7 @@ export const RULES = [
   })],
   ["V-S-12", narrowedCatch("src/simulation/components/TrafficSimulationLayer.jsx")],
   ["V-S-13", narrowedCatch("src/features/energy/campus/CampusComparisonPanel.jsx")],
-  ["V-S-14", narrowedCatch("src/AppLegacy.jsx")],
+  ["V-S-14", narrowedCatch("src/AppMain.jsx")],
   ["V-S-15", narrowedCatch("src/features/energy/analysis/BuildingAnalysis.jsx")],
   ["V-S-16", narrowedCatch("src/features/energy/installations/InstallationPlanManager.jsx")],
   ["V-S-17", narrowedCatch("src/features/energy/installations/InstallationPlanManager.jsx")],
@@ -287,10 +287,10 @@ export const RULES = [
   ["V-S-29", zeroMatches("src/simulation/components/NetworkDebugLayer.jsx", /\bfetch\(/)],
   ["V-S-30", zeroMatches("src/simulation/components/RouteEditorPanel.jsx", /\bfetch\(/)],
   ["V-S-31", zeroMatches("src/simulation/components/TrafficSimulationLayer.jsx", /\bfetch\(/)],
-  ["V-S-32", zeroMatches("src/AppLegacy.jsx", /\bfetch\(/)],
+  ["V-S-32", zeroMatches("src/AppMain.jsx", /\bfetch\(/)],
   ["V-S-33", zeroMatches("src/simulation/components/NetworkDebugLayer.jsx", /ok\s*\?[^:]*:\s*Promise\.reject/)],
   ["V-S-34", check((ctx) => {
-    const hits = grepFile(ctx, "src/AppLegacy.jsx", /<MetricCard\b.*\w+=\{[^}]*(\?\?|\?\s)/);
+    const hits = grepFile(ctx, "src/AppMain.jsx", /<MetricCard\b.*\w+=\{[^}]*(\?\?|\?\s)/);
     return result(hits);
   })],
   ["V-S-35", nestedTernary("src/components/D4RoomGridSelect.jsx")],
@@ -351,8 +351,8 @@ export const RULES = [
     const ok = /buildingId/.test(test) && /rejects|throws/.test(test) && /without[^\n]*buildingId|buildingId[^\n]*required/i.test(test);
     return { pass: ok, count: ok ? 0 : 1, first: "src/features/energy/editor/energyScenarioApi.test.mjs:1" };
   }))],
-  ["V-S-57", longLines("src/AppLegacy.jsx")],
-  ["V-S-58", longLines("src/AppLegacy.jsx")],
+  ["V-S-57", longLines("src/AppMain.jsx")],
+  ["V-S-58", longLines("src/AppMain.jsx")],
   ["V-S-59", longLines("src/components/TimeSlider.jsx")],
   ["V-S-60", longLines("src/components/CameraPresetBar.jsx")],
   ["V-S-61", check((ctx) => {
@@ -375,23 +375,23 @@ export const RULES = [
   })],
   ["V-S-64", check((ctx) => result(grepFiles(ctx, ctx.files.filter((f) => f.startsWith("src/components/")), /#3b82f6/i)))],
   ["V-S-65", zeroMatches("src/components/MicroclimatePanel.jsx", /#D32F2F|#1976D2/i)],
-  ["V-S-66", zeroMatches("src/AppLegacy.jsx", /#[0-9a-fA-F]{6}\b/)],
+  ["V-S-66", zeroMatches("src/AppMain.jsx", /#[0-9a-fA-F]{6}\b/)],
   ["V-S-67", check((ctx) => result(grepFiles(ctx, ctx.files.filter((f) => f.endsWith(".css")), /\.bg-white\b.*!important/)))],
   ["V-S-68", check((ctx) => result(grepFiles(ctx, ctx.files.filter((f) => f.endsWith(".css")), /\.text-gray-800\b.*!important/)))],
   ["V-S-69", check((ctx) => result(grepFiles(ctx, ctx.files.filter((f) => f.endsWith(".css")), /\.text-gray-500\b.*!important/)))],
   ["V-S-70", check((ctx) => result(grepFiles(ctx, ctx.files.filter((f) => f.endsWith(".css")), /\.border-gray-100\b.*!important/)))],
   ["V-S-71", check((ctx) => result(grepFiles(ctx, ctx.files.filter((f) => f.endsWith(".css")), /\.shadow-sm\b.*!important/)))],
   ["V-S-72", check((ctx) => result(grepFile(ctx, "src/settings/qualityPreset.mjs", /\btry\b/), { max: 1 }))],
-  ["V-S-73", zeroMatches("src/AppLegacy.jsx", /탭 버튼 공통 스타일/)],
+  ["V-S-73", zeroMatches("src/AppMain.jsx", /탭 버튼 공통 스타일/)],
   ["V-S-74", zeroMatches("src/components/CameraPresetBar.jsx", /presets는 CAMERA_PRESETS/)],
   ["V-S-75", check((ctx) => {
-    const lines = (ctx.read("src/AppLegacy.jsx") ?? "").split("\n");
+    const lines = (ctx.read("src/AppMain.jsx") ?? "").split("\n");
     const start = lines.findIndex((line) => line.includes("클릭 없이 카메라가 건물 가까이"));
     if (start < 0) return { pass: true, count: 0, first: "comment block absent" };
     let end = start;
     while (end + 1 < lines.length && lines[end + 1].trim().startsWith("//")) end += 1;
     const size = end - start + 1;
-    return { pass: size <= 2, count: size, first: `src/AppLegacy.jsx:${start + 1}` };
+    return { pass: size <= 2, count: size, first: `src/AppMain.jsx:${start + 1}` };
   })],
   ...["energyBalance", "generation", "roofContracts"].map((name, index) => [`V-S-${76 + index}`, check((ctx) => {
     const rel = `src/features/energy/domain/${name}.manual.mjs`;
@@ -399,7 +399,7 @@ export const RULES = [
     const logs = grepFiles(ctx, ctx.files.filter((f) => f.endsWith(".mjs")), /console\.log/);
     return result([...present, ...logs]);
   })]),
-  ["V-S-79", zeroMatches("src/AppLegacy.jsx", /setInterval/)],
+  ["V-S-79", zeroMatches("src/AppMain.jsx", /setInterval/)],
   ["V-S-80", check((ctx) => {
     const content = ctx.read("src/simulation/components/TrafficSimulationLayer.jsx") ?? "";
     const hits = grepFile(ctx, "src/simulation/components/TrafficSimulationLayer.jsx", /setInterval\([^)]*\b(1000|[1-4]\d{3})\)|,\s*1000\s*\)/);

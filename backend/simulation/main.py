@@ -3,20 +3,29 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import sys
 import time
 import urllib.request
 from contextlib import asynccontextmanager
 from typing import Dict, Optional, Set
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+_REPO_ROOT = str(Path(__file__).resolve().parents[2])
+if _REPO_ROOT not in sys.path:  # Supports starting from inside backend/ or backend/simulation/
+    sys.path.append(_REPO_ROOT)
+
+from common.campus_auth import require_admin_for_writes
+
 try:
-    from .schemas import ScenarioRequest, SpeedRequest, StartRequest
+    from .restriction_manager import RestrictionConflict, RestrictionNotFound
+    from .schemas import RestrictionRequest, ScenarioRequest, SpeedRequest, StartRequest
     from .traci_adapter import InternalSimulationProvider, create_provider
 except ImportError:  # Supports: cd simulation && uvicorn main:app
-    from schemas import ScenarioRequest, SpeedRequest, StartRequest
+    from restriction_manager import RestrictionConflict, RestrictionNotFound
+    from schemas import RestrictionRequest, ScenarioRequest, SpeedRequest, StartRequest
     from traci_adapter import InternalSimulationProvider, create_provider
 
 
@@ -34,6 +43,13 @@ DATA_DIR = Path(__file__).resolve().parent / "data"
 
 def _engine():
     return provider.engine if isinstance(provider, InternalSimulationProvider) else None
+
+
+def _restriction_engine():
+    engine = _engine()
+    if not engine:
+        raise HTTPException(status_code=501, detail="교통 통제는 현재 내부 시뮬레이터에서 지원됩니다.")
+    return engine
 
 
 def _model_dict(value):
@@ -128,6 +144,7 @@ app = FastAPI(
     title="SCNU Campus Traffic Simulation API",
     version="1.0.0",
     lifespan=lifespan,
+    dependencies=[Depends(require_admin_for_writes)],
 )
 app.add_middleware(
     CORSMiddleware,
@@ -230,6 +247,37 @@ async def simulation_scenario(request: ScenarioRequest):
     except (KeyError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return await simulation_status()
+
+
+@app.get("/api/simulation/restrictions")
+async def simulation_restrictions():
+    return {"restrictions": _restriction_engine().restrictions.list()}
+
+
+@app.get("/api/simulation/restrictions/targets")
+async def simulation_restriction_targets():
+    return _restriction_engine().restrictions.targets()
+
+
+@app.post("/api/simulation/restrictions", status_code=201)
+async def simulation_restriction_create(request: RestrictionRequest):
+    engine = _restriction_engine()
+    try:
+        restriction, rerouted = engine.add_restriction(request)
+    except RestrictionNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except RestrictionConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {"restriction": restriction, "rerouted": rerouted}
+
+
+@app.delete("/api/simulation/restrictions/{restriction_id}", status_code=204)
+async def simulation_restriction_delete(restriction_id: str) -> None:
+    engine = _restriction_engine()
+    try:
+        engine.remove_restriction(restriction_id)
+    except RestrictionNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.get("/api/simulation/entities")

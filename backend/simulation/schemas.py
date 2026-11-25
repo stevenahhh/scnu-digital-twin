@@ -30,6 +30,14 @@ class ScenarioRequest(BaseModel):
     risk_events_enabled: Optional[bool] = None
 
 
+class RestrictionRequest(BaseModel):
+    target_type: Literal["road", "building"]
+    target_id: str
+    cause: Literal["construction", "event", "other"]
+    access: Optional[Literal["vehicles", "all"]] = None
+    message: str = Field("", max_length=200)
+
+
 class EntityState(BaseModel):
     id: str
     type: EntityType

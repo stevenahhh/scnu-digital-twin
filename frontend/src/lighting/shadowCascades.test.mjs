@@ -22,7 +22,7 @@ import { CASCADE_CHUNK_MARKER, installCascadeShadowChunk, patchLightsFragmentBeg
 
 const DEG = Math.PI / 180;
 
-// The orbit camera of AppLegacy (fov 50, near 0.1) looking at `target` from `position`.
+// The orbit camera of AppMain (fov 50, near 0.1) looking at `target` from `position`.
 function orbitCamera(position, target, aspect = 1440 / 900) {
   const camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 2000);
   camera.position.set(...position);

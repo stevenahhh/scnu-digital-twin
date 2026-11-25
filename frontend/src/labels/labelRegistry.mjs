@@ -65,7 +65,7 @@ function codeOf(elementId, dataElementId, elementNames) {
 
 // 표시 이름: 기존 요소와 연결된 대리 노드는 요소 이름, 그 밖에는 앵커 라벨에서 앞의 대장 코드와 '(추정)'을 뗀 이름.
 function nameOf(anchor, dataElementId, elementNames) {
-  const raw = anchor.proxy && elementNames.has(dataElementId) && dataElementId !== anchor.elementId
+  const raw = anchor.proxy && !anchor.displayName?.endsWith(" · 공사 중") && elementNames.has(dataElementId) && dataElementId !== anchor.elementId
     ? elementNames.get(dataElementId)
     : anchor.displayName;
   if (typeof raw !== "string" || raw.trim() === "" || raw.startsWith("BLD_")) return { displayName: null, estimated: true };

@@ -35,7 +35,7 @@ test("IS-03 compares the name sets in any order and lists the differences", () =
   assert.equal(compareNameSets(["a", "b"], ["b", "a"]).same, true);
   const diff = compareNameSets(["a", "b"], ["a", "c", "d"]);
   assert.equal(diff.same, false);
-  assert.deepEqual(diff.onlyLegacy, ["b"]);
+  assert.deepEqual(diff.onlyMain, ["b"]);
   assert.deepEqual(diff.onlyVworld, ["c", "d"]);
 });
 
@@ -172,7 +172,7 @@ test("cameraVerdict fails when either the rendered camera or the commanded pose 
   assert.equal(flight.still, false);
   assert.equal(flight.by, "rendered");
   assert.equal(flight.positionDeltaM, 40);
-  // Legacy: no moveTo stream at all, camera still.
+  // Main: no moveTo stream at all, camera still.
   assert.equal(cameraVerdict({ rendered: at(45), commanded: null }, { rendered: at(45), commanded: null }).still, true);
   // Both still.
   assert.equal(cameraVerdict({ rendered: at(1), commanded: at(2) }, { rendered: at(1.2), commanded: at(2.3) }).still, true);

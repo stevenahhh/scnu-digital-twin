@@ -289,6 +289,10 @@ export function roadMarkingPlan({ sections, junctions, context = roadContext() }
     }
   }
   humps.sort((a, b) => (a.order ?? -1) - (b.order ?? -1));
+  // The side edges are inclusive by HUMP_EDGE_M: a band painted across the hump ends on them, and a vertex there rounds
+  // a hair outside (scene -> TM). Without it that vertex drops to the road while the hump top under it stays raised,
+  // and the paint end dips into the hump (the paint lies on the hump top, lib/groundNodes.mjs MARKING_LIFT_M).
+  const HUMP_EDGE_M = 1e-6;
   const heightAt = (x, z) => {
     const point = sceneToTm(x, z);
     for (const h of humps) {
@@ -296,10 +300,10 @@ export function roadMarkingPlan({ sections, junctions, context = roadContext() }
       // distance by the vertical scene-unit scale subtly changes the profile.
       if (h.tm) {
         const delta = sub(point, h.tm.centre);
-        if (Math.abs(dot(delta, left(h.tm.forward))) <= h.widthM / 2 && Math.abs(dot(delta, h.tm.forward)) < h.lengthM / 2) return humpProfile(dot(delta, h.tm.forward), h.lengthM, h.heightM);
+        if (Math.abs(dot(delta, left(h.tm.forward))) <= h.widthM / 2 + HUMP_EDGE_M && Math.abs(dot(delta, h.tm.forward)) < h.lengthM / 2) return humpProfile(dot(delta, h.tm.forward), h.lengthM, h.heightM);
       } else {
         const delta = [x - h.centre[0], z - h.centre[1]];
-        if (Math.abs(dot(delta, h.v)) <= h.halfWidth && Math.abs(dot(delta, h.u)) < h.lengthM * U / 2) return humpProfile(dot(delta, h.u) / U, h.lengthM, h.heightM);
+        if (Math.abs(dot(delta, h.v)) <= h.halfWidth + HUMP_EDGE_M * U && Math.abs(dot(delta, h.u)) < h.lengthM * U / 2) return humpProfile(dot(delta, h.u) / U, h.lengthM, h.heightM);
       }
     }
     return 0;

@@ -4,9 +4,12 @@ import { GlbBuilder } from "../lib/glb.mjs";
 import { buildMarkings } from "./markings.mjs";
 import { assertBuildInvariants, BuildInvariantError } from "../qa/invariants.mjs";
 import { sceneToTm } from "../../../src/geo/epsg5186.mjs";
+import { MARKING_LIFT_M } from "../lib/groundNodes.mjs";
+import { metres } from "../lib/frame.mjs";
 
+// World-space triangles of every marking element node (Road_Markings_<id>: local float32 positions plus the node's
+// translation, lib/groundNodes.mjs), in node order.
 function emittedTriangles(glb) {
-  const primitive = glb.json.meshes.find(m => m.name === "Road_Markings").primitives[0];
   const bytes = Buffer.concat(glb.chunks);
   const accessor = index => {
     const a = glb.json.accessors[index], v = glb.json.bufferViews[a.bufferView];
@@ -16,11 +19,54 @@ function emittedTriangles(glb) {
       ? Array.from({ length: data.length / 4 }, (_, i) => data.readFloatLE(i * 4))
       : Array.from({ length: a.count }, (_, i) => a.componentType === 5123 ? data.readUInt16LE(i * 2) : data.readUInt32LE(i * 4));
   };
-  const positions = accessor(primitive.attributes.POSITION), indices = accessor(primitive.indices);
   const actual = [];
-  for (let i = 0; i < indices.length; i += 3) actual.push(indices.slice(i, i + 3).map(v => [positions[v * 3], positions[v * 3 + 2]]));
+  for (const node of glb.json.nodes.filter(n => n.name.startsWith("Road_Markings_"))) {
+    const [tx, , tz] = node.translation;
+    for (const primitive of glb.json.meshes[node.mesh].primitives) {
+      const positions = accessor(primitive.attributes.POSITION), indices = accessor(primitive.indices);
+      for (let i = 0; i < indices.length; i += 3) actual.push(indices.slice(i, i + 3).map(v => [positions[v * 3] + tx, positions[v * 3 + 2] + tz]));
+    }
+  }
   return actual;
 }
+
+test("paint lies MARKING_LIFT_M above the ground it is painted on, not flush with it", async () => {
+  const glb = new GlbBuilder();
+  await buildMarkings({
+    glb, decimate: false, markings: { source: "test", pieces: [{
+      id: "lifted", kind: "parking_line", colour: "white", estimated: true,
+      rings: [[[200, -200], [204, -200], [204, -198], [200, -198]]],
+    }] },
+    baseOffset: () => 0.02,
+    surface: { grid: { step: 20, x0: 0, z0: 0 }, height: () => 10, normal: () => [0, 1, 0] },
+  });
+  const node = glb.json.nodes.find(n => n.name === "Road_Markings_lifted");
+  const accessor = glb.json.accessors[glb.json.meshes[node.mesh].primitives[0].attributes.POSITION];
+  const expected = 10 + metres(0.02 + MARKING_LIFT_M);
+  for (const y of [accessor.min[1], accessor.max[1]]) assert.ok(Math.abs(node.translation[1] + y - expected) < 1e-5, `${node.translation[1] + y} vs ${expected}`);
+});
+
+test("paint crossing a hump's outline is split along it, so no paint face spans the hump's raised edge", async () => {
+  const glb = new GlbBuilder();
+  const hump = [[201, -201], [203, -201], [203, -197], [201, -197]];
+  const inside = ([x, z]) => x >= 201 - 1e-9 && x <= 203 + 1e-9 && z >= -201 - 1e-9 && z <= -197 + 1e-9;
+  await buildMarkings({
+    glb, decimate: false, splits: [hump], markings: { source: "test", pieces: [{
+      id: "edge", kind: "edge_line", colour: "white", estimated: true,
+      rings: [[[200, -199.2], [204, -199.2], [204, -198.8], [200, -198.8]]],
+    }] },
+    surface: { grid: { step: 20, x0: 0, z0: 0 }, height: () => 0, normal: () => [0, 1, 0] },
+  });
+  const faces = emittedTriangles(glb);
+  assert.ok(faces.length > 2);
+  for (const face of faces) {
+    const centre = face.reduce((p, q) => [p[0] + q[0] / 3, p[1] + q[1] / 3], [0, 0]);
+    assert.ok(face.every((p) => inside(p) || !inside(centre)), `face ${JSON.stringify(face)} spans the hump outline`);
+  }
+  const area = faces.reduce((sum, [a, b, c]) => sum + Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) / 2, 0);
+  // float32 positions near x = 200 (ulp 1.5e-5): the split keeps the area up to that rounding
+  assert.ok(Math.abs(area - 1.6) < 1e-4, `area ${area}`);
+});
 
 test("mesh inventory records emitted crossing parts, not excluded or out-of-extent plans", async () => {
   const ids = ["JA_1111111111111111", "JA_2222222222222222", "JA_3333333333333333"];

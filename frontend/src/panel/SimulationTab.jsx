@@ -5,6 +5,7 @@ import { Segmented } from "../ui/Segmented.jsx";
 import { SliderRow } from "../ui/SliderRow.jsx";
 import { formatNumber } from "../ui/format.mjs";
 import { TrafficSafetyPanel } from "../simulation";
+import { RestrictionAdminPanel } from "../restrictions/RestrictionAdminPanel.jsx";
 
 const MODE_OPTIONS = [
   { value: "live", label: "실측" },
@@ -16,7 +17,7 @@ const compassDirection = (degrees) => COMPASS[Math.round(degrees / 45) % COMPASS
 
 // 시뮬레이션 탭: 위는 환경 가정(실측/시뮬레이션, 가상 기온, 태양 위치 추정) 한 묶음, 아래는 교통 시뮬레이션.
 // 날짜·시각은 지도 위 시간 조작 하나가 정한다(이 탭에 두 번째 슬라이더는 없다).
-export function SimulationTab({ clock }) {
+export function SimulationTab({ clock, restrictions = null }) {
   const bearing = clock.sunBearingDegrees;
   const sunItems = [
     {
@@ -45,6 +46,7 @@ export function SimulationTab({ clock }) {
         </div>
         <MetricList items={sunItems} caption={`천문 계산 추정 · 장면 ${clock.sceneDate} 기준`} />
       </section>
+      {restrictions && <RestrictionAdminPanel restrictions={restrictions} />}
       <TrafficSafetyPanel />
     </>
   );

@@ -72,7 +72,8 @@ describe("EnergyDashboard", () => {
     expect(client.load).toHaveBeenLastCalledWith(expect.objectContaining({ date: "2026-05-19" }));
     second.resolve(dashboardPayload());
     await nextTick(); await nextTick();
-    fireEvent.change(screen.getByLabelText("설치 시나리오"), { target: { value: "scenario-b" } });
+    fireEvent.click(screen.getByLabelText("설치 시나리오"));
+    fireEvent.click(await screen.findByRole("option", { name: "B" }));
     third.resolve(dashboardPayload({ scenario: { ...dashboardPayload().scenario, id: "scenario-b", name: "선택 B" }, simulation: { ...dashboardPayload().simulation, scenario_id: "scenario-b" } }));
     expect(await screen.findByText(/선택 B/)).toBeTruthy();
     first.resolve(dashboardPayload({ scenario: { ...dashboardPayload().scenario, name: "오래된 A" } }));

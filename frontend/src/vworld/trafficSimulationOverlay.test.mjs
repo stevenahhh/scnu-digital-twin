@@ -95,7 +95,7 @@ test("a wrong anchor (latitude + 0.0001) is caught by the same check (residual n
   assert.throws(() => assert.ok(unexplained < 0.10));
 });
 
-test("a Legacy-scene <-> VWorld round trip of one simulation point agrees within 1e-6 m", () => {
+test("a Main-scene <-> VWorld round trip of one simulation point agrees within 1e-6 m", () => {
   const sim = { x: 312.5, z: -207.25 };
   const scene = tmToScene(...simulationToTm(sim));
   const { longitude, latitude } = simulationPointToVWorld(sim);

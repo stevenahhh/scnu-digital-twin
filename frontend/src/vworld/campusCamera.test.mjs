@@ -96,7 +96,7 @@ test("camera buttons zoom toward the ground point at the view centre and orbit i
   assert.equal(camera.zoomBy(0.8), false);
 });
 
-test("trackpad tilt swings the camera about the view centre within the Legacy polar limits, and pinch zoom respects the zoom range", () => {
+test("trackpad tilt swings the camera about the view centre within the Main polar limits, and pinch zoom respects the zoom range", () => {
   const Cesium = fakeCesium();
   Cesium.Cartesian2 = class { constructor(x, y) { Object.assign(this, { x, y }); } };
   Cesium.Cartesian3.distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
@@ -129,7 +129,7 @@ test("trackpad tilt swings the camera about the view centre within the Legacy po
   assert.ok(Math.abs(moves[0] - (Math.hypot(100, 100) - 100)) < 1e-9);
 });
 
-test("the shared-link pose is written and read back in the Legacy scene frame", () => {
+test("the shared-link pose is written and read back in the Main scene frame", () => {
   const Cesium = fakeCesium();
   Cesium.Cartesian2 = class { constructor(x, y) { Object.assign(this, { x, y }); } };
   // Cesium's Matrix4 is a class with static helpers; the identity model matrix is its own inverse.
@@ -183,7 +183,7 @@ test("arrow-key pans move the camera along the ground, keeping its height and vi
   assert.equal(views[1].orientation.direction, scene.camera.directionWC);
 });
 
-test("flies with the Legacy easing and no altitude arc, and focus flights come from the camera's side", () => {
+test("flies with the Main easing and no altitude arc, and focus flights come from the camera's side", () => {
   const Cesium = fakeCesium();
   Cesium.EasingFunction = { QUADRATIC_IN_OUT: "quad" };
   Cesium.Cartographic = { fromCartesian: (point) => ({ height: point.z }) };

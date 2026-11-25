@@ -59,7 +59,7 @@ export function buildEntrances({ glb, records, footprints, groundAt }) {
       const ring = f.ring.map(p=>tmToScene(...p));
       kit.prism(ring,y+metres(c.heightM-c.thicknessM),y+metres(c.heightM),rgb(c.colour));
       for(const p of f.posts.map(p=>tmToScene(...p))) kit.pole(p,groundAt(...p)-metres(0.05),y+metres(c.heightM-c.thicknessM),0.15,0.15,rgb(c.postColour??c.colour));
-      glb.addNode({name:r.id,mesh:glb.addMesh(r.id,[kit.toPrimitive(material)]),extras:{entranceId:r.id,building:r.anchor.building,estimated:f.estimated}}, {root:true});
+      glb.addNode({name:r.id,mesh:glb.addMesh(r.id,[kit.toPrimitive(material)]),extras:{editable:{id:r.id,kind:"entrance",category:"entrance"},entranceId:r.id,building:r.anchor.building,estimated:f.estimated}}, {root:true});
     }
     const doors = new Kit();
     if (r.steps) {
@@ -85,6 +85,6 @@ export function buildEntrances({ glb, records, footprints, groundAt }) {
         if (r.doors.glazed) doors.prism(pane, doorBase+metres(leafHeight+frameWidth), doorBase+metres(r.bankHeightM-frameWidth), rgb(r.doors.glass ?? "#52636a"));
       }
     }
-    glb.addNode({name:`${r.id}/doors`,mesh:glb.addMesh(`${r.id}/doors`,[doors.toPrimitive(material)]),extras:{estimated:true}}, {root:true});
+    glb.addNode({name:`${r.id}/doors`,mesh:glb.addMesh(`${r.id}/doors`,[doors.toPrimitive(material)]),extras:{editable:{id:`${r.id}/doors`,kind:"entrance_doors",category:"entrance"},estimated:true}}, {root:true});
   }
 }

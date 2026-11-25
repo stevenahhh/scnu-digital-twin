@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { routeEditorStore, useRouteEditorStore } from "../stores/routeEditorStore";
 import { fetchNetworkQuality, readGeoJsonFeatures } from "../api/routeEditorApi.mjs";
 import { describeSimulationError } from "../api/simulationHttp.mjs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { FieldSelect } from "../../features/energy/shared/FieldSelect.jsx";
+import { FIELD_CONTROL, FIELD_LABEL } from "../../features/energy/shared/fieldStyles.mjs";
 import { Button } from "../../ui/Button.jsx";
 import { MetricList } from "../../ui/MetricList.jsx";
 import { SectionHeader } from "../../ui/SectionHeader.jsx";
@@ -25,8 +29,9 @@ const KIND_LABELS = {
   building_entrance: "건물 출입구", parking_connection: "주차 연결", scooter_parking_connection: "킥보드 주차 연결",
 };
 const MODE_LABELS = { idle: "대기", drawing: "그리는 중", editing: "편집 중", moving: "점 이동 중" };
-const FIELD = "mt-1 min-h-8 w-full rounded-control border border-hairline-strong bg-surface-1 px-2 text-caption text-ink";
-const LABEL = "flex flex-col text-caption text-ink-muted";
+const KIND_OPTIONS = KINDS.map((kind) => ({ value: kind, label: KIND_LABELS[kind] }));
+const GEOMETRY_OPTIONS = [{ value: "centerline", label: "중심선+폭" }, { value: "polygon", label: "다각형" }];
+const DIRECTION_OPTIONS = [{ value: "bidirectional", label: "양방향" }, { value: "forward", label: "단방향" }];
 
 function QualitySummary({ quality }) {
   const summary = quality.summary ?? {};
@@ -89,7 +94,8 @@ export function RouteEditorPanel() {
       event.target.value = "";
     }
   };
-  const setMetadata = (key, parse = (value) => value) => (event) => routeEditorStore.setMetadata({ [key]: parse(event.target.value) });
+  const setOption = (key) => (value) => routeEditorStore.setMetadata({ [key]: value });
+  const setNumber = (key) => (event) => routeEditorStore.setMetadata({ [key]: Number(event.target.value) });
   const action = (label, onClick) => <Button key={label} size="sm" onClick={onClick}>{label}</Button>;
 
   return (
@@ -100,35 +106,23 @@ export function RouteEditorPanel() {
         actions={<Button size="sm" variant="ghost" onClick={() => routeEditorStore.setEnabled(!state.enabled)}>{state.enabled ? "끄기" : "켜기"}</Button>}
       />
       {state.enabled && <>
-        <label className={LABEL}>종류
-          <select value={state.kind} onChange={setMetadata("kind")} className={FIELD}>
-            {KINDS.map((kind) => <option key={kind} value={kind}>{KIND_LABELS[kind]}</option>)}
-          </select>
-        </label>
+        <FieldSelect label="종류" value={state.kind} onValueChange={setOption("kind")} options={KIND_OPTIONS} />
         {state.kind === "crosswalk" && <div className="grid grid-cols-2 gap-2">
-          <label className={LABEL}>형상
-            <select value={state.geometryMode} onChange={setMetadata("geometryMode")} className={FIELD}>
-              <option value="centerline">중심선+폭</option><option value="polygon">다각형</option>
-            </select>
-          </label>
-          <label className={LABEL}>폭(m)
-            <input type="number" min="0.5" step="0.5" value={state.width} onChange={setMetadata("width", Number)} className={FIELD} />
-          </label>
+          <FieldSelect label="형상" value={state.geometryMode} onValueChange={setOption("geometryMode")} options={GEOMETRY_OPTIONS} />
+          <Label className={FIELD_LABEL}>폭(m)
+            <Input type="number" min="0.5" step="0.5" value={state.width} onChange={setNumber("width")} className={FIELD_CONTROL} />
+          </Label>
         </div>}
         <div className="grid grid-cols-2 gap-2">
-          <label className={LABEL}>방향
-            <select value={state.direction} onChange={setMetadata("direction")} className={FIELD}>
-              <option value="bidirectional">양방향</option><option value="forward">단방향</option>
-            </select>
-          </label>
-          <label className={LABEL}>신뢰도
-            <input type="number" min="0" max="1" step="0.05" value={state.confidence} onChange={setMetadata("confidence", Number)} className={FIELD} />
-          </label>
+          <FieldSelect label="방향" value={state.direction} onValueChange={setOption("direction")} options={DIRECTION_OPTIONS} />
+          <Label className={FIELD_LABEL}>신뢰도
+            <Input type="number" min="0" max="1" step="0.05" value={state.confidence} onChange={setNumber("confidence")} className={FIELD_CONTROL} />
+          </Label>
         </div>
-        <label className="flex items-center gap-2 text-ink-muted">
+        <Label className="flex items-center gap-2 text-caption text-ink-muted">
           <input type="checkbox" checked={state.showNetwork} onChange={(event) => routeEditorStore.setShowNetwork(event.target.checked)} />
           기존 교통망 표시
-        </label>
+        </Label>
         <p className="text-ink-muted">
           {`상태 ${MODE_LABELS[state.mode] ?? state.mode} · 점 ${state.points.length}개`}
           {state.mode === "moving" && <span className="block">지도에서 새 위치를 누르세요</span>}

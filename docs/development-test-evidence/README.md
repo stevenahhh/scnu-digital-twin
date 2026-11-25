@@ -21,7 +21,7 @@
 
 | 파일 | 크기 | 내용 |
 |---|---:|---|
-| `00-live-d4-room-detail-2x.png` | 3840×2160 | Legacy 대시보드에서 D4 301호를 선택한 실제 화면 |
+| `00-live-d4-room-detail-2x.png` | 3840×2160 | Main 대시보드에서 D4 301호를 선택한 실제 화면 |
 | `00-live-d4-room-schedule-2x.png` | 3840×2160 | 실제 화면에서 301호 시간표를 연 상태 |
 
 실제 실행 화면은 1920×1080 CSS 뷰포트를 `deviceScaleFactor=2`로 캡처하여 글자와 UI 요소를 2배 물리 해상도로 저장했습니다.
@@ -75,7 +75,7 @@ powershell -ExecutionPolicy Bypass -File docs/development-test-evidence/export-e
 ```powershell
 bun run --cwd frontend test
 node --test frontend/src/vworld/*.test.mjs
-bun run --cwd frontend dev:legacy
+bun run --cwd frontend dev:main
 python -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
 ```
 

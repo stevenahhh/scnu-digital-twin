@@ -4,7 +4,7 @@ import { FeedAlert } from "./FeedStatus.jsx";
 import { BuildingAnalysis } from "../features/energy/analysis";
 import { CampusComparison } from "../features/energy/campus/CampusComparisonPanel";
 import { EnergyDashboard } from "../features/energy/dashboard/EnergyDashboard";
-import { FIELD_INPUT } from "../features/energy/shared/fieldStyles.mjs";
+import { FieldSelect } from "../features/energy/shared/FieldSelect.jsx";
 import { kstToday, WEATHER_PRESETS } from "../features/energy/shared/energyContext.mjs";
 
 // 에너지 탭: 맨 위 한 줄에 기준일(장면 날짜)과 기상 프리셋 하나, 그 아래 선택 건물 요약, 접힌 건물 분석, 캠퍼스 비교 표.
@@ -32,19 +32,15 @@ export function EnergyTab({ buildingId, hasSelection = true, plans, feedStatus, 
         <p className="text-caption text-ink-muted">
           기준일 (장면 날짜) <time dateTime={date} className="font-semibold tabular-nums text-ink">{date}</time>
         </p>
-        <label className="flex items-center gap-2 text-caption text-ink-muted">
-          기상 프리셋
-          <span className="w-32">
-            <select
-              data-qa="energy-weather-preset"
-              value={weatherPreset}
-              onChange={(event) => setWeatherPreset(event.target.value)}
-              className={FIELD_INPUT}
-            >
-              {WEATHER_PRESETS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-            </select>
-          </span>
-        </label>
+        <FieldSelect
+          data-qa="energy-weather-preset"
+          label="기상 프리셋"
+          value={weatherPreset}
+          onValueChange={setWeatherPreset}
+          options={WEATHER_PRESETS.map(([value, label]) => ({ value, label }))}
+          className="flex-row items-center gap-2"
+          triggerClassName="w-32"
+        />
       </div>
       {feedDown && <FeedAlert feed="energy" status={feedStatus} onRetry={onRetry} />}
       {!hasSelection && comparison}

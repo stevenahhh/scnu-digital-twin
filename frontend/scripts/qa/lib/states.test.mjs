@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CHAIN_IDS, LEGACY_ONLY_STATE_IDS, S17_SKIPPED_IDS, S17_SUBSTATES, STATES, STATE_IDS, VWORLD_STATE_IDS, parseStateList } from "./states.mjs";
+import { CHAIN_IDS, MAIN_ONLY_STATE_IDS, S17_SKIPPED_IDS, S17_SUBSTATES, STATES, STATE_IDS, VWORLD_STATE_IDS, parseStateList } from "./states.mjs";
 
 test("state table holds S01..S17 plus S09E, S12E, S18 (ideal-state 6.1), each with steps", () => {
   assert.deepEqual(STATES.map((state) => state.id), STATE_IDS);
@@ -14,8 +14,8 @@ test("state table holds S01..S17 plus S09E, S12E, S18 (ideal-state 6.1), each wi
   // S18 forks from S01, S09E from S09 and S12E from S12; each is replayed only when requested (optional).
   assert.deepEqual(CHAIN_IDS, ["S01", "S18", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S09E", "S10", "S11", "S12", "S12E", "S13", "S14", "S15"]);
   for (const id of ["S09E", "S12E", "S18"]) assert.equal(STATES.find((state) => state.id === id).optional, true, id);
-  // VWorld replays every chained state but the Legacy-only roof editor, including S13, S14 and the new states.
-  assert.deepEqual(LEGACY_ONLY_STATE_IDS, ["S15", "S16"]);
+  // VWorld replays every chained state but the Main-only roof editor, including S13, S14 and the new states.
+  assert.deepEqual(MAIN_ONLY_STATE_IDS, ["S15", "S16"]);
   assert.deepEqual(VWORLD_STATE_IDS, CHAIN_IDS.filter((id) => id !== "S15"));
   for (const id of ["S13", "S14", "S09E", "S12E", "S18"]) assert.ok(VWORLD_STATE_IDS.includes(id), id);
   for (const id of ["S09", "S10", "S11", "S12", "S09E", "S12E", "S18"]) assert.ok(S17_SKIPPED_IDS.includes(id), id);

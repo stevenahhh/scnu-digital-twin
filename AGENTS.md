@@ -6,7 +6,8 @@
 
 ## OVERVIEW
 
-SCNU campus digital-twin prototype: a React/Three.js or VWorld dashboard, a
+SCNU campus digital-twin prototype: a React/Three.js dashboard (Main) with a
+student screen and an admin screen behind one login, a frozen VWorld entry, a
 FastAPI weather/microclimate service, a traffic simulation service, and local computer-vision and safety
 proofs of concept. JavaScript UI and Python services are separate runtimes
 joined by HTTP and shared `BLD_*` element identifiers.
@@ -15,11 +16,12 @@ joined by HTTP and shared `BLD_*` element identifiers.
 
 ```text
 ./
-├── frontend/                  # Main dashboard; Legacy and VWorld entry points
+├── frontend/                  # Main dashboard (login, student and admin screens); frozen VWorld entry
 ├── weather/                   # KMA/AirKorea collection and microclimate API
 ├── car_vision_model/          # YOLO gate counter plus its own React client
 ├── TrafficSafety/             # Separate OCR/NLP/Streamlit safety PoC
 ├── common/data/               # Cross-domain campus and element contracts
+├── common/campus_auth.py      # Accounts, tokens and the admin-only write rule for both APIs
 ├── backend/simulation/        # Traffic simulation API on port 8002
 ├── docs/                      # Static demonstration artifacts
 ├── vision_api.py              # Dashboard traffic endpoint on port 8001
@@ -34,8 +36,12 @@ build outputs when mapping product code.
 
 | Task | Location | Notes |
 |---|---|---|
-| Legacy dashboard behavior | `frontend/src/AppLegacy.jsx` | Default `index.html` route |
-| VWorld dashboard behavior | `frontend/src/AppVWorld.jsx` | `index-vworld.html` route |
+| Entry and role routing | `frontend/src/App.jsx` | `index.html`: login, then the screen for the account role |
+| Admin (Main) dashboard | `frontend/src/AppMain.jsx` | Every feature; opens for role `admin` |
+| Student screen | `frontend/src/student/AppStudent.jsx` | Read-only: map, search, building, status, D4 rooms |
+| Login and session | `frontend/src/auth/` | `session.mjs` stores the token and adds it to writes |
+| Account auth (server) | `common/campus_auth.py`, `weather/api/auth.py` | `/auth/login`, `/auth/guest`, `/auth/me` |
+| VWorld dashboard (frozen) | `frontend/src/AppVWorld.jsx` | `index-vworld.html` route; build only |
 | VWorld SDK and selection | `frontend/src/vworld/` | Mapping, camera, marker, loader tests |
 | Building/room details | `frontend/src/components/` | D4 section and room status UI |
 | Weather HTTP API | `weather/api/app.py` | FastAPI routes and response assembly |
@@ -45,13 +51,16 @@ build outputs when mapping product code.
 | Dashboard traffic feed | `vision_api.py` | `GET /api/traffic`, default port 8001 |
 | WebSocket vision demo | `car_vision_model/` | Separate server and React 19 client |
 | Traffic simulation | `backend/simulation/main.py` | FastAPI + WebSocket, port 8002 |
+| Road and building restrictions | `backend/simulation/restriction_manager.py`, `frontend/src/restrictions/` | `RD_*` closures reroute agents, `BLD_*` alerts; kept in memory |
 | Safety-report PoC | `TrafficSafety/` | Separate OCR/NLP/Streamlit PoC |
 
 ## CODE MAP
 
 | Symbol | Type | Location | Refs | Role |
 |---|---|---|---:|---|
-| `AppLegacy` | React component | `frontend/src/AppLegacy.jsx` | entry | Main Three.js dashboard |
+| `AppMain` | React component | `frontend/src/AppMain.jsx` | entry | Main Three.js dashboard (admin) |
+| `AppStudent` | React component | `frontend/src/student/AppStudent.jsx` | entry | Student screen on the same scene |
+| `require_admin_for_writes` | FastAPI dependency | `common/campus_auth.py` | 2 | Public reads, admin-only writes |
 | `AppVWorld` | React component | `frontend/src/AppVWorld.jsx` | entry | VWorld-backed dashboard |
 | `VWorldRenderer` | React component | `frontend/src/vworld/VWorldRenderer.jsx` | 1 | SDK lifecycle and map selection |
 | `BuildingSectionView` | React component | `frontend/src/components/BuildingSectionView.jsx` | 2 | D4 floor/room drill-down |
@@ -69,8 +78,13 @@ build outputs when mapping product code.
   the repository root with `--app-dir weather`, because its modules use imports
   such as `from config import ...`. Simulation imports resolve from `backend/`:
   use `--app-dir backend` from the root (or run inside `backend/`).
-- Legacy and VWorld are parallel products, not aliases. Both builds must remain
-  valid when shared dashboard behavior changes.
+- Main is the product (the former Legacy dashboard). VWorld is frozen: no
+  feature work and no QA passes, but `build:vworld` must keep passing when
+  shared code changes.
+- Reads are public. Every other HTTP method on the weather and simulation APIs
+  needs an admin token; the app-wide dependency in `common/campus_auth.py`
+  applies it, so a new mutating route needs no per-route check. The frontend
+  role only picks the screen; the server decides what an account may write.
 - `common/data/common_elemetns.json` is misspelled but is a live contract.
   Rename only with every consumer in the same change.
 - Element prefixes are semantic: `BLD_` building, `RD_` road, `ND_` node,
@@ -92,6 +106,9 @@ build outputs when mapping product code.
   production observations.
 - Do not assume YOLO assets are present: model files are gitignored and must be
   provisioned locally.
+- Do not expose the seed accounts or guest login on a public deployment. Set
+  `SCNU_AUTH_GUEST_ENABLED=0` and replace the seed table in
+  `common/campus_auth.py` first.
 - Do not describe a degraded weather response as live data. When the upstream
   fails, routes return 503 (see Weather contracts below) or cached data marked
   by `freshness`.
@@ -122,14 +139,14 @@ Services, one terminal each:
 .venv/bin/python -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
 .venv/bin/python vision_api.py --source 0 --port 8001
 .venv/bin/python -m uvicorn simulation.main:app --app-dir backend --host 127.0.0.1 --port 8002
-bun run --cwd frontend dev:legacy
+bun run --cwd frontend dev:main
 bun run --cwd frontend dev:vworld
 ```
 ```powershell
 .venv\Scripts\python.exe -m uvicorn api.app:app --app-dir weather --host 127.0.0.1 --port 8000
 .venv\Scripts\python.exe vision_api.py --source 0 --port 8001
 .venv\Scripts\python.exe -m uvicorn simulation.main:app --app-dir backend --host 127.0.0.1 --port 8002
-bun run --cwd frontend dev:legacy
+bun run --cwd frontend dev:main
 bun run --cwd frontend dev:vworld
 ```
 
@@ -165,6 +182,16 @@ when empty; `weather/.env` only fills gaps. Copy `weather/.env.example` to start
 - `WEATHER_CACHE_FILE`: default `weather/data/weather-cache.json`; a relative path resolves
   against the repository root; empty disables it. A failed write is logged, never an error.
 - `WEATHER_ENERGY_DB`: energy SQLite path.
+
+Auth (`common/campus_auth.py`, read by the weather and simulation processes):
+
+- `SCNU_AUTH_SECRET`: token signing secret. Unset: both processes share a
+  generated key file, `.scnu-auth-secret` at the repository root (git-ignored);
+  `SCNU_AUTH_SECRET_FILE` moves it.
+- `SCNU_AUTH_TOKEN_TTL_S` (43200), `SCNU_AUTH_GUEST_ENABLED` (on; `0` or `false`
+  turns the guest buttons' endpoint off).
+- Seed accounts for the prototype: student `20239901`, admin `admin`. Passwords
+  are exactly 8 characters.
 
 Frontend (`frontend/.env`, copied from `frontend/.env.example`): `VITE_API_URL` (weather; `VITE_WEATHER_API_URL`
 is a deprecated alias), `VITE_VISION_API_URL` (default `http://127.0.0.1:8001`),

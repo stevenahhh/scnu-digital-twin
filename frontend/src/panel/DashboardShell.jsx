@@ -1,11 +1,12 @@
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { Building2, ChevronRight, ChevronUp, FlaskConical, LayoutDashboard, Zap } from "lucide-react";
+import { AlertDot } from "../ui/AlertDot.jsx";
 import { Button } from "../ui/Button.jsx";
 import { Sheet } from "../ui/Sheet.jsx";
 import { cx } from "../ui/cx.mjs";
 import { useInert } from "../hooks/useInert.mjs";
 import { DASHBOARD_TABS, DashboardPanel, dashboardTitle } from "./DashboardPanel.jsx";
-import { Wordmark } from "./Wordmark.jsx";
+import { alertLabel, totalTabAlerts } from "./tabAlerts.mjs";
 
 const TAB_ICONS = { building: Building2, status: LayoutDashboard, energy: Zap, simulation: FlaskConical };
 const TARGET_44 = "h-11 min-h-11 w-11 min-w-11";
@@ -46,9 +47,11 @@ export function useSettledOpen(open) {
   return open || settled;
 }
 
-// 56px 레일: 탭 아이콘만 둔다(건물은 고른 것이 있을 때만). 아이콘을 누르면 그 탭으로 패널을 연다.
+const withAlertDot = (icon, count) => <span className="relative inline-flex">{icon}{count > 0 && <AlertDot className="-right-1 -top-1" />}</span>;
+
+// 56px 레일: 탭 아이콘만 둔다(건물은 고른 것이 있을 때만). 아이콘을 누르면 그 탭으로 패널을 연다. 확인할 일이 있는 탭에는 점을 단다.
 // 레일은 보이는 제목을 둘 폭이 없어 지금 탭 이름을 화면 읽기용 제목(h2)으로 둔다.
-const Rail = forwardRef(function Rail({ activeTab, tabs, onOpen, className }, activeRef) {
+const Rail = forwardRef(function Rail({ activeTab, tabs, tabAlerts, onOpen, className }, activeRef) {
   return (
     <nav
       aria-label="대시보드 레일"
@@ -59,16 +62,17 @@ const Rail = forwardRef(function Rail({ activeTab, tabs, onOpen, className }, ac
       {tabs.map((tab) => {
         const Icon = TAB_ICONS[tab.value];
         const active = tab.value === activeTab;
+        const alerts = tabAlerts[tab.value] ?? 0;
         return (
           <Button
             key={tab.value}
             ref={active ? activeRef : undefined}
             variant="ghost"
             iconOnly
-            label={tab.label}
+            label={alerts > 0 ? `${tab.label}, ${alertLabel(alerts)}` : tab.label}
             data-qa={`dashboard-tab-${tab.value}`}
             aria-current={active ? "page" : undefined}
-            icon={<Icon aria-hidden="true" className="h-5 w-5" />}
+            icon={withAlertDot(<Icon aria-hidden="true" className="h-5 w-5" />, alerts)}
             onClick={() => onOpen(tab.value)}
             className={cx(TARGET_44, "aria-[current=page]:bg-surface-2 aria-[current=page]:text-ink")}
           />
@@ -83,7 +87,10 @@ const Rail = forwardRef(function Rail({ activeTab, tabs, onOpen, className }, ac
 // tablet: 오른쪽에서 겹쳐 나오는 서랍(--dashboard-drawer-width), 가림막 없음, Esc로 닫고 포커스는 레일의 지금 탭으로 간다.
 // phone: 바텀 시트. 처음에는 peek(탭 이름과 여닫기), 탭을 누르면 half.
 export const DashboardShell = forwardRef(function DashboardShell(
-  { mode, open, onOpenChange, detent, onDetentChange, hidden = false, activeTab, onTabChange, hasSelection = false, scrollRef, pane = null, onPaneExit, children },
+  {
+    mode, open, onOpenChange, detent, onDetentChange, hidden = false, activeTab, onTabChange, tabs = DASHBOARD_TABS, tabAlerts = {},
+    hasSelection = false, scrollRef, pane = null, onPaneExit, children,
+  },
   panelRef,
 ) {
   const railTabRef = useRef(null);
@@ -91,7 +98,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
   const shellRef = useRef(null);
   const focusRailRef = useRef(false);
   const shown = useSettledOpen(open);
-  const railTabs = DASHBOARD_TABS.filter((tab) => tab.value !== "building" || hasSelection);
+  const railTabs = tabs.filter((tab) => tab.value !== "building" || hasSelection);
   const attachShell = useCallback((node) => {
     shellRef.current = node;
     if (typeof panelRef === "function") panelRef(node);
@@ -133,7 +140,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
         <div className="pointer-events-auto absolute inset-y-0 left-0 border-l border-hairline" style={{ right: "var(--dashboard-rail-width)" }}>
           {pane}
         </div>
-        <Rail ref={railTabRef} activeTab={activeTab} tabs={railTabs} className="right-0" onOpen={(tab) => {
+        <Rail ref={railTabRef} activeTab={activeTab} tabs={railTabs} tabAlerts={tabAlerts} className="right-0" onOpen={(tab) => {
           onPaneExit?.();
           onTabChange(tab);
           onOpenChange(true);
@@ -144,6 +151,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
 
   if (mode === "phone") {
     const expanded = detent !== "peek";
+    const alertCount = expanded ? 0 : totalTabAlerts(tabAlerts);
     const selectTab = (tab) => {
       onTabChange(tab);
       // 탭을 고르면 시트를 반만 올린다(peek일 때만). 전체 높이는 사용자가 끌어 올린다.
@@ -161,20 +169,19 @@ export const DashboardShell = forwardRef(function DashboardShell(
         className={hidden ? "invisible" : undefined}
         header={(
           <div className="flex h-11 items-center gap-2">
-            <Wordmark className="sr-only" />
             <h2 className="min-w-0 flex-1 truncate text-title text-ink">{dashboardTitle(activeTab)}</h2>
             <Button
               variant="ghost"
               iconOnly
-              label={expanded ? "패널 닫기" : "패널 열기"}
-              icon={<ChevronUp aria-hidden="true" className={cx("h-5 w-5 transition-transform duration-micro motion-reduce:transition-none", expanded && "rotate-180")} />}
+              label={expanded ? "패널 닫기" : alertCount > 0 ? `패널 열기, ${alertLabel(alertCount)}` : "패널 열기"}
+              icon={withAlertDot(<ChevronUp aria-hidden="true" className={cx("h-5 w-5 transition-transform duration-micro motion-reduce:transition-none", expanded && "rotate-180")} />, alertCount)}
               onClick={() => onDetentChange(expanded ? "peek" : "half")}
               className={TARGET_44}
             />
           </div>
         )}
       >
-        <DashboardPanel activeTab={activeTab} onTabChange={selectTab} showTitle={false} scrollRef={scrollRef}>
+        <DashboardPanel activeTab={activeTab} onTabChange={selectTab} tabs={tabs} tabAlerts={tabAlerts} showTitle={false} scrollRef={scrollRef}>
           {children}
         </DashboardPanel>
       </Sheet>
@@ -202,7 +209,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
       }}
     >
       {!shown && (
-        <Rail ref={railTabRef} activeTab={activeTab} tabs={railTabs} className="left-0" onOpen={(tab) => {
+        <Rail ref={railTabRef} activeTab={activeTab} tabs={railTabs} tabAlerts={tabAlerts} className="left-0" onOpen={(tab) => {
           onTabChange(tab);
           onOpenChange(true);
         }} />
@@ -212,6 +219,8 @@ export const DashboardShell = forwardRef(function DashboardShell(
         <DashboardPanel
           activeTab={activeTab}
           onTabChange={onTabChange}
+          tabs={tabs}
+          tabAlerts={tabAlerts}
           scrollRef={scrollRef}
           headerAction={(
             <Button

@@ -5,13 +5,12 @@ import { D4SampleBadge } from "./D4SampleBadge";
 import { D4_CARD, D4_COLUMN, floorLabel, floorLevels } from "./d4Shared.mjs";
 import { getFloorMajor, formatRoomNumber } from "../utils/d4BuildingData.mjs";
 import { describeTodaySchedule, formatEquipmentLabel } from "../utils/d4RoomStatus.mjs";
+import { FieldSelect } from "../features/energy/shared/FieldSelect.jsx";
 import { Button } from "../ui/Button.jsx";
 import { MetricList } from "../ui/MetricList.jsx";
 import { Segmented } from "../ui/Segmented.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
-import { COARSE_TARGET, FOCUS_RING } from "../ui/Button.jsx";
 
-const FLOOR_SELECT = `min-h-10 w-full rounded-control border border-hairline-strong bg-surface-1 px-3 text-body text-ink ${COARSE_TARGET} ${FOCUS_RING}`;
 const value = (text) => <span className="text-body font-medium text-ink">{text}</span>;
 
 function ScheduleList({ timetable }) {
@@ -92,18 +91,19 @@ function RoomButtonList({ rooms, roomUsageById, selectedRoomId, onSelectRoom }) 
     <ul data-qa="d4-room-list" aria-label="강의실 목록" className="grid w-full grid-cols-3 gap-2 sm:hidden">
       {rooms.filter((room) => room.isSelectable !== false).map((room) => (
         <li key={room.id}>
-          <button
-            type="button"
+          <Button
             aria-pressed={selectedRoomId === room.id}
             onClick={() => onSelectRoom(room.id)}
-            className={`flex min-h-11 w-full flex-col items-center justify-center rounded-control border border-hairline bg-surface-2 px-2 py-1 text-body font-semibold text-ink aria-pressed:ring-2 aria-pressed:ring-primary ${COARSE_TARGET} ${FOCUS_RING}`}
+            className="min-h-11 w-full px-2 py-1 font-semibold aria-pressed:ring-2 aria-pressed:ring-primary"
           >
-            <span className="inline-flex items-center gap-1">
-              {selectedRoomId === room.id && <Check aria-hidden="true" className="h-4 w-4" />}
-              {formatRoomNumber(room.roomNumber)}
+            <span className="flex flex-col items-center">
+              <span className="inline-flex items-center gap-1">
+                {selectedRoomId === room.id && <Check aria-hidden="true" className="h-4 w-4" />}
+                {formatRoomNumber(room.roomNumber)}
+              </span>
+              {roomUsageById.get(room.id) && <span className="text-micro text-ink-muted">사용 중</span>}
             </span>
-            {roomUsageById.get(room.id) && <span className="text-micro text-ink-muted">사용 중</span>}
-          </button>
+          </Button>
         </li>
       ))}
     </ul>
@@ -137,12 +137,13 @@ export function D4RoomGridSelect({
             onChange={onChangeWing}
           />
         </div>
-        <label className="flex w-full flex-col gap-1 text-caption text-ink-muted">
-          층
-          <select value={floor} onChange={(event) => onChangeFloor(Number(event.target.value))} className={FLOOR_SELECT}>
-            {floorLevels(wing).map((level) => <option key={level} value={level}>{`${wing.label} ${floorLabel(level)}`}</option>)}
-          </select>
-        </label>
+        <FieldSelect
+          label="층"
+          value={String(floor)}
+          onValueChange={(level) => onChangeFloor(Number(level))}
+          options={floorLevels(wing).map((level) => ({ value: String(level), label: `${wing.label} ${floorLabel(level)}` }))}
+          className="w-full"
+        />
       </div>
 
       {major && <p className="text-caption text-ink-muted">{`${wing.label} ${floorLabel(floor)} · ${major}`}</p>}

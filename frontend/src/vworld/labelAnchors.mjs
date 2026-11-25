@@ -6,7 +6,7 @@ import {
 import { ZONES, buildLabelRegistry } from "../labels/labelRegistry.mjs";
 import { campusModelCenter } from "../simulation/utils/campusTrafficCoordinates.mjs";
 
-// VWorld 지도에 올린 campus-buildings.glb에서 건물 라벨 앵커를 만든다. Legacy CityModel의 buildLabelAnchors와 같은 규칙이다:
+// VWorld 지도에 올린 campus-buildings.glb에서 건물 라벨 앵커를 만든다. Main CityModel의 buildLabelAnchors와 같은 규칙이다:
 // 건물(BLD_*) 노드마다 장면 좌표의 경계 상자를 구해, 상자 위 가운데 6 단위 위에 앵커를 둔다. 같은 요소 id는 처음 것만 쓴다.
 // three 없이 GLB의 JSON 덩어리만 읽는다. 상자는 POSITION 접근자의 min/max 꼭짓점 8개를 노드 변환으로 옮겨 잡는다.
 
@@ -138,7 +138,7 @@ export function glbLabelAnchors(json, { elementNames }) {
 
 const SYNTHETIC_ZONE_IDS = new Set(ZONES.filter((zone) => zone.synthetic).map((zone) => zone.id));
 
-// CampusLabelLayer가 받는 항목: Legacy CityModel의 labelEntries와 같다. campus-buildings.glb는 uni.glb와 같은 장면 좌표라
+// CampusLabelLayer가 받는 항목: Main CityModel의 labelEntries와 같다. campus-buildings.glb는 uni.glb와 같은 장면 좌표라
 // 정문 구역(시점 목표점, 재중심화 뒤 좌표)은 D4 앵커로 구한 중심만큼 되돌린다.
 export function buildVWorldLabelEntries({ json, elements, presets }) {
   const elementNames = new Map(elements.map(({ element_id: id, name }) => [id, name]));
@@ -158,13 +158,13 @@ export function buildVWorldLabelEntries({ json, elements, presets }) {
     }));
 }
 
-// Legacy CityModel의 재중심화 값: D4 앵커가 교통 좌표 원점에 오게 하는 x, z. frameVersion은 GLB asset.extras 값이다.
+// Main CityModel의 재중심화 값: D4 앵커가 교통 좌표 원점에 오게 하는 x, z. frameVersion은 GLB asset.extras 값이다.
 export function campusCenterOf(anchors, frameVersion) {
   const d4 = anchors.find((anchor) => anchor.elementId === "BLD_D4");
   return d4 ? campusModelCenter(d4.position, { frameVersion }) : { x: 0, z: 0 };
 }
 
-// 라벨 항목의 앵커를 Legacy 장면 좌표(재중심화 뒤)로 되돌린다: 정문 거리·방위(gateDistance.mjs)처럼 장면 좌표를 쓰는 값에 쓴다.
+// 라벨 항목의 앵커를 Main 장면 좌표(재중심화 뒤)로 되돌린다: 정문 거리·방위(gateDistance.mjs)처럼 장면 좌표를 쓰는 값에 쓴다.
 // 항목이 없거나 위치가 없으면 null.
 export function gateScenePositionOf(entries, elementId) {
   const entry = entries?.find((item) => item.elementId === elementId);
