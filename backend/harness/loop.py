@@ -155,9 +155,10 @@ class Harness:
             self.pending.pop(confirm_id, None)
         session.append({"kind": "confirm", "text": decision, "pending_proposal": None})
         if decision != "approve":
-            return "rejected_by_user"
-        return await self.twin.call(name, args, role=session.role, authorization=authorization,
-                                    session_id=session.conversation_id)
+            return "rejected_by_user" if decision == "reject" else "not applied: the admin did not confirm in time"
+        result = await self.twin.call(name, args, role=session.role, authorization=authorization,
+                                      session_id=session.conversation_id)
+        return result if result.startswith("ERROR") else f"applied after the admin confirmed in the UI\n{result}"
 
     async def _run_tool(self, session: Session, tools: frozenset[str], call: dict, round_no: int,
                         authorization: str | None, digests: list[str], emit: Callable[[Event], None]) -> str:

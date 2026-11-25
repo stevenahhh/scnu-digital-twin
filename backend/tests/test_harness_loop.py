@@ -101,6 +101,7 @@ async def test_write_tool_waits_for_confirmation_before_calling_the_twin(tmp_pat
     assert twin.calls == [("restriction_create", {"target_type": "road", "target_id": "RD_057", "cause": "construction"},
                            "admin", "Bearer admin")]
     assert events[-1][0] == "final"
+    assert harness.timely.requests[1]["messages"][0]["content"].startswith("applied after the admin confirmed")
 
 
 async def test_student_gets_no_admin_tools_and_rejected_calls_become_errors(tmp_path) -> None:
