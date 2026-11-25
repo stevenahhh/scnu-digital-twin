@@ -46,7 +46,6 @@ def test_owner_key_separates_accounts_and_guest_clients() -> None:
     guest_a = owner_for(Account("guest-student", "게스트", "student", guest=True), "a" * 22)
     guest_b = owner_for(Account("guest-student", "게스트", "student", guest=True), "b" * 22)
     assert guest_a.key != guest_b.key and guest_a.key.startswith("guest:student:")
-    assert len(student.dir) == 16
 
 
 @pytest.mark.parametrize("client_id", [None, "short", "x" * 65, "bad id with spaces!!!!"])

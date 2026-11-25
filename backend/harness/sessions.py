@@ -201,6 +201,20 @@ class SessionStore:
         self._sessions[owner_key, conversation_id] = session
         return session
 
+    def list(self, owner_key: str) -> list[Session]:
+        owner_dir = hashlib.sha256(owner_key.encode()).hexdigest()[:16]
+        found = []
+        for journal in sorted((self.data_dir / "sessions" / owner_dir).glob("*/journal.jsonl")):
+            try:
+                found.append(self.get(owner_key, journal.parent.name))
+            except NotFound:
+                continue
+        return sorted(found, key=lambda session: session.updated_at, reverse=True)
+
+    def delete(self, session: Session) -> None:
+        self._sessions.pop((session.owner_key, session.conversation_id), None)
+        shutil.rmtree(session.directory, ignore_errors=True)
+
     async def reap(self) -> int:
         removed = 0
         for journal in (self.data_dir / "sessions").glob("*/*/journal.jsonl"):
