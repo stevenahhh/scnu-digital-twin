@@ -94,7 +94,7 @@ def catalogue(role):
         SimpleNamespace(
             name=name,
             meta={"scnu/roles": [role]},
-            inputSchema={
+            input_schema={
                 "title": "SDK-generated title",
                 "properties": {key: {"title": key} for key in reversed(properties)},
                 **({"required": required} if required else {}),
@@ -131,7 +131,7 @@ def test_mcp_role_metadata_must_authorize_role(meta):
 
 def test_mcp_reports_property_and_required_set_diffs_together():
     tools = catalogue("student")
-    tools[0].inputSchema = {"properties": {"unexpected": {}}, "required": ["unexpected"]}
+    tools[0].input_schema = {"properties": {"unexpected": {}}, "required": ["unexpected"]}
     mismatches = prefix.check_compatible("student", tools)
     assert len(mismatches) == 2
     assert all("find_place" in message for message in mismatches)

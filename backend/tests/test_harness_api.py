@@ -32,7 +32,7 @@ def client(tmp_path, key_file):
         tool_calls(("c1", "comfort_rank", {"metric": "utci", "order": "hot"})),
         final("공과대학 3호관이 가장 덥습니다."),
     ]
-    with TestClient(create_app(lambda: make_harness(tmp_path, script))) as test_client:
+    with TestClient(create_app(lambda: make_harness(tmp_path, script), check_prefix=False)) as test_client:
         yield test_client
 
 
@@ -83,6 +83,21 @@ def test_message_streams_tool_and_final_events(client) -> None:
     assert [m["role"] for m in history] == ["user", "assistant"]
     assert client.delete(f"/chat/sessions/{sid}", headers=headers).status_code == 204
     assert client.get(f"/chat/sessions/{sid}/messages", headers=headers).status_code == 404
+
+
+@pytest.mark.anyio
+async def test_frozen_prefixes_match_the_real_twin_mcp_server(tmp_path) -> None:
+    from harness.main import verify_prefixes
+    from harness.mcp_client import TwinClient
+    from twin_mcp.server import build_server
+
+    harness = make_harness(tmp_path, [])
+    harness.twin = TwinClient(build_server())
+    await harness.twin.start()
+    try:
+        await verify_prefixes(harness)
+    finally:
+        await harness.twin.close()
 
 
 def test_health_reports_llm_and_eval_state(client) -> None:

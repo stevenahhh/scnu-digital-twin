@@ -19,7 +19,7 @@ from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 from common.campus_auth import Account, current_account
-from harness import config
+from harness import config, prefix
 from harness.auth import Owner, owner_for
 from harness.events import HEARTBEAT, sse
 from harness.loop import Harness
@@ -75,11 +75,21 @@ class ConfirmBody(BaseModel):
     decision: str = Field(pattern="^(approve|reject)$")
 
 
-def create_app(harness_factory: Callable[[], Harness] = default_harness) -> FastAPI:
+async def verify_prefixes(harness: Harness) -> None:
+    tools = await harness.twin.list_tools()
+    problems = [f"{role}: {problem}" for role in ("student", "admin")
+                for problem in prefix.check_compatible(role, tools)]
+    if problems:
+        raise RuntimeError("frozen prefix does not match the twin MCP server:\n" + "\n".join(problems))
+
+
+def create_app(harness_factory: Callable[[], Harness] = default_harness, *, check_prefix: bool = True) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         harness = harness_factory()
         await harness.twin.start()
+        if check_prefix:
+            await verify_prefixes(harness)
         app.state.harness = harness
         try:
             yield
