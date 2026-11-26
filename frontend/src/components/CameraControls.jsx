@@ -54,7 +54,7 @@ export function CameraControls({ controlsRef, onZoom, onRotate, onHome, collapsi
         />
       )}
       {shown && (
-        <div id={listId} className="flex flex-col gap-1 rounded-card border border-hairline bg-surface-1 p-1 shadow-popover">
+        <div id={listId} className="flex flex-col gap-1 rounded-popover border border-hairline bg-surface-1 p-1 shadow-popover">
           {actions.map(({ label, Icon, keys, hint, qa, run }) => (
             <Button
               key={label}

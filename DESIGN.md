@@ -79,7 +79,7 @@ Layout: presentation mode - fixed: scene canvas, time readout, tour pager; scrol
 
 ## 5. Components
 
-Components are built on shadcn/ui: the Tailwind 3 generation of the `new-york` registry (Radix primitives), generated into `frontend/src/components/ui/` and themed only through the tokens. The shadcn colour variables in `tokens.css` are derived from the palette, and the radius classes map to the radius tokens (`rounded-md` control, `rounded-lg` and `rounded-xl` card). The primitives in `frontend/src/ui/` keep the project API and wrap those components.
+Components are built on shadcn/ui: the Tailwind 3 generation of the `new-york` registry (Radix primitives), generated into `frontend/src/components/ui/` and themed only through the tokens. The shadcn colour variables in `tokens.css` are derived from the palette, and the radius classes map to the radius tokens (`rounded-md` control, `rounded-lg` popover, `rounded-xl` card, `rounded-sm` the 4px alias). The primitives in `frontend/src/ui/` keep the project API and wrap those components.
 
 | Project primitive | shadcn source |
 |---|---|
@@ -104,7 +104,7 @@ Shared primitives live in `frontend/src/ui/` and both entries use them (Legacy `
 - **Accessibility**: native `button`, a visible focus ring, and 44px touch targets.
 
 ### Segmented
-- **Structure**: a `pill` track with equal-width text segments (control radius, the same active shape as every pressed control) that use Korean nouns. It is `role="tablist"` or `role="radiogroup"` by `kind`.
+- **Structure**: a `rounded-popover` track (4px inset) with equal-width text segments (control radius, the same active shape as every pressed control) that use Korean nouns. It is `role="tablist"` or `role="radiogroup"` by `kind`.
 - **States**: one active style everywhere: a `surface-2` wash, `ink` text and a 4px dot or check before the label. No accent border and no primary fill. Inactive segments use `ink-subtle` text.
 - **Accessibility**: arrow keys move with a roving tabindex, `aria-selected` or `aria-checked` marks the active segment, and segments are 44px tall under a coarse pointer.
 
@@ -134,7 +134,7 @@ Shared primitives live in `frontend/src/ui/` and both entries use them (Legacy `
 - **Accessibility**: `aria-expanded` and `aria-controls`, operable by keyboard.
 
 ### Popover
-- **Structure**: anchored to its trigger, `surface-1`, hairline border, `rounded-card`, `--shadow-popover`, `z-modal` layer; `role="dialog"` or `role="menu"`.
+- **Structure**: anchored to its trigger, `surface-1`, hairline border, `rounded-card` (menus with a 4px inset: `rounded-popover`), `--shadow-popover`, `z-modal` layer; `role="dialog"` or `role="menu"`.
 - **States**: closed or open. Esc or an outside click closes it.
 - **Accessibility**: focus moves inside on open and returns to the trigger on close.
 
@@ -209,7 +209,7 @@ Shared primitives live in `frontend/src/ui/` and both entries use them (Legacy `
 |---|---|---|
 | `--motion-micro` | 120ms | Hover, press, focus feedback |
 | `--motion-state` | 200ms | State changes inside a component (segment, badge, value highlight) |
-| `--motion-surface` | 300ms | Panels, sheets, popovers entering or leaving |
+| `--motion-surface` | 300ms | Panels, sheets, the assistant dock, dialogs, menus, select lists and popovers entering, leaving or resizing |
 | `--motion-camera` | 800ms | Camera fly-to between presets and selections |
 | `--motion-settle` | 150ms | Label layout settle pass after camera motion; material colour transitions |
 | `--motion-ease-standard` | `cubic-bezier(0.2, 0, 0, 1)` | Default easing |
@@ -227,13 +227,16 @@ Hairline borders and tonal steps (`surface-1` to `surface-3`) set the dashboard 
 
 | Token | Value | Usage |
 |---|---|---|
-| `--rounded-control` | 6px | Chips, buttons, inputs, badges, segments inside the track |
-| `--rounded-card` | 12px | Cards, HUD, inspector, popovers, sheets |
-| `--rounded-pill` | 9999px | Segmented track, slider track |
+| `--rounded-control` | 8px | Chips, buttons, inputs, badges, menu rows, segments inside the track |
+| `--rounded-popover` | `control + --spacing-xxs` (12px) | Surfaces that hold controls with a 4px (`p-1`) inset: menus, select lists, search results, the camera list, tab lists, the segmented track |
+| `--rounded-card` | `control + --spacing-xs` (16px) | Surfaces with an 8px (`p-2`) or larger inset: cards, HUD cards, the assistant dock, inspector, popovers, dialogs, sheets |
+| `--rounded-pill` | 9999px | Slider track, dots |
 | `--shadow-popover` | `0 20px 48px rgba(0,0,0,.28)` | Popovers, menus, the HUD toolbar |
 | `--shadow-dialog` | `0 24px 64px rgba(0,0,0,.40)` | Modal dialogs |
 
-Transitional radius aliases: `--rounded-xs` (4px), `--rounded-md` (8px) and `--rounded-lg` (equal to `--rounded-card`) exist only for `frontend/src/ui/legacy-classes.css`. They are deleted together with that file in the W2 cleanup, and new code uses `control`, `card` or `pill`.
+Radii are concentric: an outer surface's radius is the radius of the controls it holds plus its inset, so `--rounded-popover` and `--rounded-card` are computed from `--rounded-control` and the spacing tokens. Give a surface the inset its radius implies (`p-1` for popover, `p-2` for card) wherever a control sits in its corner.
+
+Transitional radius aliases: `--rounded-xs` (`control - --spacing-xxs`, 4px), `--rounded-md` (equal to `--rounded-control`) and `--rounded-lg` (equal to `--rounded-popover`, which shadcn `rounded-lg` reads) exist only for `frontend/src/ui/legacy-classes.css`. They are deleted together with that file in the W2 cleanup, and new code uses `control`, `card` or `pill`.
 
 ## 8. Accessibility Constraints & Accepted Debt
 

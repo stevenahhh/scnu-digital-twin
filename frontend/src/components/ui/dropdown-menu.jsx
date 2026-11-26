@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils"
 import { COARSE_TARGET } from "@/ui/Button.jsx"
 
 // 닫힐 때는 바로 사라진다. 나가는 애니메이션 동안 남은 메뉴는 포인터가 항목을 벗어나면 포커스를 가져가서, 항목이 연 면(설정)의 포커스를 빼앗는다.
-const MENU_MOTION = "duration-state data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+const MENU_MOTION = "duration-surface data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
 // 바탕색은 전환 없이 바로 바뀌고 글자색만 짧게 전환한다(DESIGN 6절).
-const MENU_ROW = "relative flex min-h-10 cursor-default select-none items-center gap-2 rounded-sm py-1.5 text-body outline-none transition-[color] duration-micro focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+const MENU_ROW = "relative flex min-h-10 cursor-default select-none items-center gap-2 rounded-md py-1.5 text-body outline-none transition-[color] duration-micro focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
 
 const DropdownMenu = DropdownMenuPrimitive.Root
 

@@ -19,9 +19,9 @@ const RANGE_LABEL = "시각 (KST)";
 // 묶은 선택자를 쓰고, 굵은 포인터·폰 폭에서는 index.css의 44px 규칙이 그대로 남는다.
 const RANGE = "time-range mt-2 w-full accent-[var(--colors-primary)] [@media(pointer:fine)]:[&.time-range]:h-6";
 
-const SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 px-3 py-2.5";
+const SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 p-2";
 // 폰에서 접힌 시간 카드: 장면 시각 칩 하나(누르면 펼친다). 지도를 가리지 않는다.
-const COLLAPSED_SURFACE = "pointer-events-auto rounded-card border border-hairline bg-surface-1 p-1";
+const COLLAPSED_SURFACE = "pointer-events-auto rounded-popover border border-hairline bg-surface-1 p-1";
 const CHIP = cx(
   "flex min-h-11 items-center gap-2 rounded-control px-3",
   "text-caption font-medium text-ink-muted hover:bg-surface-2",

@@ -89,14 +89,16 @@
   --spacing-xl: 32px;
   --spacing-xxl: 48px;
 
-  /* 모서리: control(칩·버튼·입력), card(카드·HUD·인스펙터), pill */
-  --rounded-control: 6px;
-  --rounded-card: 12px;
+  /* 모서리: 바깥 면의 반경 = 안쪽 컨트롤 반경 + 면의 안쪽 여백(동심원). control 하나에서 계산한다.
+     popover: p-1(4px) 안에 컨트롤을 담는 면(메뉴, 목록, 탭 목록, 세그먼트 트랙). card: p-2(8px) 이상인 면. */
+  --rounded-control: 8px;
+  --rounded-popover: calc(var(--rounded-control) + var(--spacing-xxs));
+  --rounded-card: calc(var(--rounded-control) + var(--spacing-xs));
   --rounded-pill: 9999px;
-  /* 별칭: legacy-classes.css가 쓴다. --rounded-lg는 shadcn 컴포넌트의 rounded-lg도 받는다. */
-  --rounded-xs: 4px;
-  --rounded-md: 8px;
-  --rounded-lg: var(--rounded-card);
+  /* 별칭: legacy-classes.css가 쓴다. xs는 popover 면 안쪽 4px 여백을 다시 뺀 값이다. */
+  --rounded-xs: calc(var(--rounded-control) - var(--spacing-xxs));
+  --rounded-md: var(--rounded-control);
+  --rounded-lg: var(--rounded-popover);
 
   /* 그림자: 떠 있는 면 두 가지뿐 */
   --shadow-popover: 0 20px 48px rgba(0, 0, 0, 0.28);
