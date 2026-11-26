@@ -124,3 +124,16 @@ def test_prefix_hash_depends_only_on_instructions_and_tools() -> None:
     assert prefix_hash("sys", tools) == prefix_hash("sys", [dict(tools[0])])
     assert prefix_hash("sys", tools) != prefix_hash("sys2", tools)
     assert prefix_hash("sys", tools) != prefix_hash("sys", [])
+
+
+@pytest.mark.anyio
+async def test_network_errors_become_timely_errors() -> None:
+    def broken(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/sdk-auth/authenticate"):
+            return httpx.Response(200, json={"data": {"access_token": "jwt"}})
+        raise httpx.ReadError("connection reset", request=request)
+
+    client = TimelyClient(api_key="test-key", base_url="https://timely.test",
+                          http=httpx.AsyncClient(transport=httpx.MockTransport(broken)))
+    with pytest.raises(TimelyError, match="ReadError"):
+        await collect(client, session_id="s", instructions="sys", tools=[], messages=[])
