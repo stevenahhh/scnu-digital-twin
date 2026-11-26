@@ -24,7 +24,6 @@ const TOOL_LABELS = {
   simulation_control: "시뮬레이션 제어", todo: "작업 목록",
 };
 const NOTICE = "질문과 답변은 외부 AI 서비스로 전송됩니다";
-const MAX_CHARS = 2000;
 // 접힌 입력 막대 높이. 펼치면 막대 위로 그 네 배만큼 대화창이 자란다(폰은 화면 비율로 따로 정한다).
 const BAR_PX = 76;
 // 데스크톱에서 하단 왼쪽 시간 카드(16~400px)와 오른쪽 카메라 단추 열(지도 오른쪽 끝에서 58px) 사이의 빈 띠 가운데에 둔다.
@@ -177,7 +176,7 @@ export function AssistantDock({ assistant, mode = "desktop", insetRight = "0px",
   };
   const send = (text) => {
     const question = text.trim();
-    if (busy || !assistant.available || !question || question.length > MAX_CHARS) return;
+    if (busy || !assistant.available || !question) return;
     setDraft("");
     stick.current = true;
     open(true);
@@ -286,7 +285,7 @@ export function AssistantDock({ assistant, mode = "desktop", insetRight = "0px",
         {!expanded && !hasConversation && assistant.sessions?.length > 0 && (
           <Button size="sm" variant="ghost" iconOnly label="이전 대화" icon={<History className="h-4 w-4" />} onClick={() => { open(true); setHistoryOpen(true); }} />
         )}
-        {!available ? <p role="status" className="min-h-11 flex-1 px-2 py-2.5 text-ink-muted">{ASSISTANT_LOGIN_NOTICE}</p> : <textarea ref={input} aria-label="질문" aria-describedby={noticeId} rows={1} value={draft} maxLength={MAX_CHARS}
+        {!available ? <p role="status" className="min-h-11 flex-1 px-2 py-2.5 text-ink-muted">{ASSISTANT_LOGIN_NOTICE}</p> : <textarea ref={input} aria-label="질문" aria-describedby={noticeId} rows={1} value={draft}
           disabled={!available || busy}
           placeholder="캠퍼스에 대해 무엇이든 물어보세요"
           onChange={(event) => setDraft(event.target.value)}
@@ -300,7 +299,7 @@ export function AssistantDock({ assistant, mode = "desktop", insetRight = "0px",
         {expanded && phone && <Button size="sm" variant="ghost" iconOnly label="닫기" icon={<X className="h-4 w-4" />} onClick={() => open(false)} />}
       </form>
       <p id={noticeId} className={cx("px-5 pb-2 text-caption text-ink-muted", !expanded && available && "sr-only")}>
-        {NOTICE}{draft.length > MAX_CHARS * 0.8 ? ` · ${draft.length}/${MAX_CHARS}` : ""}
+        {NOTICE}
       </p>
     </section>
   );

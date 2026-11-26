@@ -129,7 +129,7 @@ def create_app(harness_factory: Callable[[], Harness] = default_harness, *, chec
         try:
             session = harness_of(request).store.create(who.key, who.role)
         except ConversationLimit:
-            raise _error(429, "conversation_limit", "대화는 최대 5개까지 만들 수 있습니다",
+            raise _error(429, "conversation_limit", f"대화는 최대 {config.MAX_CONVERSATIONS_PER_OWNER}개까지 만들 수 있습니다",
                          "Too many conversations") from None
         return {"session_id": session.conversation_id, "role": session.role, "epoch": session.epoch,
                 "limits": {"max_user_chars": config.MAX_USER_CHARS, "max_rounds": config.MAX_ROUNDS}}
@@ -160,9 +160,10 @@ def create_app(harness_factory: Callable[[], Harness] = default_harness, *, chec
         harness = harness_of(request)
         if harness.timely is None:
             raise _error(503, "llm_key_missing", "AI 서비스 키가 설정되지 않았습니다", "TIMELY_API_KEY is not set")
-        if len(body.text) > config.MAX_USER_CHARS:
-            raise _error(413, "message_too_long", "질문은 2,000자 이하로 입력해 주세요", "Message too long")
-        if session.turn_lock.locked() or harness.owner_runs.get(who.key, 0) >= config.MAX_RUNS_PER_OWNER:
+        if config.MAX_USER_CHARS and len(body.text) > config.MAX_USER_CHARS:
+            raise _error(413, "message_too_long", f"질문은 {config.MAX_USER_CHARS:,}자 이하로 입력해 주세요", "Message too long")
+        if session.turn_lock.locked() or (
+                config.MAX_RUNS_PER_OWNER and harness.owner_runs.get(who.key, 0) >= config.MAX_RUNS_PER_OWNER):
             raise _error(409, "run_in_progress", "이전 답변을 만드는 중입니다", "A run is already in progress")
         authorization = request.headers.get("Authorization")
         queue: asyncio.Queue[bytes | None] = asyncio.Queue()

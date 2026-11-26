@@ -70,7 +70,15 @@ def test_restart_replays_journal_even_with_stale_meta(tmp_path: Path) -> None:
     assert json.loads((restored.directory / "meta.json").read_text())["needs_roll"]
 
 
-def test_conversation_limit_survives_restart(tmp_path: Path) -> None:
+def test_limits_are_off_by_default(tmp_path: Path) -> None:
+    store = SessionStore(tmp_path, clock=lambda: 0.0, estimate=len)
+    sessions = [store.create("guest:student:" + "a" * 22, "student") for _ in range(8)]
+    store.record_usage(sessions[0], ModelCall(text="x" * 5_000_000))
+    store.check_budget(sessions[-1])
+
+
+def test_conversation_limit_survives_restart(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(config, "MAX_CONVERSATIONS_PER_OWNER", 5)
     store = SessionStore(tmp_path)
     for _ in range(config.MAX_CONVERSATIONS_PER_OWNER):
         store.create("acct:a", "student")
@@ -115,8 +123,9 @@ def test_usage_counts_context_delta_thinking_and_arguments(tmp_path: Path) -> No
     ("guest:admin:" + "a" * 22, "admin", "guest"),
 ])
 def test_budget_charges_overage_then_blocks_until_next_day(
-    tmp_path: Path, owner: str, role: str, budget: str,
+    tmp_path: Path, owner: str, role: str, budget: str, monkeypatch,
 ) -> None:
+    monkeypatch.setattr(config, "DAILY_BUDGET", {"guest": 60000, "student": 150000, "admin": 600000})
     now = [0.0]
     store = SessionStore(tmp_path, clock=lambda: now[0], estimate=lambda text: len(text))
     session = store.create(owner, role)
