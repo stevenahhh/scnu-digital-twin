@@ -81,26 +81,29 @@ class TimelyClient:
             body["checkpoint_id"] = checkpoint_id
         if reasoning_effort:
             body["reasoning_effort"] = reasoning_effort
-        for attempt in range(2):
-            token = self._token if self._token and not _expires_soon(self._token) else await self._authenticate()
-            request = self._http.build_request(
-                "POST", self._base_url + COMPLETION_PATH, json=body,
-                headers={"authorization": f"Bearer {token}", "accept": "text/event-stream"})
-            response = await self._http.send(request, stream=True)
-            try:
-                if response.status_code == 401 and attempt == 0:
-                    self._token = None
-                    continue
-                if response.status_code >= 400:
-                    detail = (await response.aread()).decode(errors="replace")[:300]
-                    raise TimelyError(f"Timely completion failed: HTTP {response.status_code} {detail}")
-                async for line in response.aiter_lines():
-                    if not line.startswith("data:"):
+        try:
+            for attempt in range(2):
+                token = self._token if self._token and not _expires_soon(self._token) else await self._authenticate()
+                request = self._http.build_request(
+                    "POST", self._base_url + COMPLETION_PATH, json=body,
+                    headers={"authorization": f"Bearer {token}", "accept": "text/event-stream"})
+                response = await self._http.send(request, stream=True)
+                try:
+                    if response.status_code == 401 and attempt == 0:
+                        self._token = None
                         continue
-                    event = json.loads(line[5:])
-                    if event.get("type") == "error":
-                        raise TimelyError(event.get("message") or event.get("error") or "Timely error event")
-                    yield event
-                return
-            finally:
-                await response.aclose()
+                    if response.status_code >= 400:
+                        detail = (await response.aread()).decode(errors="replace")[:300]
+                        raise TimelyError(f"Timely completion failed: HTTP {response.status_code} {detail}")
+                    async for line in response.aiter_lines():
+                        if not line.startswith("data:"):
+                            continue
+                        event = json.loads(line[5:])
+                        if event.get("type") == "error":
+                            raise TimelyError(event.get("message") or event.get("error") or "Timely error event")
+                        yield event
+                    return
+                finally:
+                    await response.aclose()
+        except httpx.HTTPError as exc:
+            raise TimelyError(f"Timely connection failed: {type(exc).__name__}") from exc

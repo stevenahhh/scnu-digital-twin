@@ -178,16 +178,17 @@ export function useAssistant({ session, active, context, onAction, onWriteComple
     }
   }
 
-  async function remove() {
-    if (!sid || run.current || operation.current) return;
+  // target: the conversation to delete, the open one when omitted.
+  async function remove(target = sid) {
+    if (!target || run.current || operation.current) return;
     const controller = new AbortController();
     operation.current = controller;
     setLoading(true); setError(null);
     try {
-      await client.remove(sid);
+      await client.remove(target);
       if (!isCurrent()) return;
-      setSessions((previous) => previous.filter((item) => item.session_id !== sid));
-      setSid(null); setMessages([]); setTurn(emptyTurn());
+      setSessions((previous) => previous.filter((item) => item.session_id !== target));
+      if (target === sid) { setSid(null); setMessages([]); setTurn(emptyTurn()); }
     } catch (failure) { report(failure); }
     finally {
       if (operation.current === controller) { operation.current = null; setLoading(false); }

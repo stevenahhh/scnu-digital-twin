@@ -1,12 +1,9 @@
-/* @vitest-environment happy-dom */
+/* @vitest-environment jsdom */
 import { useState } from "react";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import { AssistantPanel } from "./AssistantPanel.jsx";
+import { AssistantDock } from "./AssistantDock.jsx";
 import { useAssistant } from "./useAssistant.mjs";
-import { DashboardShell } from "../panel/DashboardShell.jsx";
-import { DASHBOARD_TABS } from "../panel/DashboardPanel.jsx";
-import { assistantTabs } from "./assistantTab.mjs";
 
 const student = { token: "test-student", account: { role: "student", guest: false } };
 const admin = { token: "test-admin", account: { role: "admin", guest: false } };
@@ -37,7 +34,7 @@ function server() {
 function Harness({ session = student, onAction = () => {}, refresh = () => {} }) {
   const [visible, setVisible] = useState(true);
   const assistant = useAssistant({ session, active: visible, context, onAction, onWriteComplete: refresh });
-  return <><button onClick={() => setVisible((value) => !value)}>다른 탭</button>{visible && <AssistantPanel assistant={assistant} />}</>;
+  return <><button onClick={() => setVisible((value) => !value)}>다른 탭</button>{visible && <AssistantDock assistant={assistant} />}</>;
 }
 async function ask() {
   await screen.findByRole("button", { name: "지금 캠퍼스 날씨" });
@@ -133,6 +130,7 @@ it("changing tabs keeps the run alive but unmounting the dashboard aborts it", a
   expect(signal.aborted).toBe(false);
   await api.emit("token", { text: "계속되는 답변" });
   fireEvent.click(screen.getByRole("button", { name: "다른 탭" }));
+  fireEvent.click(screen.getByRole("button", { name: "대화창 펼치기" }));
   expect(screen.getByText("계속되는 답변")).toBeTruthy();
   mounted.unmount();
   expect(signal.aborted).toBe(true);
@@ -163,18 +161,35 @@ it("expired proposals stop offering an apply action", async () => {
   await api.emit("end", {});
 });
 
-it.each(["desktop", "phone"])("shows the assistant tab within the existing %s shell", (mode) => {
-  const assistant = { available: false };
-  render(<DashboardShell mode={mode} open detent="full" activeTab="assistant" tabs={assistantTabs(DASHBOARD_TABS)} onTabChange={() => {}} onOpenChange={() => {}} onDetentChange={() => {}}>
-    <AssistantPanel assistant={assistant} />
-  </DashboardShell>);
-  expect(screen.getByRole("tab", { name: "도우미" }).getAttribute("aria-selected")).toBe("true");
-  expect(screen.getAllByRole("region", { name: "대시보드" })).toHaveLength(mode === "phone" ? 2 : 1);
-  expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("도우미");
+it("renders answers as markdown and html blocks as sandboxed cards", async () => {
+  const api = server();
+  render(<Harness />);
+  await ask();
+  expect(screen.getByRole("region", { name: "도우미 대화" }).dataset.expanded).toBe("true");
+  await api.emit("final", { text: "**굵은 요약**\n\n```html\n<table><tr><td>34.9</td></tr></table>\n```", flags: {} });
+  await api.emit("end", {});
+  expect(screen.getByText("굵은 요약").tagName).toBe("STRONG");
+  const card = screen.getByTitle("도우미 자료");
+  expect(card.getAttribute("sandbox")).toBe("allow-same-origin");
+  expect(card.getAttribute("srcdoc")).toContain("<td>34.9</td>");
 });
 
-it("keeps the assistant reachable on the collapsed dashboard rail", () => {
-  render(<DashboardShell mode="desktop" open={false} activeTab="status" tabs={assistantTabs(DASHBOARD_TABS)}
-    onTabChange={() => {}} onOpenChange={() => {}} />);
-  expect(screen.getByRole("button", { name: "도우미" })).toBeTruthy();
+it("deletes a conversation from the history list without opening it", async () => {
+  const api = server();
+  render(<Harness />);
+  fireEvent.click(await screen.findByRole("button", { name: "이전 대화" }));
+  fireEvent.click(screen.getByRole("button", { name: "이전 날씨 삭제" }));
+  await waitFor(() => expect(screen.queryByRole("button", { name: "이전 날씨" })).toBeNull());
+  expect(api.fetch.mock.calls.find(([url, init]) => url.endsWith("/old") && init.method === "DELETE")).toBeTruthy();
+  expect(api.fetch.mock.calls.some(([url, init]) => url.endsWith("/old/messages") && init.method === "GET")).toBe(false);
+});
+
+it("Escape folds the chat window back into the input bar", async () => {
+  const api = server();
+  render(<Harness />);
+  await ask();
+  fireEvent.keyDown(screen.getByRole("textbox", { name: "질문" }), { key: "Escape" });
+  expect(screen.getByRole("region", { name: "도우미 대화" }).dataset.expanded).toBe("false");
+  expect(screen.getByRole("button", { name: "대화창 펼치기" })).toBeTruthy();
+  await api.emit("end", {});
 });

@@ -2,14 +2,6 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createAssistantClient, parseSSE, AssistantError } from "./assistantClient.mjs";
 import { resolveAssistantEndpoint } from "../simulation/utils/apiConfig.js";
-import { ASSISTANT_TAB, assistantTabs } from "./assistantTab.mjs";
-
-test("assistant tabs extend a caller's tabs without changing shared tabs", () => {
-  const base = Object.freeze([{ value: "status", label: "현황" }]);
-  assert.deepEqual(assistantTabs(base), [...base, ASSISTANT_TAB]);
-  assert.equal(base.length, 1);
-  assert.equal(ASSISTANT_TAB.value, "assistant");
-});
 
 test("assistant endpoint uses its own origin and trims trailing slashes", () => {
   assert.equal(resolveAssistantEndpoint(), "http://127.0.0.1:8004");

@@ -261,23 +261,38 @@ class Harness:
                     "delta_roles": [m["role"] for m in delta], "checkpoint": bool(checkpoint)})})
                 log.info("timely request session=%s prefix=%s delta=%s", session.timely_session,
                          prefix_hash(p.instructions, tools_list), [m["role"] for m in delta])
-                streamed, thinking, final, calls = "", "", None, None
-                async with self.streams:
-                    async for event in self.timely.stream(
-                            session_id=session.timely_session, instructions=p.instructions, tools=tools_list,
-                            messages=delta, checkpoint_id=checkpoint,
-                            reasoning_effort=config.REASONING_EFFORT.get(role)):
-                        kind = event.get("type")
-                        if kind == "token" and event.get("content"):
-                            streamed += event["content"]
-                            yield "token", {"text": event["content"]}
-                        elif kind == "thinking":
-                            thinking += event.get("content") or ""
-                        elif kind == "tool_call_required":
-                            calls = event.get("tool_calls") or []
-                            checkpoint = (event.get("configurable") or {}).get("checkpoint_id") or checkpoint
-                        elif kind == "final_response":
-                            final = event.get("message") or ""
+                retried = False
+                while True:
+                    streamed, thinking, final, calls = "", "", None, None
+                    try:
+                        async with self.streams:
+                            async for event in self.timely.stream(
+                                    session_id=session.timely_session, instructions=p.instructions, tools=tools_list,
+                                    messages=delta, checkpoint_id=checkpoint,
+                                    reasoning_effort=config.REASONING_EFFORT.get(role)):
+                                kind = event.get("type")
+                                if kind == "token" and event.get("content"):
+                                    streamed += event["content"]
+                                    yield "token", {"text": event["content"]}
+                                elif kind == "thinking":
+                                    thinking += event.get("content") or ""
+                                elif kind == "tool_call_required":
+                                    calls = event.get("tool_calls") or []
+                                    checkpoint = (event.get("configurable") or {}).get("checkpoint_id") or checkpoint
+                                elif kind == "final_response":
+                                    final = event.get("message") or ""
+                        break
+                    except TimelyError as exc:
+                        # A first request that dropped before any output leaves Timely's copy of this session
+                        # unknown, so retry once in a fresh epoch seeded from the journal instead of failing.
+                        if retried or round_no or streamed or calls is not None or final is not None:
+                            raise
+                        retried = True
+                        log.warning("timely dropped the first request, retrying in a new epoch: %s", exc)
+                        seed = compaction.roll(session, prefix_version=p.version, prefix_tokens=_prefix_tokens(p))
+                        delta = [{"role": "user", "content": f"[이전 대화 요약]\n{seed}\n[/이전 대화 요약]\n\n{user_text}"}]
+                        checkpoint = None
+                        yield "status", {"state": "thinking", "label_ko": "AI 서비스에 다시 연결하는 중"}
                 call = ModelCall(messages=delta, text=final if final is not None else streamed, thinking=thinking,
                                  tool_arguments=tuple(json.dumps(c.get("args") or {}, ensure_ascii=False)
                                                       for c in calls or ()))
@@ -311,8 +326,7 @@ class Harness:
             raise
         except TimelyError as exc:
             log.warning("timely failure: %s", exc)
-            if awaiting_results or checkpoint:
-                session.append({"kind": "error", "needs_roll": True})
+            session.append({"kind": "error", "needs_roll": True})
             yield "error", {"code": "llm_upstream_unavailable", "message_ko": "AI 서비스 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요",
                             "retry_after_s": 30}
         except BudgetExceeded:

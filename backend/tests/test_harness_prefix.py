@@ -17,8 +17,8 @@ PREFIX_DIR = Path(__file__).parents[1] / "harness" / "prefix"
 @pytest.mark.parametrize(
     ("role", "version", "digest", "sizes"),
     [
-        ("student", "2f51301aa9d7", "5b2e60566d6007b2", (1654, 3413)),
-        ("admin", "e1d62e7641f0", "6e7d850e741ceee0", (1872, 5261)),
+        ("student", "72b607be5d9b", "d217f769e517ffbf", (2526, 3413)),
+        ("admin", "9abed381e8de", "177b44f5e774ccae", (2744, 5261)),
     ],
 )
 def test_frozen_prefix_golden_bytes(role, version, digest, sizes):

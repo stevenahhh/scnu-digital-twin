@@ -38,16 +38,15 @@ import { buildingNotice } from "../restrictions/restrictionModel.mjs";
 import { useCampusRestrictions } from "../restrictions/useCampusRestrictions.mjs";
 import { sessionStore } from "../auth/session.mjs";
 import { accountLabel, useSession } from "../auth/useSession.mjs";
-import { assistantTabs } from "../assistant/assistantTab.mjs";
 import { assistantContext, applyAssistantAction } from "../assistant/assistantActions.mjs";
 import { useAssistant } from "../assistant/useAssistant.mjs";
-import { AssistantPanel } from "../assistant/AssistantPanel.jsx";
+import { AssistantDock } from "../assistant/AssistantDock.jsx";
 
 const D4SectionExperience = lazy(() => import("../vworld/D4SectionExperience").then((module) => ({ default: module.D4SectionExperience })));
 const ROOT_CLASS = "dashboard-root relative h-dvh w-screen overflow-clip bg-canvas text-ink";
 const D4_PRESET = CAMERA_PRESETS.find((preset) => preset.id === D4_PRESET_ID);
 // 학생 화면은 건물·현황·도우미를 제공한다. 도우미의 쓰기 권한은 서버에서 검사한다.
-export const STUDENT_TABS = Object.freeze(assistantTabs(DASHBOARD_TABS.filter((tab) => tab.value === "building" || tab.value === "status")));
+export const STUDENT_TABS = Object.freeze(DASHBOARD_TABS.filter((tab) => tab.value === "building" || tab.value === "status"));
 const isStudentTab = (value) => STUDENT_TABS.some((tab) => tab.value === value);
 // 학생 화면은 설치 계획을 읽지 않는다. 피드 집계(useFeedStatus)에는 빈 목록을 넘긴다.
 const NO_PLANS = Object.freeze({ status: "ready", plans: [], retry() {} });
@@ -67,11 +66,6 @@ export default function AppStudent() {
   const viewportMode = useViewportMode();
   const panelState = usePanelState(viewportMode);
   const navigation = useDashboardNavigation({ panelState, activeTab, setActiveTab });
-  // 폰 시트의 중간 높이에서는 도우미 입력창이 화면 밖에 있어, 도우미 탭이 열리면 전체 높이로 올린다.
-  const { open: panelOpen, setDetent: setPanelDetent } = panelState;
-  useEffect(() => {
-    if (activeTab === "assistant" && viewportMode === "phone" && panelOpen) setPanelDetent("full");
-  }, [activeTab, viewportMode, panelOpen, setPanelDetent]);
   const [isTimePlaying, setIsTimePlaying] = useState(false);
   const [isSceneLoading, setIsSceneLoading] = useState(false);
   const [sceneAttempt, setSceneAttempt] = useState(0);
@@ -108,7 +102,7 @@ export default function AppStudent() {
   });
   const isCampus = flow.buildingViewMode === "campus";
   const assistant = useAssistant({
-    session, active: activeTab === "assistant",
+    session, active: true,
     context: () => assistantContext({ selection, activeTab, flow, clock }),
     onAction: (event) => applyAssistantAction(event, { flow, camera, clock, panelState, setActiveTab, role: session?.account.role }),
     onWriteComplete: restrictions.refresh,
@@ -223,7 +217,6 @@ export default function AppStudent() {
         onTabChange={setActiveTab}
         scrollRef={panelScrollRef}
       >
-        {activeTab === "assistant" && <AssistantPanel assistant={assistant} />}
         {activeTab === "building" && (
           <PanelErrorBoundary label="건물">{inspector ?? <BuildingEmptyState />}</PanelErrorBoundary>
         )}
@@ -233,6 +226,13 @@ export default function AppStudent() {
           </PanelErrorBoundary>
         )}
       </DashboardShell>
+      <AssistantDock
+        assistant={assistant}
+        mode={viewportMode}
+        insetRight={mapInsetRight}
+        sheetRaised={viewportMode === "phone" && (!isCampus || panelState.detent !== "peek")}
+        onExpand={() => { if (viewportMode === "phone") panelState.setDetent("peek"); }}
+      />
     </div>
   );
 }

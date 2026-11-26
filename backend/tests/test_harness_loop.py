@@ -178,3 +178,30 @@ async def test_twin_client_sends_the_bearer_in_meta_and_enforces_roles() -> None
     assert text == "campus_status | 시뮬레이션 시나리오"
     assert seen["scnu/authorization"] == "Bearer abc" and seen["scnu/session"] == "s1"
     assert "not allowed" in denied
+
+
+async def test_a_dropped_first_request_is_retried_once_in_a_new_epoch(tmp_path) -> None:
+    from harness.timely import TimelyError
+
+    harness = make_harness(tmp_path, [TimelyError("Timely connection failed: ReadError"), final("다시 연결된 답변")])
+    session = harness.store.create("acct:20239901", "student")
+    first_id = session.timely_session
+
+    events = await run(harness, session, "통제 구간 알려줘")
+
+    assert events[-1] == ("final", events[-1][1]) and events[-1][1]["text"] == "다시 연결된 답변"
+    retry = harness.timely.requests[1]
+    assert retry["session_id"] != first_id
+    assert retry["messages"][0]["content"].endswith("통제 구간 알려줘")
+
+
+async def test_a_second_failure_reports_an_upstream_error_and_rolls_next_turn(tmp_path) -> None:
+    from harness.timely import TimelyError
+
+    harness = make_harness(tmp_path, [TimelyError("a"), TimelyError("b")])
+    session = harness.store.create("acct:20239901", "student")
+
+    events = await run(harness, session, "안녕")
+
+    assert events[-1][0] == "error" and events[-1][1]["code"] == "llm_upstream_unavailable"
+    assert session.needs_roll is True

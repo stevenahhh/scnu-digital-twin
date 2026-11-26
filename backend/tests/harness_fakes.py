@@ -19,7 +19,10 @@ class ScriptedTimely:
 
     async def stream(self, **request):
         self.requests.append(request)
-        for event in self.script.pop(0):
+        step = self.script.pop(0)
+        if isinstance(step, Exception):
+            raise step
+        for event in step:
             yield event
 
     async def aclose(self) -> None:
