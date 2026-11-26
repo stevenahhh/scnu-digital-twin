@@ -160,7 +160,7 @@ export function RoofEditor({
   }
 
   return (
-    <div className="absolute inset-0 flex min-h-0 flex-col sm:flex-row" aria-label={`${buildingId} 태양광 설치 모드`}>
+    <div className="absolute inset-0 flex min-h-0 flex-col" aria-label={`${buildingId} 태양광 설치 모드`}>
       <div className="relative min-h-0 min-w-0 flex-1">
         <RoofEditorScene
           state={editor}
