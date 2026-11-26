@@ -9,10 +9,10 @@ import { StatusBadge } from "../../../ui/StatusBadge.jsx";
 import { cx } from "../../../ui/cx.mjs";
 import { useViewportMode } from "../../../hooks/useViewportMode.mjs";
 
-const SIDE_PANEL = [
-  "relative z-20 flex shrink-0 flex-col gap-4 overflow-y-auto",
-  "border-l border-hairline-strong bg-surface-1 p-4 text-ink",
-  "md:h-full md:w-[360px] xl:w-[380px]",
+// 장면 아래 칸. 장면이 화면 폭을 다 쓰도록 위아래로 나누고, 넘치는 제어는 이 칸 안에서만 스크롤한다.
+const BOTTOM_PANEL = [
+  "relative z-20 flex max-h-[45%] min-h-0 shrink-0 flex-col gap-4 overflow-y-auto overscroll-contain",
+  "border-t border-hairline-strong bg-surface-1 p-4 text-ink",
 ].join(" ");
 const icon = (Icon) => <Icon aria-hidden="true" className="h-4 w-4" />;
 const pressedClass = (pressed) => cx(pressed && "border-hairline-strong bg-surface-3 text-ink");
@@ -37,7 +37,7 @@ function NumberField({ label, value, min, max, step = 1, suffix, onChange }) {
   );
 }
 
-// 머리 한 줄: 제목과 배열 추가·계획 목록. 데스크톱 옆 칸과 폰 바텀 시트가 같은 머리를 쓴다.
+// 머리 한 줄: 제목과 배열 추가·계획 목록. 데스크톱 아래 칸과 폰 바텀 시트가 같은 머리를 쓴다.
 function ControlsHeader({ buildingId, onAdd, onBackToPlans }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -109,7 +109,7 @@ function ControlsBody({
       </dl>
 
       {selectedArray && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <NumberField
             label="가로 위치"
             suffix="m"
@@ -158,7 +158,7 @@ function ControlsBody({
             value={selectedArray.tiltDeg}
             onChange={(tiltDeg) => onUpdate({ tiltDeg })}
           />
-          <fieldset className="col-span-2">
+          <fieldset className="col-span-2 sm:col-span-3">
             <legend className="mb-1 text-caption text-ink-muted">모듈 방향</legend>
             <div className="grid grid-cols-2 gap-2">
               {[
@@ -197,7 +197,7 @@ function ControlsBody({
         </p>
       )}
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Button size="sm" onClick={onUndo} disabled={!canUndo} icon={icon(RotateCcw)}>
           실행 취소
         </Button>
@@ -224,7 +224,7 @@ function ControlsBody({
   );
 }
 
-// 옥상 태양광 편집 제어판. 데스크톱·태블릿은 장면 오른쪽 칸, 폰은 장면을 가리지 않는 바텀 시트(Sheet)다.
+// 옥상 태양광 편집 제어판. 데스크톱·태블릿은 장면 아래 칸, 폰은 장면을 가리지 않는 바텀 시트(Sheet)다.
 export function RoofEditorControls({ buildingId = "D4", arrays = [], onAdd, onBackToPlans, ...body }) {
   const phone = useViewportMode() === "phone";
   const header = <ControlsHeader buildingId={buildingId} onAdd={onAdd} onBackToPlans={onBackToPlans} />;
@@ -238,7 +238,7 @@ export function RoofEditorControls({ buildingId = "D4", arrays = [], onAdd, onBa
   }
   return (
     <aside
-      className={SIDE_PANEL}
+      className={BOTTOM_PANEL}
       aria-label="태양광 설치 제어판"
     >
       {header}
