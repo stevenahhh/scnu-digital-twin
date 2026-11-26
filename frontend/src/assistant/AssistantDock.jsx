@@ -3,10 +3,11 @@ import {
   ArrowUp, Check, ChevronDown, ChevronUp, Copy, History, Maximize2, Minimize2, Sparkles, SquarePen, Square, Trash2, X,
 } from "lucide-react";
 import { Button, FOCUS_RING } from "../ui/Button.jsx";
+import { Spinner } from "../ui/Spinner.jsx";
 import { StatusBadge } from "../ui/StatusBadge.jsx";
 import { cx } from "../ui/cx.mjs";
 import { ASSISTANT_LOGIN_NOTICE } from "./assistantClient.mjs";
-import { cardDocument, splitAnswer } from "./assistantMarkdown.mjs";
+import { CARD_TOKENS, cardDocument, splitAnswer } from "./assistantMarkdown.mjs";
 
 const FLAGS = [
   ["estimated", "추정", "estimate"],
@@ -43,13 +44,14 @@ function HtmlCard({ html, complete }) {
   const observer = useRef(null);
   useEffect(() => () => observer.current?.disconnect(), []);
   useLayoutEffect(() => {
-    const style = frame.current ? getComputedStyle(frame.current.parentElement) : null;
     const root = getComputedStyle(document.documentElement);
-    const primary = root.getPropertyValue("--primary").trim();
-    // 부모와 color-scheme이 다르면 Chrome이 투명한 iframe 바탕을 흰색으로 칠한다.
+    // 부모와 color-scheme이 다르면 Chrome이 iframe 바탕을 흰색으로 칠한다.
     const scheme = document.documentElement.dataset.theme === "light" ? "light" : "dark";
     setScheme(scheme);
-    setDoc(cardDocument(html, style ? { color: style.color, font: style.fontFamily, accent: primary ? `hsl(${primary})` : undefined, scheme } : undefined));
+    setDoc(cardDocument(html, {
+      scheme, font: root.fontFamily,
+      tokens: Object.fromEntries(Object.entries(CARD_TOKENS).map(([name, token]) => [name, root.getPropertyValue(token).trim()])),
+    }));
   }, [html]);
   const measure = () => {
     const body = frame.current?.contentDocument?.documentElement;
@@ -62,9 +64,9 @@ function HtmlCard({ html, complete }) {
   };
   if (!complete) return <div className="rounded-control bg-surface-2 px-3 py-2 text-caption text-ink-muted" data-qa="assistant-card-pending">시각 자료를 만드는 중입니다</div>;
   return (
-    <div className="min-w-0 overflow-hidden rounded-control" data-qa="assistant-card">
+    <div className="min-w-0 overflow-hidden rounded-control border border-hairline bg-canvas" data-qa="assistant-card">
       <iframe ref={frame} title="도우미 자료" sandbox="allow-same-origin" srcDoc={doc} onLoad={measure}
-        className="block w-full border-0 bg-transparent" style={{ height, colorScheme: scheme }} />
+        className="block w-full border-0 bg-canvas" style={{ height, colorScheme: scheme }} />
     </div>
   );
 }
@@ -93,8 +95,8 @@ function CopyButton({ text }) {
 function Message({ message, last, assistant }) {
   if (message.role === "user") {
     return (
-      <li className="flex justify-end">
-        <p className="max-w-xl whitespace-pre-wrap rounded-2xl rounded-br-md bg-primary px-4 py-2 text-body text-primary-foreground [overflow-wrap:anywhere]">{message.text}</p>
+      <li className="flex justify-end pl-12">
+        <p className="whitespace-pre-wrap rounded-card bg-primary px-4 py-2 text-body text-on-primary [overflow-wrap:anywhere]">{message.text}</p>
       </li>
     );
   }
@@ -107,19 +109,14 @@ function Message({ message, last, assistant }) {
         {tools.length > 0 && (
           <ul aria-label="도구 실행 상태" className="flex flex-wrap gap-1.5">
             {tools.map((tool) => (
-              <li key={tool.call_id} className={cx("rounded-full border border-hairline px-2.5 py-0.5 text-caption", tool.state === "error" ? "text-danger" : "text-ink-muted")}>
-                {TOOL_LABELS[tool.name] ?? tool.name} · {TOOL_STATES[tool.state]}{tool.ms != null ? ` · ${tool.ms}ms` : ""}
+              <li key={tool.call_id}><StatusBadge tone={tool.state === "error" ? "danger" : "neutral"}>
+                {TOOL_LABELS[tool.name] ?? tool.name} · {TOOL_STATES[tool.state]}{tool.ms != null ? ` · ${tool.ms}ms` : ""}</StatusBadge>
               </li>
             ))}
           </ul>
         )}
         {message.text ? <AnswerBody text={message.text} /> : live && (
-          <p role="status" className="flex items-center gap-1 text-caption text-ink-muted" data-qa="assistant-typing">
-            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-muted motion-reduce:animate-none" />
-            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-muted [animation-delay:120ms] motion-reduce:animate-none" />
-            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-muted [animation-delay:240ms] motion-reduce:animate-none" />
-            <span className="sr-only">{assistant.status || "답변을 준비하고 있습니다"}</span>
-          </p>
+          <div data-qa="assistant-typing"><Spinner delayMs={0} label={assistant.status || "답변을 준비하고 있습니다"} /></div>
         )}
         {message.flags && FLAGS.some(([flag]) => message.flags[flag]) && (
           <div className="flex flex-wrap gap-2">
@@ -140,7 +137,7 @@ function Message({ message, last, assistant }) {
 
 function HistoryList({ assistant, busy, onClose }) {
   return (
-    <div role="dialog" aria-label="대화 목록" className="absolute inset-x-3 top-12 z-10 max-h-[70%] overflow-y-auto rounded-card border border-hairline bg-surface-1 p-2" style={{ boxShadow: "var(--shadow-popover)" }}>
+    <div role="dialog" aria-label="대화 목록" className="absolute inset-x-3 top-12 bottom-24 z-10 overflow-y-auto rounded-card border border-hairline bg-surface-2 p-2 shadow-popover">
       {assistant.sessions.length === 0 ? <p className="p-3 text-caption text-ink-muted">저장된 대화가 없습니다</p> : (
         <ul className="flex flex-col">
           {assistant.sessions.map((item) => (
@@ -215,12 +212,11 @@ export function AssistantDock({ assistant, mode = "desktop", insetRight = "0px",
   return (
     <section aria-label="도우미 대화" data-qa="assistant-dock" data-expanded={expanded ? "true" : "false"}
       onKeyDown={(event) => { if (event.key === "Escape" && expanded) { event.stopPropagation(); open(false); } }}
-      className="pointer-events-auto absolute z-30 flex flex-col overflow-hidden rounded-3xl border border-hairline-strong bg-surface-1/95 text-body text-ink backdrop-blur-md transition-[height] duration-300 ease-out motion-reduce:transition-none"
+      className="pointer-events-auto absolute z-30 flex flex-col overflow-hidden rounded-card border border-hairline bg-surface-1 text-body text-ink shadow-popover transition-[height] duration-300 ease-out motion-reduce:transition-none"
       style={{
         left: phone ? "8px" : `calc(${HUD_LEFT_PX}px + ${band} / 2)`, transform: phone ? undefined : "translateX(-50%)",
         bottom: bottom ?? (phone ? "104px" : "20px"), width,
         height: expanded ? (maximized ? size.max : size.open) : "auto",
-        boxShadow: "var(--shadow-dialog)",
       }}>
       {expanded && (
         <header className="flex shrink-0 items-center gap-1 border-b border-hairline px-3 py-1.5">
@@ -279,7 +275,7 @@ export function AssistantDock({ assistant, mode = "desktop", insetRight = "0px",
         <div className="flex gap-2 overflow-x-auto px-3 pt-3 [scrollbar-width:none]">
           {assistant.prompts.map((prompt) => (
             <Button key={prompt.name} size="sm" variant="ghost" disabled={busy} onClick={() => send(prompt.text ?? prompt.title)}
-              className="shrink-0 rounded-full border border-hairline">{prompt.title}</Button>
+              className="shrink-0">{prompt.title}</Button>
           ))}
         </div>
       )}
@@ -299,8 +295,8 @@ export function AssistantDock({ assistant, mode = "desktop", insetRight = "0px",
           }}
           className={cx("min-h-11 min-w-0 flex-1 resize-none bg-transparent px-2 py-2.5 text-body text-ink caret-primary outline-none placeholder:text-ink-muted disabled:opacity-60", FOCUS_RING, "rounded-control")} />}
         {available && (assistant.running
-          ? <Button variant="secondary" iconOnly label="답변 중지" icon={<Square className="h-4 w-4" />} onClick={assistant.stop} className="rounded-full" />
-          : <Button type="submit" variant="primary" iconOnly label="전송" disabled={busy || !available || !draft.trim()} icon={<ArrowUp className="h-4 w-4" />} className="rounded-full" />)}
+          ? <Button variant="secondary" iconOnly label="답변 중지" icon={<Square className="h-4 w-4" />} onClick={assistant.stop} />
+          : <Button type="submit" variant="primary" iconOnly label="전송" disabled={busy || !available || !draft.trim()} icon={<ArrowUp className="h-4 w-4" />} />)}
         {expanded && phone && <Button size="sm" variant="ghost" iconOnly label="닫기" icon={<X className="h-4 w-4" />} onClick={() => open(false)} />}
       </form>
       <p id={noticeId} className={cx("px-5 pb-2 text-caption text-ink-muted", !expanded && available && "sr-only")}>
