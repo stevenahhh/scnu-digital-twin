@@ -90,13 +90,14 @@ module.exports = {
       },
       borderRadius: {
         control: "var(--rounded-control)",
+        popover: "var(--rounded-popover)",
         card: "var(--rounded-card)",
         pill: "var(--rounded-pill)",
-        // shadcn 컴포넌트의 모서리 클래스는 프로젝트 모서리 토큰을 쓴다: md는 control(6px), lg·xl은 card(12px), sm은 메뉴 항목(4px).
+        // shadcn 모서리 클래스도 같은 단계를 쓴다: md는 control, lg는 popover(p-1 메뉴·목록), xl은 card, sm은 xs.
         xl: "var(--rounded-card)",
         lg: "var(--rounded-lg)",
         md: "var(--rounded-control)",
-        sm: "calc(var(--rounded-control) - 2px)",
+        sm: "var(--rounded-xs)",
       },
       boxShadow: {
         popover: "var(--shadow-popover)",

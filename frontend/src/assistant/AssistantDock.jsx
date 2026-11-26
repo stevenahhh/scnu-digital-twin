@@ -211,14 +211,14 @@ export function AssistantDock({ assistant, mode = "desktop", insetRight = "0px",
   return (
     <section aria-label="도우미 대화" data-qa="assistant-dock" data-expanded={expanded ? "true" : "false"}
       onKeyDown={(event) => { if (event.key === "Escape" && expanded) { event.stopPropagation(); open(false); } }}
-      className="pointer-events-auto absolute z-30 flex flex-col overflow-hidden rounded-card border border-hairline bg-surface-1 text-body text-ink shadow-popover transition-[height] duration-300 ease-out motion-reduce:transition-none"
+      className="pointer-events-auto absolute z-30 flex flex-col overflow-hidden rounded-card border border-hairline bg-surface-1 text-body text-ink shadow-popover transition-[height] duration-surface motion-reduce:transition-none"
       style={{
         left: phone ? "8px" : `calc(${HUD_LEFT_PX}px + ${band} / 2)`, transform: phone ? undefined : "translateX(-50%)",
         bottom: bottom ?? (phone ? "104px" : "20px"), width,
         height: expanded ? (maximized ? size.max : size.open) : "auto",
       }}>
       {expanded && (
-        <header className="flex shrink-0 items-center gap-1 border-b border-hairline px-3 py-1.5">
+        <header className="flex shrink-0 items-center gap-1 border-b border-hairline p-2 pl-4">
           <Sparkles aria-hidden="true" className="h-4 w-4 text-primary" />
           <h2 className="mr-auto truncate text-body font-semibold">도우미</h2>
           <Button size="sm" variant="ghost" iconOnly label="이전 대화" aria-expanded={historyOpen} icon={<History className="h-4 w-4" />} onClick={() => setHistoryOpen((value) => !value)} />
@@ -271,28 +271,28 @@ export function AssistantDock({ assistant, mode = "desktop", insetRight = "0px",
         </div>
       )}
       {!expanded && !hasConversation && available && assistant.prompts?.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto px-3 pt-3 [scrollbar-width:none]">
+        <div className="flex gap-2 overflow-x-auto px-2 pt-2 [scrollbar-width:none]">
           {assistant.prompts.map((prompt) => (
             <Button key={prompt.name} size="sm" variant="ghost" disabled={busy} onClick={() => send(prompt.text ?? prompt.title)}
               className="shrink-0">{prompt.title}</Button>
           ))}
         </div>
       )}
-      <form onSubmit={(event) => { event.preventDefault(); send(draft); }} className={cx("flex shrink-0 items-end gap-2 p-3", expanded && "border-t border-hairline")}>
+      <form onSubmit={(event) => { event.preventDefault(); send(draft); }} className={cx("flex shrink-0 items-end gap-2 p-2", expanded && "border-t border-hairline")}>
         {!expanded && hasConversation && (
           <Button size="sm" variant="ghost" iconOnly label="대화창 펼치기" icon={<ChevronUp className="h-4 w-4" />} onClick={() => open(true)} />
         )}
         {!expanded && !hasConversation && assistant.sessions?.length > 0 && (
           <Button size="sm" variant="ghost" iconOnly label="이전 대화" icon={<History className="h-4 w-4" />} onClick={() => { open(true); setHistoryOpen(true); }} />
         )}
-        {!available ? <p role="status" className="min-h-11 flex-1 px-2 py-2.5 text-ink-muted">{ASSISTANT_LOGIN_NOTICE}</p> : <textarea ref={input} aria-label="질문" aria-describedby={noticeId} rows={1} value={draft}
+        {!available ? <p role="status" className="min-h-10 flex-1 px-2 py-2 text-ink-muted">{ASSISTANT_LOGIN_NOTICE}</p> : <textarea ref={input} aria-label="질문" aria-describedby={noticeId} rows={1} value={draft}
           disabled={!available || busy}
           placeholder="캠퍼스에 대해 무엇이든 물어보세요"
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); send(draft); }
           }}
-          className={cx("min-h-11 min-w-0 flex-1 resize-none bg-transparent px-2 py-2.5 text-body text-ink caret-primary outline-none placeholder:text-ink-muted disabled:opacity-60", FOCUS_RING, "rounded-control")} />}
+          className={cx("min-h-10 min-w-0 flex-1 resize-none bg-transparent px-2 py-2.5 text-body text-ink caret-primary outline-none placeholder:text-ink-muted disabled:opacity-60", FOCUS_RING, "rounded-control")} />}
         {available && (assistant.running
           ? <Button variant="secondary" iconOnly label="답변 중지" icon={<Square className="h-4 w-4" />} onClick={assistant.stop} />
           : <Button type="submit" variant="primary" iconOnly label="전송" disabled={busy || !available || !draft.trim()} icon={<ArrowUp className="h-4 w-4" />} />)}

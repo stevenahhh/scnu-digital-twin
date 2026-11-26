@@ -9,7 +9,7 @@ const NEXT_KEYS = new Set(["ArrowRight", "ArrowDown"]);
 const PREV_KEYS = new Set(["ArrowLeft", "ArrowUp"]);
 
 // 트랙은 pill이라 안쪽 칸의 반지름과 맞출 필요가 없다. 칸은 높이를 내용에 맞춰 늘려 긴 이름이 줄을 바꿔도 잘리지 않는다.
-const TRACK = "flex h-auto w-full items-stretch justify-start gap-1 rounded-pill border border-hairline bg-surface-1 p-1";
+const TRACK = "flex h-auto w-full items-stretch justify-start gap-1 rounded-popover border border-hairline bg-surface-1 p-1";
 const SEGMENT = "h-auto min-w-0 flex-1 basis-0 gap-2 whitespace-normal rounded-control border py-0 font-medium transition-[color,border-color] duration-micro hover:bg-surface-2 hover:text-ink [&_svg]:size-3";
 
 // 탭과 라디오가 함께 쓰는 칸 동작. Radix 루트에는 값만 내려 주고 선택은 여기서 처리한다:

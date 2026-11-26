@@ -79,7 +79,7 @@ export function RestrictionAdminPanel({ restrictions }) {
         <div className="flex flex-col gap-1">
           <Label htmlFor={targetField}>{targetType === "road" ? "도로" : "건물"}</Label>
           <Select value={selected} onValueChange={setTargetId}>
-            <SelectTrigger id={targetField} className="h-10">
+            <SelectTrigger id={targetField}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="max-h-[min(18rem,var(--radix-select-content-available-height))]">
@@ -91,7 +91,7 @@ export function RestrictionAdminPanel({ restrictions }) {
         {targetType === "road" && <Segmented kind="radio" label="통제 범위" options={ACCESS_OPTIONS} value={access} onChange={setAccess} />}
         <div className="flex flex-col gap-1">
           <Label htmlFor={messageField}>안내 문구</Label>
-          <Input id={messageField} className="h-10" maxLength={200} value={message} onChange={(event) => setMessage(event.target.value)} />
+          <Input id={messageField} maxLength={200} value={message} onChange={(event) => setMessage(event.target.value)} />
         </div>
         <Button type="submit" variant="primary" data-qa="restriction-apply" loading={busy} disabled={!selected}>시나리오 적용</Button>
       </form>

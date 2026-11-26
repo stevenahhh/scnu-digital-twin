@@ -110,7 +110,7 @@ export function SearchField({ registry, onPick, className = "", placeholder = SE
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={handleKeyDown}
-          className="h-11 min-w-0 flex-1 rounded-control bg-transparent text-body transition-none active:bg-surface-2 sm:h-9 text-ink placeholder:text-ink-muted focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+          className="h-11 min-w-0 flex-1 rounded-control bg-transparent text-body transition-none active:bg-surface-2 sm:h-10 text-ink placeholder:text-ink-muted focus:outline-none [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (
           <button
@@ -132,7 +132,7 @@ export function SearchField({ registry, onPick, className = "", placeholder = SE
         role="listbox"
         aria-label="검색 결과"
         hidden={!expanded}
-        className="absolute left-0 right-0 top-full z-10 mt-1 max-h-80 overflow-y-auto rounded-card border border-hairline bg-surface-1 p-1 shadow-popover"
+        className="absolute left-0 right-0 top-full z-10 mt-1 max-h-80 overflow-y-auto rounded-popover border border-hairline bg-surface-1 p-1 shadow-popover"
       >
         {groups.map((group) => (
           <div key={group.id} role="group" aria-label={group.label}>
@@ -152,7 +152,7 @@ export function SearchField({ registry, onPick, className = "", placeholder = SE
                   onMouseEnter={() => setActive(position)}
                   onClick={() => pick(entry)}
                   className={cx(
-                    "flex min-h-11 cursor-pointer items-center gap-2 rounded-control px-2 text-body text-ink sm:min-h-9",
+                    "flex min-h-11 cursor-pointer items-center gap-2 rounded-control px-2 text-body text-ink sm:min-h-10",
                     selected && "bg-surface-2",
                   )}
                 >
