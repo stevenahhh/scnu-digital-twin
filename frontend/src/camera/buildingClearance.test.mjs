@@ -8,15 +8,23 @@ test("a clear arm keeps the desired length", () => {
   assert.equal(resolveArmLength([{ distance: 120, entering: true }], 80), 80);
 });
 
-test("a wall between target and camera pulls the camera in front of it", () => {
+test("a building that only stands between target and camera leaves the camera where the user put it", () => {
+  assert.equal(resolveArmLength([{ distance: 40, entering: true }, { distance: 55, entering: false }], 80), 80);
+  const fromInside = [{ distance: 10, entering: false }, { distance: 40, entering: true }, { distance: 55, entering: false }];
+  assert.equal(resolveArmLength(fromInside, 80), 80);
+});
+
+test("a camera inside a building moves out through the nearer wall", () => {
+  const hits = [{ distance: 40, entering: true }, { distance: 90, entering: false }];
+  assert.equal(resolveArmLength(hits, 45), 40 - CAMERA_WALL_MARGIN, "near the front wall: step back towards the target");
+  assert.equal(resolveArmLength(hits, 85), 90 + CAMERA_WALL_MARGIN, "near the back wall: step out behind it");
+  // No back wall within the search range: the front wall is the only way out.
   assert.equal(resolveArmLength([{ distance: 50, entering: true }], 80), 50 - CAMERA_WALL_MARGIN);
 });
 
-test("leaving the target's own building does not block, the next building does", () => {
-  const hits = [{ distance: 10, entering: false }, { distance: 40, entering: true }];
-  assert.equal(resolveArmLength(hits, 80), 40 - CAMERA_WALL_MARGIN);
-  // A gap narrower than the margin keeps the camera between the two walls.
-  assert.equal(resolveArmLength([{ distance: 10, entering: false }, { distance: 10.4, entering: true }], 80), 10.2);
+test("a gap narrower than the margin keeps the camera between the two walls", () => {
+  const hits = [{ distance: 10, entering: false }, { distance: 10.4, entering: true }, { distance: 30, entering: false }];
+  assert.equal(resolveArmLength(hits, 12), 10.2);
 });
 
 test("a camera inside the building it looks into is pushed out through the nearest wall behind it", () => {
@@ -25,7 +33,7 @@ test("a camera inside the building it looks into is pushed out through the neare
 });
 
 test("a wall very close to the target still leaves the camera on the target side", () => {
-  assert.equal(resolveArmLength([{ distance: 0.6, entering: true }], 80), 0.3);
+  assert.equal(resolveArmLength([{ distance: 0.6, entering: true }, { distance: 20, entering: false }], 3), 0.3);
 });
 
 test("the arm restores the user's distance once the obstruction clears", () => {
