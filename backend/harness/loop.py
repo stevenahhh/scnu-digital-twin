@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import itertools
 import json
 import logging
 import re
@@ -203,7 +204,8 @@ class Harness:
 
     async def _execute(self, session: Session, tools: frozenset[str], calls: list[dict], round_no: int,
                        authorization: str | None, digests: list[str], emit: Callable[[Event], None]) -> list[str]:
-        calls = calls[: config.MAX_TOOL_CALLS_PER_TURN]
+        if config.MAX_TOOL_CALLS_PER_TURN:
+            calls = calls[: config.MAX_TOOL_CALLS_PER_TURN]
         if all(call["name"] in PARALLEL_SAFE for call in calls):
             return list(await asyncio.gather(*(
                 self._run_tool(session, tools, call, round_no, authorization, digests, emit) for call in calls)))
@@ -254,7 +256,7 @@ class Harness:
         awaiting_results = False
         queue: asyncio.Queue[Event] = asyncio.Queue()
         try:
-            for round_no in range(config.MAX_ROUNDS):
+            for round_no in (range(config.MAX_ROUNDS) if config.MAX_ROUNDS else itertools.count()):
                 yield "status", {"state": "thinking", "label_ko": "생각하는 중"}
                 session.append({"kind": "request", "text": json.dumps({
                     "timely_session": session.timely_session, "prefix_hash": prefix_hash(p.instructions, tools_list),
@@ -314,7 +316,7 @@ class Harness:
                         results = item[1]
                     else:
                         yield item
-                if round_no == config.MAX_ROUNDS - 2 and results:
+                if config.MAX_ROUNDS and round_no == config.MAX_ROUNDS - 2 and results:
                     results[-1] += BUDGET_NOTE
                 delta = [{"role": "tool", "tool_call_id": c["tool_call_id"], "name": c["name"], "content": r}
                          for c, r in zip(calls, results)]

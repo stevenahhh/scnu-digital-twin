@@ -167,7 +167,8 @@ class SessionStore:
         owner_dir = hashlib.sha256(owner_key.encode()).hexdigest()[:16]
         parent = self.data_dir / "sessions" / owner_dir
         parent.mkdir(parents=True, exist_ok=True)
-        if sum(path.is_dir() for path in parent.iterdir()) >= config.MAX_CONVERSATIONS_PER_OWNER:
+        limit = config.MAX_CONVERSATIONS_PER_OWNER
+        if limit and sum(path.is_dir() for path in parent.iterdir()) >= limit:
             raise ConversationLimit(owner_key)
         sid = secrets.token_urlsafe(9)
         session = Session(owner_key, sid, parent / sid, self.clock)
@@ -241,7 +242,8 @@ class SessionStore:
         path = self._day()
         counts = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
         kind = "guest" if session.owner_key.startswith("guest:") else session.role
-        if counts.get(session.owner_dir, 0) > config.DAILY_BUDGET[kind] or sum(counts.values()) > config.DAILY_BUDGET_TOTAL:
+        owner_cap, total_cap = config.DAILY_BUDGET[kind], config.DAILY_BUDGET_TOTAL
+        if (owner_cap and counts.get(session.owner_dir, 0) > owner_cap) or (total_cap and sum(counts.values()) > total_cap):
             raise BudgetExceeded(session.owner_dir)
 
     def record_usage(self, session: Session, call: ModelCall) -> Usage:

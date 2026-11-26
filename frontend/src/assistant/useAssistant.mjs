@@ -66,7 +66,7 @@ export function useAssistant({ session, active, context, onAction, onWriteComple
 
   async function send(text) {
     const question = text.trim();
-    if (!available || run.current || operation.current || loading || !question || question.length > 2000) return false;
+    if (!available || run.current || operation.current || loading || !question) return false;
     const controller = new AbortController();
     const task = { controller, sid };
     run.current = task;

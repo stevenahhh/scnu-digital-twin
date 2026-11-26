@@ -54,21 +54,22 @@ HARNESS_CORS_ORIGIN_REGEX = _setting(
     r"^https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+)(:\d+)?$",
 )
 
+# Usage limits below are off by default (0). Set them before exposing guest login publicly.
 # Sessions.
-MAX_CONVERSATIONS_PER_OWNER = int(_number("HARNESS_MAX_CONVERSATIONS_PER_OWNER", 5))
+MAX_CONVERSATIONS_PER_OWNER = int(_number("HARNESS_MAX_CONVERSATIONS_PER_OWNER", 0))
 MAX_LIVE_KERNELS = int(_number("HARNESS_MAX_LIVE_KERNELS", 8))
 KERNEL_IDLE_TIMEOUT_S = _number("HARNESS_KERNEL_IDLE_TIMEOUT_S", 900)
 RETENTION_S = {"account": _number("HARNESS_RETENTION_S", 86400), "guest": _number("HARNESS_GUEST_RETENTION_S", 7200)}
-MAX_RUNS_PER_OWNER = int(_number("HARNESS_MAX_RUNS_PER_OWNER", 2))
+MAX_RUNS_PER_OWNER = int(_number("HARNESS_MAX_RUNS_PER_OWNER", 0))
 MAX_TIMELY_STREAMS = int(_number("HARNESS_MAX_TIMELY_STREAMS", 8))
 CONFIRM_TIMEOUT_S = _number("HARNESS_CONFIRM_TIMEOUT_S", 120)
 HEARTBEAT_S = _number("HARNESS_HEARTBEAT_S", 15)
 
 # Turn and context budgets (estimated tokens, characters).
-MAX_USER_CHARS = int(_number("HARNESS_MAX_USER_CHARS", 2000))
+MAX_USER_CHARS = int(_number("HARNESS_MAX_USER_CHARS", 0))
 MAX_CONTEXT_LINE_CHARS = 120
-MAX_ROUNDS = int(_number("HARNESS_MAX_ROUNDS", 8))
-MAX_TOOL_CALLS_PER_TURN = int(_number("HARNESS_MAX_TOOL_CALLS_PER_TURN", 16))
+MAX_ROUNDS = int(_number("HARNESS_MAX_ROUNDS", 0))
+MAX_TOOL_CALLS_PER_TURN = int(_number("HARNESS_MAX_TOOL_CALLS_PER_TURN", 0))
 MAX_TOOL_OUTPUT_CHARS_PER_TURN = int(_number("HARNESS_MAX_TOOL_OUTPUT_CHARS_PER_TURN", 40000))
 DEFAULT_TOOL_CAP = 4000
 EVAL_TOOL_CAP = 6000
@@ -76,9 +77,9 @@ EPOCH_SOFT_LIMIT = {"student": _number("HARNESS_EPOCH_SOFT_STUDENT", 24000),
                     "admin": _number("HARNESS_EPOCH_SOFT_ADMIN", 40000)}
 EPOCH_HARD_LIMIT = _number("HARNESS_EPOCH_HARD", 60000)
 SEED_MAX_CHARS = 2500
-DAILY_BUDGET = {"guest": _number("HARNESS_DAILY_GUEST", 60000), "student": _number("HARNESS_DAILY_STUDENT", 150000),
-                "admin": _number("HARNESS_DAILY_ADMIN", 600000)}
-DAILY_BUDGET_TOTAL = _number("HARNESS_DAILY_TOTAL", 3000000)
+DAILY_BUDGET = {"guest": _number("HARNESS_DAILY_GUEST", 0), "student": _number("HARNESS_DAILY_STUDENT", 0),
+                "admin": _number("HARNESS_DAILY_ADMIN", 0)}
+DAILY_BUDGET_TOTAL = _number("HARNESS_DAILY_TOTAL", 0)
 
 # Eval sandbox limits per role.
 EVAL_LIMITS = {
