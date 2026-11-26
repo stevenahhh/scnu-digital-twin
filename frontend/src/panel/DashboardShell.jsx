@@ -9,7 +9,8 @@ import { DASHBOARD_TABS, DashboardPanel, dashboardTitle } from "./DashboardPanel
 import { alertLabel, totalTabAlerts } from "./tabAlerts.mjs";
 
 const TAB_ICONS = { building: Building2, status: LayoutDashboard, energy: Zap, simulation: FlaskConical };
-const TARGET_44 = "h-11 min-h-11 w-11 min-w-11";
+// 다른 아이콘 버튼과 같은 md 크기(40px). 거친 포인터에서는 44px로 커진다.
+const ICON_TARGET = "h-10 min-h-10 w-10 min-w-10 [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:w-11 [@media(pointer:coarse)]:min-w-11";
 // 폰 시트 peek: 손잡이(48) + 머리 한 줄(탭 이름·여닫기 44) + 아래 8.
 export const SHELL_PEEK_HEIGHT = 100;
 // --motion-surface와 같은 값. 레일과 HUD 자리는 슬라이드가 시작 프레임까지 포함해 다 끝난 뒤(SETTLE_MS)에 바꾼다.
@@ -74,7 +75,7 @@ const Rail = forwardRef(function Rail({ activeTab, tabs, tabAlerts, onOpen, clas
             aria-current={active ? "page" : undefined}
             icon={withAlertDot(<Icon aria-hidden="true" className="h-5 w-5" />, alerts)}
             onClick={() => onOpen(tab.value)}
-            className={cx(TARGET_44, "aria-[current=page]:bg-surface-2 aria-[current=page]:text-ink")}
+            className={cx(ICON_TARGET, "aria-[current=page]:bg-surface-2 aria-[current=page]:text-ink")}
           />
         );
       })}
@@ -176,7 +177,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
               label={expanded ? "패널 닫기" : alertCount > 0 ? `패널 열기, ${alertLabel(alertCount)}` : "패널 열기"}
               icon={withAlertDot(<ChevronUp aria-hidden="true" className={cx("h-5 w-5 transition-transform duration-micro motion-reduce:transition-none", expanded && "rotate-180")} />, alertCount)}
               onClick={() => onDetentChange(expanded ? "peek" : "half")}
-              className={TARGET_44}
+              className={ICON_TARGET}
             />
           </div>
         )}
@@ -229,7 +230,7 @@ export const DashboardShell = forwardRef(function DashboardShell(
               label="패널 닫기"
               icon={<ChevronRight aria-hidden="true" className="h-5 w-5" />}
               onClick={() => onOpenChange(false)}
-              className={TARGET_44}
+              className={ICON_TARGET}
             />
           )}
         >
