@@ -58,13 +58,18 @@ export function splitAnswer(text) {
   return segments;
 }
 
-// 카드 문서: 외부 요청을 모두 막는 CSP와, 대시보드 글꼴·색을 이어받는 기본 스타일.
-// 모델은 아래 CSS 변수로 색을 고르므로(프롬프트 Format 절) 같은 카드가 밝은·어두운 테마에 모두 맞는다.
-export function cardDocument(html, { color = "CanvasText", font = "system-ui, sans-serif", accent = "royalblue", scheme = "dark" } = {}) {
-  const vars = `--fg:${color};--muted:color-mix(in srgb,${color} 62%,transparent);--surface:color-mix(in srgb,${color} 7%,transparent);`
-    + `--line:color-mix(in srgb,${color} 16%,transparent);--accent:${accent};--ok:mediumseagreen;--warn:goldenrod;--danger:tomato`;
+// 카드 CSS 변수와 그 값을 읽어 올 디자인 토큰(ui/tokens.css). 모델은 이 변수로만 색을 고른다(프롬프트 Format 절).
+export const CARD_TOKENS = Object.freeze({
+  bg: "--colors-canvas", fg: "--colors-ink", muted: "--colors-ink-muted", surface: "--colors-surface-2",
+  line: "--colors-hairline", accent: "--colors-primary", ok: "--colors-semantic-success",
+  warn: "--colors-semantic-warning", danger: "--colors-semantic-danger",
+});
+
+// 카드 문서: 외부 요청을 모두 막는 CSP와 대시보드 토큰 값을 옮긴 변수. 바탕은 캔버스 토큰(검정)으로 칠한다.
+export function cardDocument(html, { tokens = {}, font = "system-ui, sans-serif", scheme = "dark" } = {}) {
+  const vars = Object.keys(CARD_TOKENS).map((name) => `--${name}:${tokens[name] || "Canvas"}`).join(";");
   return `<!doctype html><html><head><meta charset="utf-8">`
     + `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:">`
-    + `<meta name="color-scheme" content="${scheme}"><style>:root{${vars};color-scheme:${scheme}}html,body{margin:0;background:transparent}body{color:var(--fg);font:14px/1.55 ${font};overflow:hidden;word-break:keep-all;overflow-wrap:anywhere}`
+    + `<meta name="color-scheme" content="${scheme}"><style>:root{${vars};color-scheme:${scheme}}html,body{margin:0;background:var(--bg)}body{color:var(--fg);font:14px/1.55 ${font};overflow:hidden;word-break:keep-all;overflow-wrap:anywhere}`
     + `table{border-collapse:collapse}*{box-sizing:border-box;max-width:100%}</style></head><body>${html}</body></html>`;
 }
