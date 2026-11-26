@@ -88,7 +88,7 @@ export function SearchField({ registry, onPick, className = "", placeholder = SE
   let index = -1;
   return (
     <div data-qa="search-field" className={cx("pointer-events-auto relative w-[min(18rem,calc(100vw-2rem))]", className)}>
-      <div className="flex items-center gap-2 rounded-control border border-hairline bg-surface-1 px-3">
+      <div className="flex h-10 items-center gap-2 rounded-control border border-hairline bg-surface-1 px-3 [@media(pointer:coarse)]:h-11">
         <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-ink-muted" />
         <input
           ref={inputRef}
@@ -110,7 +110,7 @@ export function SearchField({ registry, onPick, className = "", placeholder = SE
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={handleKeyDown}
-          className="h-11 min-w-0 flex-1 rounded-control bg-transparent text-body transition-none active:bg-surface-2 sm:h-10 text-ink placeholder:text-ink-muted focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+          className="h-full min-w-0 flex-1 rounded-control bg-transparent text-body transition-none active:bg-surface-2 text-ink placeholder:text-ink-muted focus:outline-none [&::-webkit-search-cancel-button]:hidden"
         />
         {query && (
           <button
@@ -121,7 +121,7 @@ export function SearchField({ registry, onPick, className = "", placeholder = SE
               setQuery("");
               inputRef.current?.focus();
             }}
-            className="-mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-control text-ink-muted hover:text-ink sm:h-8 sm:w-8"
+            className="-mr-2 grid h-8 w-8 shrink-0 place-items-center rounded-control text-ink-muted hover:text-ink [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11"
           >
             <X aria-hidden="true" className="h-4 w-4" />
           </button>
@@ -152,7 +152,7 @@ export function SearchField({ registry, onPick, className = "", placeholder = SE
                   onMouseEnter={() => setActive(position)}
                   onClick={() => pick(entry)}
                   className={cx(
-                    "flex min-h-11 cursor-pointer items-center gap-2 rounded-control px-2 text-body text-ink sm:min-h-10",
+                    "flex min-h-10 cursor-pointer items-center gap-2 rounded-control px-2 text-body text-ink [@media(pointer:coarse)]:min-h-11",
                     selected && "bg-surface-2",
                   )}
                 >

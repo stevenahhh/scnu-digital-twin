@@ -63,7 +63,6 @@ export function HudToolbar({ presets, activeId, onSelect, compact = false, class
         renderTrigger={(props) => (
           <Button
             {...props}
-            size="sm"
             iconOnly={compact}
             label={compact ? (activeNamed ? title : "시점") : undefined}
             data-qa="camera-view-menu"

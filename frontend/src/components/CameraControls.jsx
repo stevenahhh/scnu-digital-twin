@@ -43,7 +43,6 @@ export function CameraControls({ controlsRef, onZoom, onRotate, onHome, collapsi
     >
       {collapsible && (
         <Button
-          size="sm"
           iconOnly
           label="카메라 조작"
           data-qa="camera-controls-toggle"
