@@ -3,6 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Component, Suspense, useEffect, useRef } from "react";
 import { AnimationMixer, Vector3 } from "three";
 import { POINTER_EXCLUDED_LAYER } from "./canvasLifecycle.mjs";
+import { attachLayerPlayback, layerPaused, pointInView } from "./layerPlayback.mjs";
 
 // A removable layer in the detailed campus frame. Its GLB also contains the
 // animation so exporting the full model does not depend on the web renderer.
@@ -33,21 +34,13 @@ function WorksiteLayer({ obscured, controlsRef }) {
       child.layers.set(POINTER_EXCLUDED_LAYER);
       child.castShadow = child.receiveShadow = true;
     });
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const state = { mixer, motion, inView: true, position: new Vector3(), orbit: null, originalMin: 0 };
-    const observer = new IntersectionObserver(([entry]) => { state.inView = entry.isIntersecting; invalidate(); });
-    observer.observe(gl.domElement);
-    const changed = () => invalidate();
-    motion.addEventListener("change", changed);
-    document.addEventListener("visibilitychange", changed);
+    const state = Object.assign(attachLayerPlayback(gl, invalidate), { mixer, position: new Vector3(), orbit: null, originalMin: 0 });
     playback.current = state;
     invalidate();
     return () => {
       playback.current = null;
       if (state.orbit) state.orbit.minDistance = state.originalMin;
-      observer.disconnect();
-      document.removeEventListener("visibilitychange", changed);
-      motion.removeEventListener("change", changed);
+      state.dispose();
       mixer.stopAllAction();
       mixer.uncacheRoot(scene);
     };
@@ -65,10 +58,7 @@ function WorksiteLayer({ obscured, controlsRef }) {
     // Let visitors orbit down to the workbench without changing campus-wide zoom.
     if (orbit) orbit.minDistance = orbit.target.distanceToSquared(s.position) < 35 ** 2 ? Math.min(6.5, s.originalMin)
       : Math.min(s.originalMin, camera.position.distanceTo(orbit.target));
-    if (obscured || !s.inView || document.hidden || s.motion.matches) return;
-    if (s.position.distanceToSquared(camera.position) > 125 ** 2) return;
-    s.position.project(camera);
-    if (Math.abs(s.position.x) > 1.05 || Math.abs(s.position.y) > 1.05 || Math.abs(s.position.z) > 1) return;
+    if (layerPaused(s, obscured) || !pointInView(s.position, camera, 125)) return;
     s.mixer.update(Math.min(dt, .08));
     invalidate();
   });
