@@ -19,6 +19,7 @@
     "model:pack": "bun scripts/campus-model/pack.mjs",
     "model:worksite": "bun scripts/campus-model/e2-worksite.mjs",
     "model:med-promo": "bun scripts/campus-model/med-promo.mjs",
+    "model:med-site": "bun scripts/campus-model/med-campus.mjs",
     "model:precompress": "bun scripts/campus-model/publish.mjs",
     "network:build": "bun scripts/campus-model/network/buildNetwork.mjs"
   },
