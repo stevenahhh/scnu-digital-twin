@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useRef } from "react";
-import { CloudSun, Pause, Play, Presentation } from "lucide-react";
+import { ArrowLeft, CloudSun, Hospital, Pause, Play, Presentation } from "lucide-react";
 import { Button } from "../ui/Button.jsx";
 import { cx } from "../ui/cx.mjs";
 import { CAMERA_PRESETS } from "../camera/cameraPresets.mjs";
@@ -11,6 +11,7 @@ import { HudToolbar } from "./HudToolbar";
 import { SearchField } from "./SearchField";
 import { TimeSlider } from "./TimeSlider";
 import { FOLLOW_MOTION, FOLLOW_ROOT, usePanelFollow } from "./hud/usePanelFollow.mjs";
+import { medSiteView, useMedSiteActive } from "../medSite/medSiteView.mjs";
 
 const PRESSED = "aria-pressed:bg-surface-2 aria-pressed:text-ink";
 const sceneTimeReadout = (minuteOfDay) => `장면 ${formatMinuteOfDay(minuteOfDay)}`;
@@ -25,7 +26,7 @@ export const PHONE_SEARCH_PLACEHOLDER = "건물 검색";
 export const CampusHud = forwardRef(function CampusHud(
   {
     mode = "desktop", insetRight, camera, clock, playing, onPlayingChange, presenting = false, onTogglePresentation,
-    tour = null, search = null, moreMenu = null, sceneWeather = null, sheetDetent = null,
+    tour = null, search = null, moreMenu = null, sceneWeather = null, sheetDetent = null, medSiteSwitch = false,
   },
   ref,
 ) {
@@ -43,6 +44,11 @@ export const CampusHud = forwardRef(function CampusHud(
   const sheetHalf = phone && sheetDetent === "half";
   const sheetFull = phone && sheetDetent === "full";
   const cameraReady = camera.ready !== false;
+  const medSite = useMedSiteActive() && medSiteSwitch;
+  const toggleMedSite = () => {
+    medSiteView.setActive(!medSite);
+    if (medSite) camera.goHome?.();
+  };
   const toggle = onTogglePresentation && <PresentationToggle presenting={presenting} onToggle={onTogglePresentation} />;
 
   // 발표 모드: 읽기 전용 장면 시각, 투어 시작/멈춤, 발표 모드 끝내기만 남기고 투어 중이면 아래 가운데에 점 표시를 둔다.
@@ -74,7 +80,7 @@ export const CampusHud = forwardRef(function CampusHud(
     >
       <Wordmark className="absolute left-1/2 top-4 flex h-10 -translate-x-1/2 items-center whitespace-nowrap text-body font-semibold text-on-primary [text-shadow:var(--shadow-scene-text)] [@container(max-width:760px)]:top-[3.75rem] [@container(max-width:760px)]:h-6 [@container(max-width:760px)]:text-caption" />
       <div data-qa="hud-bar" className="absolute left-4 right-4 top-4 flex min-w-0 flex-nowrap items-center gap-2">
-        {search && (
+        {search && !medSite && (
           <SearchField
             registry={search.registry}
             onPick={search.onPick}
@@ -82,13 +88,15 @@ export const CampusHud = forwardRef(function CampusHud(
             {...(phone ? { placeholder: PHONE_SEARCH_PLACEHOLDER } : {})}
           />
         )}
-        {cameraReady && (
+        {cameraReady && !medSite && (
           <HudToolbar presets={CAMERA_PRESETS} activeId={camera.activePresetId} onSelect={camera.selectPreset} compact={phone} />
         )}
+        {medSiteSwitch && <MedSiteToggle active={medSite} onToggle={toggleMedSite} compact={phone} />}
         <div className={cx("ml-auto flex shrink-0 items-center gap-2", FOLLOW_MOTION)} style={follow.style}>
           {moreMenu}
         </div>
       </div>
+      {medSite && <MedSiteCard phone={phone} />}
       <TimeSlider
         minuteOfDay={clock.sceneMinuteOfDay}
         onMinuteChange={clock.setSceneMinuteOfDay}
@@ -139,6 +147,46 @@ export function PresentationToggle({ presenting, onToggle, className }) {
     >
       {presenting ? "발표 모드 끝내기" : "발표 모드"}
     </Button>
+  );
+}
+
+// 캠퍼스와 의대 예정 부지(조례동) 모형을 서로 바꾼다. 부지는 캠퍼스에서 약 5 km 떨어져 같은 장면에 두지 않는다.
+function MedSiteToggle({ active, onToggle, compact }) {
+  const label = active ? "캠퍼스로 돌아가기" : "의대 예정 부지로 가기";
+  return (
+    <Button
+      data-qa="med-site-toggle"
+      aria-pressed={active}
+      iconOnly={compact}
+      label={compact ? label : undefined}
+      title={label}
+      icon={active ? <ArrowLeft aria-hidden="true" className="h-4 w-4" /> : <Hospital aria-hidden="true" className="h-4 w-4" />}
+      onClick={onToggle}
+      className={cx("pointer-events-auto shrink-0 whitespace-nowrap", PRESSED)}
+    >
+      {label}
+    </Button>
+  );
+}
+
+// 부지 모형을 띄운 동안 검색 줄 아래에 놓는 설명. 위치·면적·계획은 보도된 값이고 건물 배치는 추정이다
+// (scripts/campus-model/medCampus/plan.mjs).
+// 폰에서는 오른쪽 위 카메라 토글(top-20) 아래로 내린다.
+function MedSiteCard({ phone }) {
+  return (
+    <section
+      data-qa="med-site-card"
+      aria-label="의대 예정 부지 설명"
+      className={cx("absolute left-4 w-[min(24rem,calc(100%-2rem))] rounded-control border border-hairline bg-surface-1 px-3 py-2 text-ink", phone ? "top-36" : "top-20")}
+    >
+      <p className="text-body font-semibold">국립순천대 의과대학·부속병원 예정 부지</p>
+      <p className="text-caption text-ink-muted">조례동 산 13-3 일원 · 15만 1,719㎡ · 순천드라마촬영장 북서쪽</p>
+      <p className="text-caption text-ink-muted">정원 60명 · 2030학년도 첫 입학 · 부속병원 500병상급</p>
+      <p className="mt-1 text-caption text-ink-muted">
+        <span className="mr-1 rounded-pill border border-hairline px-1.5 font-semibold text-ink">추정</span>
+        부지 경계와 건물 배치는 계획 이론에 따른 추정이며 실제 설계안이 아닙니다.
+      </p>
+    </section>
   );
 }
 

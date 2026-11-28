@@ -7,6 +7,7 @@ import { cx } from "../ui/cx.mjs";
 import { SCENE_UNITS_PER_METRE } from "../geo/epsg5186.mjs";
 import { CATEGORY_LABELS, kindLabel } from "./sceneEditor.mjs";
 import { editorRuntime, modelEditStore, saveModelEdits } from "./modelEditsApi.mjs";
+import { useMedSiteActive } from "../medSite/medSiteView.mjs";
 
 const MODE_OPTIONS = [
   { value: "translate", label: "이동 W" },
@@ -145,6 +146,7 @@ export function ModelEditorPanel() {
   const runtime = useSyncExternalStore(editorRuntime.subscribe, editorRuntime.get);
   useSyncExternalStore(editorRuntime.subscribe, editorRuntime.version);
   const [save, setSave] = useState({ busy: false, message: null, error: false });
+  const medSite = useMedSiteActive();
   const entry = state.selection && runtime ? runtime.describe(state.selection) : null;
   const { draft } = state;
   const changeCount = Object.keys(draft.transforms).length + draft.removed.length + draft.added.length
@@ -188,6 +190,9 @@ export function ModelEditorPanel() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [state.editing]);
+
+  // 의대 예정 부지를 띄운 동안에는 편집할 캠퍼스 모형이 장면에 없다.
+  if (medSite) return null;
 
   if (!state.editing) {
     return (

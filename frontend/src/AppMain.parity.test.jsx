@@ -448,6 +448,8 @@ describe("Main and VWorld feature parity", () => {
     const { container } = render(<App />);
 
     const menu = container.querySelector('[data-qa="camera-view-menu"]');
+    // 의대 예정 부지 전환 단추는 시점 메뉴 바로 뒤에 온다(Main과 학생 화면만, VWorld에는 없다).
+    const medSite = container.querySelector('[data-qa="med-site-toggle"]');
     // 더보기(설정·발표 모드·링크 복사)는 HUD 줄 끝에 온다. 비교 열기는 HUD가 아니라 인스펙터 안에 있다.
     const more = container.querySelector('[data-qa="more-menu"]');
     expect(container.querySelector('[data-qa="compare-open"]')).toBeNull();
@@ -461,7 +463,7 @@ describe("Main and VWorld feature parity", () => {
     // HUD에는 피드 갱신 표시와 새로 고침 단추가 없다. 날짜·시각 입력은 시각 값 단추의 팝오버 안에 있다.
     expect(container.querySelector('[data-qa="campus-hud"] [data-qa="freshness-stamp"]')).toBeNull();
     expect(screen.queryByLabelText("장면 날짜")).toBeNull();
-    const expected = [search, menu, more, timeValue, now, play, slider, ...cameraButtons];
+    const expected = [search, menu, medSite, more, timeValue, now, play, slider, ...cameraButtons];
 
     const reached = [];
     for (let i = 0; i < expected.length; i += 1) {
@@ -471,7 +473,7 @@ describe("Main and VWorld feature parity", () => {
     expect(reached).toEqual(expected);
     // Arrow keys reach the camera from the chips inside the map region; the region itself leaves the tab order.
     expect(mapLayer.getAttribute("tabindex")).toBe("-1");
-    for (const button of [menu, more, timeValue, play, ...cameraButtons]) {
+    for (const button of [menu, medSite, more, timeValue, play, ...cameraButtons]) {
       expect(button.getAttribute("type")).toBe("button");
     }
   });

@@ -56,6 +56,7 @@ import { clipPolygonAhead } from "./render/clipPolygon.mjs";
 import { POINTER_EXCLUDED_LAYER } from "./render/canvasLifecycle.mjs";
 import { CampusGrass } from "./render/CampusGrass";
 import { E2Worksite } from "./render/E2Worksite";
+import { MedPromo } from "./render/MedPromo";
 import { ModelEditorScene } from "./editor/ModelEditorScene";
 import { modelEditStore } from "./editor/modelEditsApi.mjs";
 
@@ -1493,6 +1494,7 @@ export function CityModel({
         />
         {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <CampusGrass scene={scene} quality={quality} />}
       {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <E2Worksite obscured={labelsHidden} controlsRef={controlsRef} />}
+      {CAMPUS_MODEL_URL === CAMPUS_MODEL_URLS.detailed && <MedPromo obscured={labelsHidden} />}
       </group>
       <ModelEditorScene scene={scene} controlsRef={controlsRef} />
     </>

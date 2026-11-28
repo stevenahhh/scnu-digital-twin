@@ -203,6 +203,7 @@ function Dashboard() {
         sceneWeather={sceneWeather}
         search={{ registry: flow.labelRegistry, onPick: handleSearchPick }}
         sheetDetent={viewportMode === "phone" ? (isCampus ? panelState.detent : "full") : null}
+        medSiteSwitch
       />
       <CampusCanvas
         ref={mapLayerRef}

@@ -11,6 +11,8 @@ import { SUN_DISC_HEX } from "../lighting/sceneBackground.mjs";
 import { SceneWeatherBinding } from "../weather/SceneWeatherBinding";
 import { CampusTrafficSimulation } from "../simulation";
 import { campusLoad } from "../loading/campusLoad.mjs";
+import { MedSiteScene } from "../medSite/MedSiteScene";
+import { useMedSiteActive } from "../medSite/medSiteView.mjs";
 
 // 모델 응답이 멈췄을 때 다시 시도: 캐시된 요청을 지우면, attempt로 다시 마운트된 Suspense가 GLB를 새로 받는다(페이지는 새로 읽지 않는다).
 export function clearCampusModel() {
@@ -54,6 +56,9 @@ export const CampusScene = memo(function CampusScene({
   onSelect, onBuildingClick, onBuildingProximity, onD4Enter, onOrbitStart, onOrbitEnd, onLoadingChange, attempt = 0, presentation = false,
   onCompare, restrictions, labelRegistry,
 }) {
+  // 의대 예정 부지를 띄우는 동안에는 캠퍼스 모형과 교통 시뮬레이션을 내린다. 숨기기만 하면 보이지 않는 건물이 클릭을 받고
+  // CityModel의 카메라 충돌 보정이 캠퍼스 지형을 기준으로 계속 실행된다.
+  const medSite = useMedSiteActive();
   return (
     <>
       <color attach="background" args={[background]} />
@@ -79,6 +84,12 @@ export const CampusScene = memo(function CampusScene({
         </mesh>
       )}
       <Suspense key={attempt} fallback={<SceneLoadingSignal onChange={onLoadingChange} />}>
+        {medSite ? (
+          <Suspense fallback={null}>
+            <MedSiteScene controlsRef={controlsRef} />
+          </Suspense>
+        ) : (
+          <>
         <CityModel
           position={[0, 0, 0]}
           controlsRef={controlsRef}
@@ -103,6 +114,8 @@ export const CampusScene = memo(function CampusScene({
           quality={quality}
         />
         <CampusTrafficSimulation contactShadows={quality === "high"} restrictions={restrictions} labelRegistry={labelRegistry} labelsHidden={labelsHidden} />
+          </>
+        )}
         <ShadowBaker sunKey={sunVector.join(",")} />
         <SceneReadySignal />
       </Suspense>
