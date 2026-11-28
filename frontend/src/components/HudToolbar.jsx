@@ -1,5 +1,5 @@
 import {
-  BookOpen, Building, ChevronDown, DoorOpen, Eye, GraduationCap, Landmark, Sprout, Wrench,
+  BookOpen, Building, ChevronDown, DoorOpen, Eye, GraduationCap, Landmark, Megaphone, Sprout, Wrench,
 } from "lucide-react";
 import { DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu";
 import { OVERVIEW_PRESET_ID } from "../camera/cameraPresets.mjs";
@@ -9,6 +9,7 @@ import { cx } from "../ui/cx.mjs";
 
 const PRESET_ICONS = {
   gate: DoorOpen,
+  "gate-plaza": Megaphone,
   d4: Building,
   engineering: Wrench,
   library: BookOpen,
