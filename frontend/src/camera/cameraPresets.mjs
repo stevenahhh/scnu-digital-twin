@@ -32,15 +32,6 @@ export const CAMERA_PRESETS = Object.freeze([
     target: [100, 4, -38],
   },
   {
-    id: "gate-plaza",
-    title: "정문 광장",
-    description: "SCNU 글자 위 전광판과 의대 유치 피켓 행진",
-    position: [203, 27, 6],
-    target: [211, 15.5, 36],
-    // 정문 광장 북쪽 위에서 SCNU 글자와 그 위 전광판(render/MedPromo.jsx)을 내려다본다. 좌표는 campus-v2.glb 장면에서 잔
-    // 값이다: 화면 중심 약 (211.4, 18.4, 40.4), 광장 지반 약 y 13.4.
-  },
-  {
     id: D4_PRESET_ID,
     title: "공대 3호관",
     description: "공과대학 3호관(D4) 가까이",

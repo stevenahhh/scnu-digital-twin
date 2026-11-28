@@ -96,7 +96,7 @@ export const CampusHud = forwardRef(function CampusHud(
           {moreMenu}
         </div>
       </div>
-      {medSite && <MedSiteCard />}
+      {medSite && <MedSiteCard phone={phone} />}
       <TimeSlider
         minuteOfDay={clock.sceneMinuteOfDay}
         onMinuteChange={clock.setSceneMinuteOfDay}
@@ -171,12 +171,13 @@ function MedSiteToggle({ active, onToggle, compact }) {
 
 // 부지 모형을 띄운 동안 검색 줄 아래에 놓는 설명. 위치·면적·계획은 보도된 값이고 건물 배치는 추정이다
 // (scripts/campus-model/medCampus/plan.mjs).
-function MedSiteCard() {
+// 폰에서는 오른쪽 위 카메라 토글(top-20) 아래로 내린다.
+function MedSiteCard({ phone }) {
   return (
     <section
       data-qa="med-site-card"
       aria-label="의대 예정 부지 설명"
-      className="absolute left-4 top-[4.5rem] w-[min(22rem,calc(100%-2rem))] rounded-control border border-hairline bg-surface-1 px-3 py-2 text-ink"
+      className={cx("absolute left-4 w-[min(24rem,calc(100%-2rem))] rounded-control border border-hairline bg-surface-1 px-3 py-2 text-ink", phone ? "top-36" : "top-20")}
     >
       <p className="text-body font-semibold">국립순천대 의과대학·부속병원 예정 부지</p>
       <p className="text-caption text-ink-muted">조례동 산 13-3 일원 · 15만 1,719㎡ · 순천드라마촬영장 북서쪽</p>

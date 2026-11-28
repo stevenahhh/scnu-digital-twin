@@ -45,7 +45,6 @@ import { summarizeWeather } from "./panel/weatherSummary.mjs";
 import { sessionStore } from "./auth/session.mjs";
 import { accountLabel, useSession } from "./auth/useSession.mjs";
 import { ModelEditorPanel } from "./editor/ModelEditorPanel";
-import { useMedSiteActive } from "./medSite/medSiteView.mjs";
 import { modelEditStore } from "./editor/modelEditsApi.mjs";
 import { assistantContext, applyAssistantAction } from "./assistant/assistantActions.mjs";
 import { useAssistant } from "./assistant/useAssistant.mjs";
@@ -178,7 +177,6 @@ function Dashboard() {
     />
   ) : null;
 
-  const medSite = useMedSiteActive();
   const moreMenu = (
     <MoreMenu mode={viewportMode} onTogglePresentation={presentation.toggle} quality={qualitySetting}
       themeMode={themeMode} onThemeChange={setThemeMode}
@@ -229,7 +227,7 @@ function Dashboard() {
           restrictions: restrictions.items,
         }}
       />
-      {isCampus && !presentation.presenting && !medSite && <ModelEditorPanel />}
+      {isCampus && !presentation.presenting && <ModelEditorPanel />}
       {isSceneLoading && <SceneLoadingNotice key={sceneAttempt} insetRight={mapInsetRight} onRetry={retryScene} />}
       <DashboardShell
         ref={panelRef}
